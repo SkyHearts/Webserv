@@ -64,7 +64,9 @@ int main ( int ac, char **av ) {
 		std::string request(buffer, valread);
 		std::cout << request << std::endl;
 
-		std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world!</h1></body></html>";
+		std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
+		response += std::to_string(count);
+		response += "</h1></body></html>";
 		send(new_socket, response.c_str(), response.length(), 0);
 		close(new_socket);
 	}
