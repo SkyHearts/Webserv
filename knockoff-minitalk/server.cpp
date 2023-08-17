@@ -49,9 +49,10 @@ int main ( int ac, char **av ) {
 
 	static int count;
 	
-	// Accept incoming connections
+	// Accept incoming connections and sending a response
 	int addrlen = sizeof(server_addr);
 	while (1) {
+		// Add client information to server_addr struct
 		int new_socket = accept(serverfd, (struct sockaddr *)&server_addr, (socklen_t*)&addrlen);
 		if (new_socket < 0) {
 			std::cerr << "Error accepting connection" << std::endl;
@@ -59,11 +60,13 @@ int main ( int ac, char **av ) {
 		}
 		count++;
 
+		// Read request from client, convert from c-str to std::string
 		char buffer[1024];
 		int valread = read(new_socket, buffer, 1024);
 		std::string request(buffer, valread);
 		std::cout << request << std::endl;
 
+		// Send simple "Hello World!" response back to client
 		std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
 		response += std::to_string(count);
 		response += "</h1></body></html>";
