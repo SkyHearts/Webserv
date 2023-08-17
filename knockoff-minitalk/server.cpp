@@ -2,9 +2,11 @@
 
 #include <iostream>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <vector>
 
 int main ( int ac, char **av ) {
 	// AF_INET = IPv4, SOCK_STREAM = TCP, 0 = IP
@@ -47,32 +49,63 @@ int main ( int ac, char **av ) {
 		return 1;
 	}
 
+	// Set up array to store client sockets
+	std::vector<int> client_sockets;
+	fd_set read_fds;
+	int max_fd = serverfd;
+
 	static int count;
 	
 	// Accept incoming connections and sending a response
-	int addrlen = sizeof(server_addr);
 	while (1) {
-		// Add client information to server_addr struct
-		int new_socket = accept(serverfd, (struct sockaddr *)&server_addr, (socklen_t*)&addrlen);
-		if (new_socket < 0) {
-			std::cerr << "Error accepting connection" << std::endl;
-			continue;
+		// Use serverfd to initalise list of monitored sockets 
+		FD_ZERO(&read_fds);
+		FD_SET(serverfd, &read_fds);
+		// For each connected client, add them to the list of monitored sockets
+		for (size_t i = 0; i < client_sockets.size(); i++)
+			FD_SET(client_sockets[i], &read_fds);
+
+		if (select(max_fd + 1, &read_fds, NULL, NULL, NULL) == -1) {
+			std::cerr << "Error selecting socket" << std::endl;
+			return 1;
 		}
-		count++;
 
-		// Read request from client, convert from c-str to std::string
-		char buffer[1024];
-		int valread = read(new_socket, buffer, 1024);
-		std::string request(buffer, valread);
-		std::cout << request << std::endl;
+		// Accept any new incoming connections
+		if (FD_ISSET(serverfd, &read_fds)) {
+			int new_socket = accept(serverfd, NULL, NULL);
+			if (new_socket < 0) {
+				std::cerr << "Error accepting connection" << std::endl;
+				continue;
+			}
+			count++;
+			client_sockets.push_back(new_socket);
+			max_fd = std::max(max_fd, new_socket);
+		}
 
-		// Send simple "Hello World!" response back to client
-		std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
-		response += std::to_string(count);
-		response += "</h1></body></html>";
-		send(new_socket, response.c_str(), response.length(), 0);
-		close(new_socket);
+		for (size_t i = 0; i < client_sockets.size(); i++) {
+			int client_socket = client_sockets[i];
+			if (FD_ISSET(client_socket, &read_fds)) {
+				char buffer[1024];
+				int valread = read(client_socket, buffer, 1024);
+				if (valread <= 0) {
+					// If no response from client, close connection
+					close(client_socket);
+					client_sockets.erase(client_sockets.begin() + i);
+					i--;
+				}
+				else {
+					// Else, send response
+					std::string request(buffer, valread);
+					std::cout << request << std::endl;
+
+					std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
+					response += std::to_string(count);
+					response += "</h1></body></html>";
+					send(client_socket, response.c_str(), response.length(), 0);
+				}
+			}
+		}
 	}
-
+	
 	return 0;
 }
