@@ -84,7 +84,7 @@ void Server::connectionHandler( void ) {
 		for (size_t i = 0; i < _client_sockets.size(); i++) {
 			int client_socket = _client_sockets[i];
 			if (FD_ISSET(client_socket, &read_fds)) {
-				char request[1024] = {0};
+				char request[1024];
 				int valread = read(client_socket, request, 1024);
 				if (valread == 0) {
 					close(client_socket);
@@ -115,7 +115,6 @@ int Server::run( void ) {
 		}
 		
 		_server_fds.push_back(server_fd);
-		FD_SET(server_fd, &_read_fds);
 		if (server_fd > _max_fd)
 			_max_fd = server_fd;
 	}

@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <vector>
 
+struct s_connection {
+	int					server_fd;
+	std::vector<int>	client_sockets;
+} t_connection;
+
 class Server {
 	private:
 		std::vector<int>	_ports;
