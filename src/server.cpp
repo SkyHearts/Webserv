@@ -20,23 +20,23 @@ Server::~Server( void ) {}
 
 int Server::init( void ) {
 	if (_serverfd == -1) {
-		std::cerr << "error: Socket creation failure" << std::endl;
+		std::cerr << "Error: Socket creation failure" << std::endl;
 		return 1;
 	}
 
 	int optval = 1;
 	if (setsockopt(_serverfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) == -1) {
-		std::cerr << "error: Socket configuration failure" << std::endl;
+		std::cerr << "Error: Socket configuration failure" << std::endl;
 		return 1;
 	}
 
 	if (bind(_serverfd, (struct sockaddr *)&_server_addr, sizeof(_server_addr)) < 0) {
-		std::cerr << "error: Socket bind failure" << std::endl;
+		std::cerr << "Error: Socket bind failure" << std::endl;
 		return 1;
 	}
 
 	if (listen(_serverfd, 3) < 0) {
-		std::cerr << "error: Unable to listen on socket" << std::endl;
+		std::cerr << "Error: Unable to listen on socket" << std::endl;
 		return 1;
 	}
 
@@ -45,7 +45,7 @@ int Server::init( void ) {
 
 int Server::run( void ) {
 	if (init()) {
-		std::cerr << "error: Error encountered while initialising server" << std::endl;
+		std::cerr << "Error: Error encountered while initialising server" << std::endl;
 		return 1;
 	}
 
@@ -63,7 +63,7 @@ int Server::run( void ) {
 			FD_SET(_client_sockets[i], &read_fds);
 
 		if (select(max_fd + 1, &read_fds, NULL, NULL, NULL) == -1) {
-			std::cerr << "error: Unable to select socket" << std::endl;
+			std::cerr << "Error: Unable to select socket" << std::endl;
 			return 1;
 		}
 
@@ -71,7 +71,7 @@ int Server::run( void ) {
 		if (FD_ISSET(_serverfd, &read_fds)) {
 			int new_socket = accept(_serverfd, NULL, NULL);
 			if (new_socket < 0) {
-				std::cerr << "error: Server unable to accept incoming connection" << std::endl;
+				std::cerr << "Error: Server unable to accept incoming connection" << std::endl;
 				continue;
 			}
 			count++;
