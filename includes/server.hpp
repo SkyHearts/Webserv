@@ -8,17 +8,19 @@
 
 class Server {
 	private:
-		int					_port;
-		int					_serverfd;
-		struct sockaddr_in	_server_addr;
+		std::vector<int>	_ports;
+		std::vector<int>	_server_fds;
 		std::vector<int>	_client_sockets;
+		fd_set				_read_fds;
+		int					_max_fd;
 
-		Server( void );
-		int init( void );
+		int init( int port );
+		void connectionHandler( void );
 
 	public:
-		Server( int port );
+		Server( void );
 		~Server( void );
 
+		void set_port( int port );
 		int run( void );
 };
