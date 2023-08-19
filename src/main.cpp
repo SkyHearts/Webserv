@@ -31,7 +31,9 @@ int main( int ac, char **av ) {
 	std::cout << av[1] << std::endl;
 
 	// run server on port 80
-	Server server(80);
+	Server server;
+	server.set_port(80);
+	server.set_port(8080);
 	server.run();
 	return 0;
 }
