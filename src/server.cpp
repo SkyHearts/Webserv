@@ -4,14 +4,12 @@
 
 /** CONSTRUCTS **/
 
-Server::Server( void ) {
-	FD_ZERO(&_read_fds);
-	_max_fd = -1;
-}
+Server::Server( void ) {}
 
 Server::~Server( void ) {
-	for (size_t i = 0; i < _server_fds.size(); i++)
-		close(_server_fds[i]);
+	for (size_t i = 0; i < _server_ports.size(); i++)
+		for (size_t j = 0; j < _server_ports[i].client_sockets.size(); j++)
+			close(_server_ports[i].client_sockets[j]);
 }
 
 /** MEMBER FUNCTIONS **/
@@ -20,84 +18,71 @@ Server::~Server( void ) {
 	Given a port number, Server::init() initialises a socket on that
 	port and returns the file descriptor of the socket.
 */
-int Server::init( int port ) {
-	int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd == -1) {
+int init( t_connection *new_port ) {
+	new_port->server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (new_port->server_fd == -1) {
 		std::cerr << "Error: Socket creation failure" << std::endl;
-		return -1;
+		return 1;
 	}
 
 	int optval = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+	if (setsockopt(new_port->server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
 		std::cerr << "Error: Socket configuration failure" << std::endl;
-		return -1;
+		return 1;
 	}
 
-	struct sockaddr_in server_addr;
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	if (bind(new_port->server_fd, (struct sockaddr *)&new_port->address, sizeof(new_port->address)) < 0) {
 		std::cerr << "Error: Socket bind failure" << std::endl;
-		return -1;
+		return 1;
 	}
 
-	if (listen(server_fd, 3) < 0) {
+	if (listen(new_port->server_fd, 3) < 0) {
 		std::cerr << "Error: Unable to listen on socket" << std::endl;
-		return -1;
+		return 1;
 	}
 
-	return server_fd;
+	return 0;
 }
 
 void Server::connectionHandler( void ) {
-	fd_set read_fds;
-
 	static int count;
 
 	while (1) {
-		FD_ZERO(&read_fds);
-		for (size_t i = 0; i < _server_fds.size(); i++)
-			FD_SET(_server_fds[i], &read_fds);
-		for (size_t i = 0; i < _client_sockets.size(); i++)
-			FD_SET(_client_sockets[i], &read_fds);
+		for (size_t i = 0; i < _server_ports.size(); i++) {
+			FD_ZERO(&_server_ports[i].read_fd);
+			FD_SET(_server_ports[i].server_fd, &_server_ports[i].read_fd);
+			for (size_t j = 0; j < _server_ports[i].client_sockets.size(); j++)
+				FD_SET(_server_ports[i].client_sockets[j], &_server_ports[i].read_fd);
 
-		if (select(_max_fd + 1, &read_fds, NULL, NULL, NULL) == -1) {
-			std::cerr << "Error: Select failure" << std::endl;
-			return;
-		}
+			if (select(_server_ports[i].max_fd + 1, &_server_ports[i].read_fd, NULL, NULL, NULL) == -1) {
+				std::cerr << "Error: Unable to select socket" << std::endl;
+				return;
+			}
 
-		for (size_t i = 0; i < _server_fds.size(); i++) {
-			if (FD_ISSET(_server_fds[i], &read_fds)) {
-				int new_socket = accept(_server_fds[i], NULL, NULL);
+			if (FD_ISSET(_server_ports[i].server_fd, &_server_ports[i].read_fd)) {
+				int new_socket = accept(_server_ports[i].server_fd, NULL, NULL);
 				if (new_socket < 0) {
 					std::cerr << "Error: Unable to accept connection" << std::endl;
-					return;
+					continue;
 				}
-
-				_client_sockets.push_back(new_socket);
-				if (new_socket > _max_fd)
-					_max_fd = new_socket;
+				_server_ports[i].client_sockets.push_back(new_socket);
+				_server_ports[i].max_fd = std::max(_server_ports[i].max_fd, new_socket);
 			}
-		}
 
-		for (size_t i = 0; i < _client_sockets.size(); i++) {
-			int client_socket = _client_sockets[i];
-			if (FD_ISSET(client_socket, &read_fds)) {
-				char request[1024];
-				int valread = read(client_socket, request, 1024);
-				if (valread == 0) {
-					close(client_socket);
-					_client_sockets.erase(_client_sockets.begin() + i);
-					i--;
-				}
-				else {
-					std::cout << request << std::endl;
-					std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
-                    response += std::to_string(count);
-                    response += "</h1></body></html>";
-                    send(client_socket, response.c_str(), response.length(), 0);
-					count++;
+			for (size_t i = 0; i < _server_ports.size(); i++)
+				for (size_t j = 0; j < _server_ports[i].client_sockets.size(); j++)
+					if (FD_ISSET(_server_ports[i].client_sockets[j], &_server_ports[i].read_fd)) {
+						char buffer[1024] = {0};
+						int valread = read(_server_ports[i].client_sockets[j], buffer, 1024);
+						if (valread == 0) {
+							close(_server_ports[i].client_sockets[j]);
+							_server_ports[i].client_sockets.erase(_server_ports[i].client_sockets.begin() + j);
+						}
+						else
+							std::cout << buffer << std::endl;
+						count++;
+						std::cout << count << std::endl;
+					}
 				}
 			}
 		}
@@ -105,18 +90,21 @@ void Server::connectionHandler( void ) {
 }
 
 int Server::run( void ) {
-	int server_fd;
-
-	for (size_t i = 0; i < _ports.size(); i++) {
-		server_fd = init(_ports[i]);
-		if (server_fd == -1) {
-			std::cerr << "Error: Unable to initialise server on port " << _ports[i] << std::endl;
+	for (size_t i = 0; i < _input_ports.size(); i++) {
+		t_connection new_port;
+		new_port.port = _input_ports[i];
+		new_port.address.sin_family = AF_INET;
+		new_port.address.sin_port = htons(_input_ports[i]);
+		new_port.address.sin_addr.s_addr = INADDR_ANY;
+		
+		if (init(&new_port) == 1) {
+			std::cerr << "Error: Unable to initialise server on port " << _input_ports[i] << std::endl;
 			return 1;
 		}
+		if (new_port.server_fd > new_port.max_fd)
+			new_port.max_fd = new_port.server_fd;
 		
-		_server_fds.push_back(server_fd);
-		if (server_fd > _max_fd)
-			_max_fd = server_fd;
+		_server_ports.push_back(new_port);
 	}
 
 	connectionHandler();
@@ -125,5 +113,5 @@ int Server::run( void ) {
 
 /** GETTER AND SETTER **/
 void Server::set_port( int port ) {
-	_ports.push_back(port);
+	_input_ports.push_back(port);
 }
