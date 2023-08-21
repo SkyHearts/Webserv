@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/08/21 17:21:12 by jyim             ###   ########.fr       */
+/*   Updated: 2023/08/21 18:59:08 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,13 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+
+bool	is_punct(int c)
+{
+	if (c == ';' || c == '}')
+		return true;
+	return false;	
+}
 
 Config::Config(){
 	//USE DEFAULT CONF FILE if there are no files specified
@@ -46,6 +53,46 @@ void	Config::initEnum(std::map<std::string, serverBlock> &s_mapStringValues){
 	s_mapStringValues["location"] = location;
 }
 
+void	Config::parseServerName(std::istringstream &iss, ServerConfig &server){
+	std::string subs;
+	iss >> subs;
+	// Print the word fetched
+        // from the istringstream
+	for (int i = 0, len = subs.size(); i < len; i++)
+    {
+        // check whether parsing character is punctuation or not
+        if (is_punct(subs[i]))
+        {
+            subs.erase(i--, 1);
+            len = subs.size();
+        }
+    }
+    std::cout << "(Start_Name)" << subs << "(End_Name)" << std::endl;
+	server.name = subs;
+}
+
+void	Config::parseListen(std::istringstream &iss, ServerConfig &server){
+	int end = 0;
+	server.listen = 0;
+	do {
+		std::string subs;
+		iss >> subs;
+		// Print the word fetched
+			// from the istringstream
+		for (int i = 0, len = subs.size(); i < len; i++)
+		{
+			// check whether parsing character is punctuation or not
+			if (is_punct(subs[i]))
+			{
+				subs.erase(i--, 1);
+				len = subs.size();
+			}
+		}
+		std::cout << "(Start_Name)" << subs << "(End_Name)" << std::endl;
+		server.name = subs;
+	} while (end == 0);
+}
+
 void	Config::parseServerBlock(std::istringstream &iss){
 	std::map<std::string, serverBlock> s_mapStringValues;
 	Config::initEnum(s_mapStringValues);
@@ -68,16 +115,15 @@ void	Config::parseServerBlock(std::istringstream &iss){
 		// parse to correct variable
 		switch (s_mapStringValues[subs]){
 		case listen:
-			//server.listen = ;
-			//parseListen(iss);
 			std::cout << "Parse Listen" << std::endl;
+			parseListen(iss, server);
 			break ;
 		case server_name:
-			//parseServerName(iss);
 			std::cout << "Server Name" << std::endl;
+			parseServerName(iss, server);
 			break ;
 		default:
-			std::cout << "Wrong string" << std::endl;
+			std::cout << "Next word" << std::endl;
 		}	
  
     } while (end == 0);
