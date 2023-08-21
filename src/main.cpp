@@ -19,7 +19,7 @@ int parse_config( std::string config_file ) {
 
 int main( int ac, char **av ) {
 	if (ac == 1) {
-		std::cerr << "Error: No configuration file specified\nUsage: ./webserv [file.conf]" << std::endl;
+		std::cerr << "error: No configuration file specified\nUsage: ./webserv [file.conf]" << std::endl;
 		return 1;
 	}
 
@@ -27,13 +27,7 @@ int main( int ac, char **av ) {
 	if (parse_config(config_file))
 		return 1;
 
-	// replace this with config file parsing
-	std::cout << av[1] << std::endl;
-
-	// run server on port 80
-	Server server;
-	server.set_port(80);
-	server.set_port(8080);
+	Server server(80);
 	server.run();
 	return 0;
 }

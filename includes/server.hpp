@@ -6,27 +6,19 @@
 #include <unistd.h>
 #include <vector>
 
-typedef struct s_connection {
-	int					port;
-	int					server_fd;
-	struct sockaddr_in	address;
-	std::vector<int>	client_sockets;
-	fd_set				read_fd;
-	int					max_fd;
-} t_connection;
-
 class Server {
 	private:
-		std::vector<int>			_input_ports;
-		std::vector<t_connection>	_server_ports;
+		int					_port;
+		int					_serverfd;
+		struct sockaddr_in	_server_addr;
+		std::vector<int>	_client_sockets;
 
-		int init( t_connection *new_port );
-		void connectionHandler( void );
+		Server( void );
+		int init( void );
 
 	public:
-		Server( void );
+		Server( int port );
 		~Server( void );
 
-		void set_port( int port );
 		int run( void );
 };
