@@ -6,13 +6,17 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/08/21 17:23:38 by jyim             ###   ########.fr       */
+/*   Updated: 2023/08/22 19:57:35 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.hpp"
 #include <fstream>
 #include <map>
+#include <stdexcept>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 //class Server {
 //	private:
@@ -45,7 +49,7 @@
 //                          evStringValue2,
 //                          evStringValue3,
 //                          evEnd };
-						  
+					  
 struct Location
 {
 	std::string					path;
@@ -75,14 +79,22 @@ class Config {
 			root = 3,
 			location = 4
 		};
+		// Check_if_port_occupied
+		bool CheckPortTCP(short int dwPort, const char *ipAddressStr);
+		// Parse Server Block
 		void	initEnum(std::map<std::string, serverBlock> &s_mapStringValues);
 		void	parse(std::string &file);
 		void	parseServerBlock(std::istringstream &iss);
-		//void	parseListen(std::istringstream &iss);
-		//void	parseServerName(std::istringstream &iss);
-		//void	parseRoot(std::istringstream &iss);
-		//void	parseLocation(std::istringstream &iss);
-		//std::vector<ServerConfig> get_servers(void) { return _ports; }
+		void	parseListen(std::istringstream &iss, ServerConfig *server);
+		void	parseServerName(std::istringstream &iss, ServerConfig *server);
+		void	parseRoot(std::istringstream &iss, ServerConfig *server);
+		void	parseLocation(std::istringstream &iss, ServerConfig *server);
+		std::vector<ServerConfig> get_servers(void) { return _ports; }
 		std::string	getstring(char *av);
 		//void	printfServerConfig(void);
 };
+
+bool	is_punct(int c);
+bool	checkAlpha(const std::string &str);
+bool	checkNum(const std::string &str);
+bool	isValidDir(const char *path);
