@@ -17,6 +17,7 @@ typedef struct Port {
 class Server {
 	private:
 		fd_set						_readfds, _writefds;
+		int							_socket;
 		std::vector<int>			_serverports;
 		std::vector<int>			_serverfds;
 		std::vector<sockaddr_in>	_serveraddrs;
@@ -24,8 +25,9 @@ class Server {
 
 
 		Server( void );
-		int init( void );
-		int loop( void );
+		void init( void );
+		void acceptConnection( int fd );
+		void loop( void );
 
 		void error( std::string errmsg, bool exitbool = false );
 
