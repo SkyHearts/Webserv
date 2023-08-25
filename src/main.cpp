@@ -27,7 +27,7 @@ int main( int ac, char **av ) {
 	if (parse_config(config_file))
 		return 1;
 
-	Server server(80);
+	Server server;
 	server.run();
 	return 0;
 }

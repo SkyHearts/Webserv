@@ -8,31 +8,31 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <vector>
-
-typedef struct Port {
-	int			port;
-	std::string	name;
-}				Port;
+#include <map>
 
 class Server {
 	private:
 		fd_set						_readfds, _writefds;
-		int							_socket;
-		std::vector<int>			_serverports;
-		std::vector<int>			_serverfds;
+		std::vector<int>			_serverfds, _serverports;
 		std::vector<sockaddr_in>	_serveraddrs;
-		Port						_port_info;
 
+		int							_socket, _connections;
+		std::map<int, int>			_serverindex, _sentbytes;
+		std::map<int, std::string>	_buffer, _response;
+		std::map<int, bool>			_isparsed;
 
-		Server( void );
 		void init( void );
 		void acceptConnection( int fd );
+		void handleRequest( void );
+		void sendResponse( void );
+		int parseRequest( void );
+		void executeRequest( void );
 		void loop( void );
 
 		void error( std::string errmsg, bool exitbool = false );
 
 	public:
-		Server( int port );
+		Server( void );
 		~Server( void );
 
 		int run( void );
