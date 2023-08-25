@@ -6,21 +6,28 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/08/22 19:57:36 by jyim             ###   ########.fr       */
+/*   Updated: 2023/08/23 21:02:05 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/parse.hpp"
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <cctype>
+//#include <string>
+//#include <fstream>
+//#include <sstream>
+//#include <cctype>
+
+//#include <map>
+//#include <stdexcept>
+//#include <sys/stat.h>
+//#include <stdlib.h>
+//#include <dirent.h>
+//#include <iostream>
 
 // if char is ';' or '}' return true
 // else retuen false;
 bool	is_punct(int c)
 {
-	if (c == ';' || c == '}')
+	if (c == ';' || c == '{' || c == '}')
 		return true;
 	return false;	
 }
@@ -43,7 +50,13 @@ bool	isValidDir(const char *path){
 
     struct stat info;
 	if (stat(path, &info) == 0)
-        return (1);
+	{
+		if (S_ISDIR(info.st_mode))
+			std::cout << path << " is a directory" << std::endl;
+		else 
+			std::cout << path << " is not a directory" << std::endl;
+        return (S_ISDIR(info.st_mode));
+	}
     else
         return (0);
 }
@@ -110,11 +123,12 @@ std::string	Config::getstring(char *av){
 	return ret;
 }
 
-void	Config::initEnum(std::map<std::string, serverBlock> &s_mapStringValues){
+void	Config::initEnumServerBlock(std::map<std::string, serverBlock> &s_mapStringValues){
 	s_mapStringValues["listen"] = listen;
 	s_mapStringValues["server_name"] = server_name;
 	s_mapStringValues["root"] = root;
 	s_mapStringValues["location"] = location;
+	s_mapStringValues["{"] = start;
 }
 
 void	Config::parseServerName(std::istringstream &iss, ServerConfig *server){
@@ -141,7 +155,9 @@ void	Config::parseServerName(std::istringstream &iss, ServerConfig *server){
 void	Config::parseListen(std::istringstream &iss, ServerConfig *server){
 	std::cout << "IN CONFIG::PARSELISTEN" << std::endl;
 	int end = 0;
+	//std::cout << "Before:ServerListen: " << server->listen << std::endl;
 	server->listen = 0;
+	//std::cout << "After:ServerListen: " << server->listen << std::endl;
 	do {
 		std::string subs;
 		iss >> subs;
@@ -196,32 +212,57 @@ void	Config::parseRoot(std::istringstream &iss, ServerConfig *server){
 	std::cout << "EXIT CONFIG::PARSEROOT" << std::endl << std::endl;
 }
 
+void	Config::parseLocationParams(std::istringstream &iss, struct Location *loc){
+	std::string subs;
+
+	iss >> subs;
+}
+
 //In progress
 void	Config::parseLocation(std::istringstream &iss, ServerConfig *server){
-	std::cout << "IN CONFIG::PARSEROOT" << std::endl;
-	int end = 0;
+	std::cout << "IN CONFIG::PARSELOCATION" << std::endl;
+	struct Location loc;
+	int end;
 	int filled = 0;
 	do {
 		std::string subs;
 		iss >> subs;
-		if (subs.find(";") != -1){
-			std::cout << "Semicolon found" << std::endl;
+		if (subs.find("}") != -1){
+			std::cout << "Exit location block found" << std::endl;
 			end = 1;
 		}
+		if (subs.find("{") != -1){
+			std::cout << "start location block found" << std::endl;
+			end = 0;
+		}
+		for (int i = 0, len = subs.size(); i < len; i++)
+    	{
+			// check whether parsing character is punctuation or not
+			if (is_punct(subs[i]))
+			{
+				subs.erase(i--, 1);
+				len = subs.size();
+        	}
+   		}
+		if (subs.find("/") != -1)
+			loc.uri = subs;
+		if (!subs.compare("{") && !end)
+			Config::parseLocationParams(iss, &loc);
 		// Print the word fetched from the istringstream
 		std::cout << "(Start_Root)" << subs << "(End_Root)" << std::endl;
 	} while (end == 0);
-	if (!filled)
-		throw std::invalid_argument("Not valid root path");
-	std::cout << "EXIT CONFIG::PARSEROOT" << std::endl << std::endl;
+	//if (!filled)
+	//	throw std::invalid_argument("Not valid root path");
+	std::cout << "EXIT CONFIG::PARSELOCATION" << std::endl << std::endl;
+	server->locations.push_back(loc);
 }
 
 void	Config::parseServerBlock(std::istringstream &iss){
 	std::map<std::string, serverBlock> s_mapStringValues;
-	Config::initEnum(s_mapStringValues);
-	ServerConfig *server = new ServerConfig;
-	int end = 0;
-
+	Config::initEnumServerBlock(s_mapStringValues);
+	struct ServerConfig server;
+	int end = 1;
+	//try{
 	std::cout << "IN CONFIG::PARSESERVERBLOCK" << std::endl;
 	do {
     	std::string subs;
@@ -231,6 +272,10 @@ void	Config::parseServerBlock(std::istringstream &iss){
         // from the istringstream
         std::cout << "(Start2)" << subs << "(End2)" << std::endl;
 		// exit server block
+		if (subs.find("{") != -1){
+			std::cout << "Start Bracket found" << std::endl;
+			end = 0;
+		}
 		if (subs.find("}") != -1){
 			std::cout << "Close Bracket found" << std::endl;
 			end = 1;
@@ -239,26 +284,26 @@ void	Config::parseServerBlock(std::istringstream &iss){
 		switch (s_mapStringValues[subs]){
 		case listen:
 			std::cout << "Parse Listen" << std::endl;
-			parseListen(iss, server);
+			parseListen(iss, &server);
 			break ;
 		case server_name:
 			std::cout << "Server Name" << std::endl;
-			parseServerName(iss, server);
+			parseServerName(iss, &server);
 			break ;
 		case root:
 			std::cout << "Parse root" << std::endl;
-			parseRoot(iss, server);
+			parseRoot(iss, &server);
 			break ;
 		case location:
 			std::cout << "Parse location" << std::endl;
-			parseLocation(iss, server);
+			parseLocation(iss, &server);
 			break ;
 		default:
 			std::cout << "Next word" << std::endl;
 		}	
  
     } while (end == 0);
-	this->_ports.push_back(*server);
+	this->_ports.push_back(server);
 	std::cout << "EXIT CONFIG::PARSESERVERBLOCK" << std::endl << std::endl;
 }
 
@@ -292,7 +337,7 @@ Config::Config(char *av){
 
 
 int main(int argc, char **argv){
-	try
+	try // or write in parseServerBlock
 	{
 		Config S(argv[1]);
 		std::cout << std::endl << std::endl << std::endl;
@@ -308,10 +353,14 @@ int main(int argc, char **argv){
 			std::cout << std::endl;
 		}
 		std::cout << std::endl;
+		//if (!S.get_servers().empty())
+		//	 ;//free servers
 	}
 	catch (std::invalid_argument& e)
 	{
         std::cerr << "Config error:" << e.what() << std::endl;
+			//write free here?
         return -1;
+		//exit(1);
     }
 }

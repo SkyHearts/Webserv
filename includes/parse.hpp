@@ -6,17 +6,23 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/08/22 19:57:35 by jyim             ###   ########.fr       */
+/*   Updated: 2023/08/23 18:55:35 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #include "server.hpp"
+#include <string>
 #include <fstream>
+#include <sstream>
+#include <cctype>
+
 #include <map>
 #include <stdexcept>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <iostream>
 
 //class Server {
 //	private:
@@ -44,15 +50,35 @@
 //     allowedMethods <security>; //restrict what a url is able to send to server. https://coldbox.ortusbooks.com/the-basics/event-handlers/http-method-security
 //} //end of server block
 
-//static enum StringValue { evNotDefined,
-//                          evStringValue1,
-//                          evStringValue2,
-//                          evStringValue3,
-//                          evEnd };
-					  
-struct Location
+// Enum declare
+//enum	serverBlock{
+//	notDefined = 0,
+//	listen = 1,
+//	server_name = 2,
+//	root = 3,
+//	location = 4,
+//	start = 5
+//};
+
+//enum	parseelocation{
+//	notDefined = 0,
+//	listen = 1,
+//	server_name = 2,
+//	root = 3,
+//	location = 4,
+//	start = 5
+//};
+
+struct ErrorPage
 {
 	std::string					path;
+	std::vector<std::string>	allowedMethods;
+	
+};
+
+struct Location
+{
+	std::string					uri;
 	std::vector<std::string>	allowedMethods;
 	
 };
@@ -63,6 +89,7 @@ struct ServerConfig
 	std::string			name;
 	std::string			root;
 	std::vector<Location>	locations;
+	std::vector<ErrorPage>	errorPages;
 };
 
 class Config {
@@ -77,18 +104,21 @@ class Config {
 			listen = 1,
 			server_name = 2,
 			root = 3,
-			location = 4
+			location = 4,
+			start = 5
 		};
 		// Check_if_port_occupied
 		bool CheckPortTCP(short int dwPort, const char *ipAddressStr);
 		// Parse Server Block
-		void	initEnum(std::map<std::string, serverBlock> &s_mapStringValues);
+		void	initEnumServerBlock(std::map<std::string, serverBlock> &s_mapStringValues);
 		void	parse(std::string &file);
 		void	parseServerBlock(std::istringstream &iss);
 		void	parseListen(std::istringstream &iss, ServerConfig *server);
 		void	parseServerName(std::istringstream &iss, ServerConfig *server);
 		void	parseRoot(std::istringstream &iss, ServerConfig *server);
+		// Parse Location Block
 		void	parseLocation(std::istringstream &iss, ServerConfig *server);
+		void	parseLocationParams(std::istringstream &iss, struct Location *loc);
 		std::vector<ServerConfig> get_servers(void) { return _ports; }
 		std::string	getstring(char *av);
 		//void	printfServerConfig(void);
