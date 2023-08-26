@@ -20,17 +20,21 @@ void Server::init( void ) {
 	for (size_t i = 0; i < _serverports.size(); i++) {
 		if ((_serverfds[i] = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 			error("Socket", true);
+		std::cout << "Socket: " << _serverfds[i] << std::endl;
 
 		int optval = 1;
 		if (setsockopt(_serverfds[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 			error("Setsockopt", true);
+		std::cout << "Setsockopt reuseaddr to " << optval << std::endl;
 
 		addr.sin_port = htons(_serverports[i]);
 		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[i], sizeof(_serveraddrs[i])) == -1)
 			error("Bind", true);
+		std::cout << "Bound to port " << _serverports[i] << std::endl;
 
 		if (listen(_serverfds[i], SOMAXCONN) == -1)
 			error("Listen", true);
+		std::cout << "Listening on port " << _serverports[i] << std::endl;
 	}
 }
 
@@ -47,6 +51,7 @@ void Server::acceptConnection( int fd ) {
 			break ;
 		}
 	}
+	std::cout << "Accepted connection on server" << _serverfds[_serverindex[_socket]] << std::endl;
 	_sentbytes[_socket] = 0;
 	_isparsed[_socket] = false;
 	_connections++;
@@ -57,8 +62,8 @@ void Server::handleRequest( void ) {
 	char buffer[1024];
 	memset(buffer, 0, 1024);
 
-	int request = recv(_socket, buffer, 1024, 0);
-	if (request <= 0) {
+	int request_len = recv(_socket, buffer, 1024, 0);
+	if (request_len <= 0) {
 		error("Recv");
 		_sentbytes[_socket] = 0;
 		_buffer[_socket].clear();
@@ -68,13 +73,14 @@ void Server::handleRequest( void ) {
 		FD_CLR(_socket, &_readfds);
 		return ;
 	}
+	std::cout << "Received: " << request_len << " bytes" << std::endl;
 	//else if (parseHeader()) {}
-	while (request > 0) {
+	while (request_len > 0) {
 		_buffer[_socket].append(buffer);
 		std::cout << "Received: " << _buffer[_socket].size() << "/r";
 		std::cout.flush();
 		memset(buffer, 0, 1024);
-		request = recv(_socket, buffer, 1024, 0);
+		request_len = recv(_socket, buffer, 1024, 0);
 	}
 	//if (parseHeader()) {}
 	FD_CLR(_socket, &_readfds);
@@ -86,7 +92,7 @@ int Server::parseRequest( void ) {
 
 	// Temporarily just set response to 200 OK and say Hello World
 	_response[_socket] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 12\r\n\r\nHello World!";
-
+	std::cout << "Set response to client "	<< _socket << std::endl;
 	// Error handle once we have a parser
 	// Check if client request exceeds max request size here too?
 	return 0;
@@ -108,6 +114,7 @@ void Server::sendResponse( void ) {
 		if ((size_t)_sentbytes[_socket] != _response[_socket].size())
 			return ;
 		std::cout << std::endl;
+		std::cout << "Replied and ";
 	}
 
 	_sentbytes.erase(_socket);
@@ -117,7 +124,7 @@ void Server::sendResponse( void ) {
 	
 	close(_socket);
 	FD_CLR(_socket, &_writefds);
-	std::cout << "Replied and closed connection: " << _socket << "\nTotal connections: " << --_connections << std::endl;
+	std::cout << "Closed connection: " << _socket << "\nTotal connections: " << --_connections << std::endl;
 
 	std::cout << "Listening on port(s): ";
 	for (size_t i = 0; i < _serverports.size(); i++)
@@ -222,6 +229,7 @@ void Server::error( std::string errmsg, bool exitbool ) {
 int Server::run( void ) {
 	_serverports.push_back(80);
 	init();
+	std::cout << "Initialized server, starting loop" << std::endl;
 	loop();
 	return 0;
 }
