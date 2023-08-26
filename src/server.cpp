@@ -227,7 +227,7 @@ void Server::error( std::string errmsg, bool exitbool ) {
 }
 
 int Server::run( void ) {
-	_serverports.push_back(80);
+	_serverports.push_back(8080);
 	init();
 	std::cout << "Initialized server, starting loop" << std::endl;
 	loop();
