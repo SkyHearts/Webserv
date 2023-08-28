@@ -15,8 +15,8 @@
 class Server {
 	private:
 		fd_set						_readfds, _writefds;
-		std::vector<int>			_ports, _serverfds;
-		std::map<int, sockaddr_in>	_serveraddrs, _sockets;
+		std::vector<int>			_ports, _serverfds, _clientfds;
+		std::map<int, sockaddr_in>	_serveraddrs, _clientaddrs;
 		std::map<int, std::string>	_response;
 		std::map<int, bool>			_isparsed;
 		std::map<int, int>			_sentbytes;
