@@ -15,3 +15,9 @@
 #define YELLOW "\033[33m"
 #define BLUE "\033[34m"
 #define CLEAR "\033[0m"
+
+#define HOST "Host"
+#define CON "Connection"
+#define UIR "Upgrade-Insecure-Requests"
+#define UA "User-Agent"
+#define ACCEPT "Accept"
