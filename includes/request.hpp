@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/08/28 14:16:42 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/08/29 15:02:58 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,13 @@
 enum request {
 	GET,
 	POST,
-	DELETE	
+	DELETE,
+	UNKNOWN
 };
 
 class Request {
 	private:
+		int	_headSize;
 		std::string _method;
 		std::string _path;
 		std::string _http;
