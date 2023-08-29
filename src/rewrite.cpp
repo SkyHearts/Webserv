@@ -39,30 +39,29 @@ void Server::init( void ) {
 void Server::acceptConnection( int serverfd ) {
 	sockaddr_in clientaddr;
 	socklen_t clientaddrlen = sizeof(clientaddr);
-	
+
 	int clientfd = accept(serverfd, (struct sockaddr *)&clientaddr, &clientaddrlen);
 	if (clientfd < 0) {
 		error("accept", false);
 		return ;
 	}
 
-	std::cout << "accepted client fd " << clientfd << std::endl;
-
 	fcntl(clientfd, F_SETFL, O_NONBLOCK);
 	_clientfds.push_back(clientfd);
 	_clientaddrs[clientfd] = clientaddr;
 	FD_SET(clientfd, &_readfds);
 
-	std::cout << "Accepted connection on port " << ntohs(clientaddr.sin_port) << std::endl;
+	std::cout << "Accepted connection on port " << ntohs(clientaddr.sin_port)
+				<< " with fd " << clientfd << std::endl;
 }
 
 void Server::readRequest( int socket ) {
 	std::cout << "In readRequest" << std::endl;
 
 	char buffer[1024];
-	int bytes_read = recv(socket, buffer, 1024, 0);
+	int bytes_read = read(socket, buffer, 1024);
 	if (bytes_read <= 0) {
-		error("recv", false);
+		error("read", false);
 		closeConnection(socket);
 		return ;
 	}
@@ -102,26 +101,24 @@ void Server::sendResponse( int socket ) {
 }
 
 void Server::closeConnection( int socket ) {
-	close(socket);
-	FD_CLR(socket, &_readfds);
-	FD_CLR(socket, &_writefds);
 	_clientfds.erase(std::remove(_clientfds.begin(), _clientfds.end(), socket), _clientfds.end());
 	_clientaddrs.erase(socket);
 	_response.erase(socket);
 	_isparsed.erase(socket);
 	_sentbytes.erase(socket);
+	close(socket);
 	
 	std::cout << "Closed connection on socket " << socket << std::endl;
 }
 
 void Server::loop( void ) {
 	fd_set readfds_copy, writefds_copy;
-	// timeval timeout;
+	timeval timeout;
 
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
-	// timeout.tv_sec = 1;
-	// timeout.tv_usec = 0;
+	timeout.tv_sec = 5;
+	timeout.tv_usec = 0;
 
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
@@ -138,31 +135,27 @@ void Server::loop( void ) {
 			continue;
 
 		for (size_t i = 0; i < _serverfds.size(); i++)
-			if (FD_ISSET(_serverfds[i], &readfds_copy)) {
-				FD_ZERO(&readfds_copy);
-				FD_ZERO(&writefds_copy);
-				memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
-				memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
+			if (FD_ISSET(_serverfds[i], &readfds_copy))
 				acceptConnection(_serverfds[i]);
-			}
 
 		for (size_t j = 0; j < _clientfds.size(); j++) {
 			std::cout << "Checking for client " << _clientfds[j] << std::endl;
 
+			FD_ZERO(&readfds_copy);
+			FD_ZERO(&writefds_copy);
+			memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
+			memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
 			if (FD_ISSET(_clientfds[j], &readfds_copy)) {
 				std::cout << "In the readRequst if statement for client " << _clientfds[j] << std::endl;
-				FD_ZERO(&readfds_copy);
-				FD_ZERO(&writefds_copy);
-				memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
-				memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
 				readRequest(_clientfds[j]);
 			}
+
+			FD_ZERO(&readfds_copy);
+			FD_ZERO(&writefds_copy);
+			memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
+			memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
 			if (FD_ISSET(_clientfds[j], &writefds_copy) && _isparsed[_clientfds[j]] == true) {
 				std::cout << "In the sendResponse if statement for client " << _clientfds[j] << std::endl;
-				FD_ZERO(&readfds_copy);
-				FD_ZERO(&writefds_copy);
-				memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
-				memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
 				sendResponse(_clientfds[j]);
 			}
 		}
