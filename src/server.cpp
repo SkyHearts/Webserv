@@ -95,6 +95,8 @@ int Server::run( void ) {
 					std::string request(buffer, valread);
 					std::cout << request << std::endl;
 
+					_req.parseRequest(request);
+
 					std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, world! ";
 					response += std::to_string(count);
 					response += "</h1></body></html>";

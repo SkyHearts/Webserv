@@ -17,7 +17,7 @@ int parse_config( std::string config_file ) {
 	return 0;
 }
 
-#include "server.hpp"
+// #include "server.hpp"
 
 int main( int ac, char **av ) {
 	if (ac == 1) {
