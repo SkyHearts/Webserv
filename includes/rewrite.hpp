@@ -12,6 +12,13 @@
 #include <vector>
 #include <map>
 
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define GREEN_BOLD "\033[32;1m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define CLEAR "\033[0m"
+
 class Server {
 	private:
 		fd_set						_readfds, _writefds;

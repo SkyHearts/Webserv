@@ -14,12 +14,10 @@ void Server::init( void ) {
 		if (serverfd < 0)
 			error("socket");
 		_serverfds.push_back(serverfd);
-		std::cout << "Created socket for port " << _ports[i] << std::endl;
 
 		int optval = 1;
 		if (setsockopt(_serverfds[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
 			error("setsockopt");
-		std::cout << "Set socket options for port " << _ports[i] << std::endl;
 
 		_serveraddrs[_serverfds[i]].sin_family = AF_INET;
 		_serveraddrs[_serverfds[i]].sin_addr.s_addr = INADDR_ANY;
@@ -28,11 +26,10 @@ void Server::init( void ) {
 
 		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[_serverfds[i]], sizeof(_serveraddrs[_serverfds[i]])) < 0)
 			error("bind");
-		std::cout << "Bound to port " << _ports[i] << std::endl;
 
 		if (listen(_serverfds[i], 10) < 0)
 			error("listen");
-		std::cout << "Listening on port " << _ports[i] << std::endl;
+		std::cout << GREEN << "Initialised on port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
 	}
 }
 
@@ -51,23 +48,34 @@ void Server::acceptConnection( int serverfd ) {
 	_clientaddrs[clientfd] = clientaddr;
 	FD_SET(clientfd, &_readfds);
 
-	std::cout << "Accepted new connection from client fd " << clientfd << std::endl;
+	std::cout << GREEN << "Accepted new connection from client fd " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
 void Server::readRequest( int socket ) {
-	std::cout << "In readRequest for client " << socket << std::endl;
+	std::cout << BLUE << "In readRequest for client " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
 	int bytes_read = recv(socket, buffer, 1024, 0);
-	if (bytes_read <= 0) {
-		error("recv", false);
+
+	if (bytes_read < 0) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			std::cout << RED << "No data from " << socket << CLEAR << std::endl;
+			return ;
+		}
+		else {
+			error("recv", false);
+			closeConnection(socket);
+			return ;
+		}
+	}
+	else if (bytes_read == 0) {
+		std::cout << BLUE << "Client " << socket << " disconnected" << CLEAR << std::endl;
 		closeConnection(socket);
 		return ;
 	}
 
-	buffer[bytes_read] = '\0';
-
-	std::cout << "Received " << bytes_read << " bytes\nClient says:" << buffer << std::endl;
+	std::cout << GREEN << "Received " << bytes_read << " bytes" << std::endl;
+	std::cout << CLEAR << "Client says:\n" << buffer << std::endl;
 
 	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
 	_response[socket] = response;
@@ -78,7 +86,7 @@ void Server::readRequest( int socket ) {
 }
 
 void Server::sendResponse( int socket ) {
-	std::cout << "In sendResponse for client " << socket << std::endl;
+	std::cout << BLUE << "In sendResponse for client " << socket << std::endl;
 
 	size_t total_sent = _sentbytes[socket];
 	const char *response = _response[socket].c_str();
@@ -107,7 +115,7 @@ void Server::closeConnection( int socket ) {
 	_sentbytes.erase(socket);
 	close(socket);
 	
-	std::cout << "Closed connection on socket " << socket << "\n" << std::endl;
+	std::cout << BLUE << "Closed connection on socket " << socket << "\n" << CLEAR << std::endl;
 }
 
 void Server::loop( void ) {
@@ -116,7 +124,7 @@ void Server::loop( void ) {
 
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
-	timeout.tv_sec = 5;
+	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 
 	for (size_t i = 0; i < _ports.size(); i++)
@@ -130,7 +138,7 @@ void Server::loop( void ) {
 
 		int max_fd = *std::max_element(_serverfds.begin(), _serverfds.end());
 
-		if (select(max_fd + 1, &readfds_copy, &writefds_copy, NULL, NULL) < 0)
+		if (select(max_fd + 1, &readfds_copy, &writefds_copy, NULL, &timeout) < 0)
 			continue;
 
 		for (size_t i = 0; i < _serverfds.size(); i++)
@@ -138,7 +146,7 @@ void Server::loop( void ) {
 				acceptConnection(_serverfds[i]);
 
 		for (size_t j = 0; j < _clientfds.size(); j++) {
-			std::cout << "Checking for client " << _clientfds[j] << std::endl;
+			std::cout << YELLOW << "Checking for client " << GREEN << _clientfds[j] << CLEAR << std::endl;
 
 			FD_ZERO(&readfds_copy);
 			memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
@@ -163,8 +171,9 @@ void Server::run( void ) {
 /* Error and Exit */
 
 void Server::error( std::string errmsg, bool exitbool ) {
-	std::cerr << errmsg << ": ";
+	std::cerr << RED << errmsg << ": ";
 	perror(NULL);
+	std::cerr << CLEAR;
 
 	if (exitbool)
 		exit(1);
