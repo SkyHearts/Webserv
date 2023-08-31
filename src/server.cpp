@@ -1,235 +1,184 @@
-// https://www.geeksforgeeks.org/socket-programming-cc/
+#include "rewrite.hpp"
 
-#include "server.hpp"
+/* Construct and Destruct */
 
 Server::Server( void ) {}
 
 Server::~Server( void ) {}
 
-/*
+/* Members */
 
-*/
 void Server::init( void ) {
-	sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-
-	_serverfds.resize(_serverports.size());
-	_serveraddrs.resize(_serverports.size());
-
-	for (size_t i = 0; i < _serverports.size(); i++) {
-		if ((_serverfds[i] = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-			error("Socket", true);
-		std::cout << "Socket: " << _serverfds[i] << std::endl;
+	for (size_t i = 0; i < _ports.size(); i++) {
+		int serverfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (serverfd < 0)
+			error("socket");
+		_serverfds.push_back(serverfd);
 
 		int optval = 1;
-		if (setsockopt(_serverfds[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
-			error("Setsockopt", true);
-		std::cout << "Setsockopt reuseaddr to " << optval << std::endl;
+		if (setsockopt(_serverfds[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+			error("setsockopt");
 
-		addr.sin_port = htons(_serverports[i]);
-		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[i], sizeof(_serveraddrs[i])) == -1)
-			error("Bind", true);
-		std::cout << "Bound to port " << _serverports[i] << std::endl;
+		_serveraddrs[_serverfds[i]].sin_family = AF_INET;
+		_serveraddrs[_serverfds[i]].sin_addr.s_addr = INADDR_ANY;
+		_serveraddrs[_serverfds[i]].sin_port = htons(_ports[i]);
+		memset(_serveraddrs[_serverfds[i]].sin_zero, '\0', sizeof(_serveraddrs[_serverfds[i]].sin_zero));
 
-		if (listen(_serverfds[i], SOMAXCONN) == -1)
-			error("Listen", true);
-		std::cout << "Listening on port " << _serverports[i] << std::endl;
+		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[_serverfds[i]], sizeof(_serveraddrs[_serverfds[i]])) < 0)
+			error("bind");
+
+		if (listen(_serverfds[i], 10) < 0)
+			error("listen");
+		std::cout << YELLOW << "Initialised port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
 	}
 }
 
-void Server::acceptConnection( int fd ) {
-	_socket = accept(fd, NULL, NULL);
-	if (_socket == -1) {
-		error("Accept");
+void Server::acceptConnection( int serverfd ) {
+	sockaddr_in clientaddr;
+	socklen_t clientaddrlen = sizeof(clientaddr);
+
+	int clientfd = accept(serverfd, (struct sockaddr *)&clientaddr, &clientaddrlen);
+	if (clientfd < 0) {
+		error("accept", false);
 		return ;
 	}
-	fcntl(_socket, F_SETFL, O_NONBLOCK);
-	for (size_t i = 0; i < _serverfds.size(); i++) { // Take note of the server that accepted the connection
-		if (fd == _serverfds[i]) {
-			_serverindex[_socket] = i;
-			break ;
+
+	fcntl(clientfd, F_SETFL, O_NONBLOCK);
+	_clientfds.push_back(clientfd);
+	_clientaddrs[clientfd] = clientaddr;
+	FD_SET(clientfd, &_readfds);
+
+	std::cout << GREEN << "Accepted new connection from client fd " << GREEN_BOLD << clientfd << CLEAR << std::endl;
+}
+
+void Server::readRequest( int socket ) {
+	std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
+
+	char buffer[1024];
+	int bytes_read = recv(socket, buffer, 1024, 0);
+
+	if (bytes_read < 0) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return ;
+		else {
+			error("recv", false);
+			closeConnection(socket);
+			return ;
 		}
 	}
-	std::cout << "Accepted connection on server" << _serverfds[_serverindex[_socket]] << std::endl;
-	_sentbytes[_socket] = 0;
-	_isparsed[_socket] = false;
-	_connections++;
-	FD_SET(_socket, &_readfds);
-}
-
-void Server::handleRequest( void ) {
-	char buffer[1024];
-	memset(buffer, 0, 1024);
-
-	int request_len = recv(_socket, buffer, 1024, 0);
-	if (request_len <= 0) {
-		error("Recv");
-		_sentbytes[_socket] = 0;
-		_buffer[_socket].clear();
-		_response[_socket].clear();
-		_isparsed.erase(_socket);
-		close(_socket);
-		FD_CLR(_socket, &_readfds);
+	else if (bytes_read == 0) {
+		std::cout << BLUE << "Client " << socket << " disconnected" << CLEAR << std::endl;
+		closeConnection(socket);
 		return ;
 	}
-	std::cout << "Received: " << request_len << " bytes" << std::endl;
-	//else if (parseHeader()) {}
-	while (request_len > 0) {
-		_buffer[_socket].append(buffer);
-		std::cout << "Received: " << _buffer[_socket].size() << "/r";
-		std::cout.flush();
-		memset(buffer, 0, 1024);
-		request_len = recv(_socket, buffer, 1024, 0);
-	}
-	//if (parseHeader()) {}
-	FD_CLR(_socket, &_readfds);
-	FD_SET(_socket, &_writefds);
+
+	std::cout << GREEN << "Received " << bytes_read << " bytes" << std::endl;
+	std::cout << CLEAR << "Client says:\n" << buffer << std::endl;
+
+	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
+	_response[socket] = response;
+	_isparsed[socket] = true;
+
+	FD_CLR(socket, &_readfds);
+	FD_SET(socket, &_writefds);
 }
 
-int Server::parseRequest( void ) {
-	// Parse client request into useable format first
+void Server::sendResponse( int socket ) {
+	std::cout << YELLOW << "Attempting to send response to client " << socket << CLEAR << std::endl;
 
-	// Temporarily just set response to 200 OK and say Hello World
-	_response[_socket] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 12\r\n\r\nHello World!";
-	std::cout << "Set response to client "	<< _socket << std::endl;
-	// Error handle once we have a parser
-	// Check if client request exceeds max request size here too?
-	return 0;
-}
+	size_t total_sent = _sentbytes[socket];
+	const char *response = _response[socket].c_str();
+	size_t response_len = _response[socket].length();
 
-void Server::executeRequest( void ) {
-	// Execute request here
-}
+	size_t sentbytes = send(socket, response + total_sent, response_len - total_sent, 0);
 
-void Server::sendResponse( void ) {
-	long total = _sentbytes[_socket];
-	long sendbytes = send(_socket, _response[_socket].c_str() + total, _response[_socket].size() - total, 0);
-	if (sendbytes <= 0)
-		error("Send");
-	else {
-		_sentbytes[_socket] += sendbytes;
-		std::cout << "Sending: " << _sentbytes[_socket] << "/" << _response[_socket].size() << "\r";
-		std::cout.flush();
-		if ((size_t)_sentbytes[_socket] != _response[_socket].size())
-			return ;
-		std::cout << std::endl;
-		std::cout << "Replied and ";
+	if (sentbytes < 0) {
+		error("send", false);
+		return ;
 	}
 
-	_sentbytes.erase(_socket);
-	_buffer.erase(_socket);
-	_response.erase(_socket);
-	_isparsed.erase(_socket);
+	_sentbytes[socket] += sentbytes;
+	if ((size_t)_sentbytes[socket] >= response_len) {
+		FD_CLR(socket, &_writefds);
+		FD_SET(socket, &_readfds);
+	}
+
+	std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
+	closeConnection(socket);
+}
+
+void Server::closeConnection( int socket ) {
+	_clientfds.erase(std::remove(_clientfds.begin(), _clientfds.end(), socket), _clientfds.end());
+	_clientaddrs.erase(socket);
+	_response.erase(socket);
+	_isparsed.erase(socket);
+	_sentbytes.erase(socket);
+	close(socket);
 	
-	close(_socket);
-	FD_CLR(_socket, &_writefds);
-	std::cout << "Closed connection: " << _socket << "\nTotal connections: " << --_connections << std::endl;
-
-	std::cout << "Listening on port(s): ";
-	for (size_t i = 0; i < _serverports.size(); i++)
-		std::cout << _serverports[i] << " ";
-	std::cout << "\nAwaiting connections..." << std::endl;
+	std::cout << BLUE << "Closed connection on socket " << socket << "\n" << CLEAR << std::endl;
 }
 
 void Server::loop( void ) {
-	fd_set readfds, writefds;
+	fd_set readfds_copy, writefds_copy;
 	timeval timeout;
 
+	FD_ZERO(&readfds_copy);
+	FD_ZERO(&writefds_copy);
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
-	FD_ZERO(&_readfds);
-	FD_ZERO(&_writefds);
 
-	for (size_t i = 0; i < _serverfds.size(); i++) {
-		_isparsed[_serverfds[i]] = false;
+	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
-	}
-	_socket = 0;
-
-	std::cout << "Listening on port(s): ";
-	for (size_t i = 0; i < _serverports.size(); i++)
-		std::cout << _serverports[i] << " ";
-	std::cout << "\nAwaiting connections..." << std::endl;
 
 	while (1) {
-		memcpy(&readfds, &_readfds, sizeof(_readfds));
-		memcpy(&writefds, &_writefds, sizeof(_writefds));
-		if (select(FD_SETSIZE, &readfds, &writefds, NULL, &timeout) == 0)
-			continue ;
+		FD_ZERO(&readfds_copy);
+		FD_ZERO(&writefds_copy);
+		memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
+		memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
 
-		std::cout << "Someone is trying to connect" << std::endl;
+		int max_fd = *std::max_element(_serverfds.begin(), _serverfds.end());
 
-		// Handling reads
-		for (int fd = 0; fd < FD_SETSIZE; fd++) {
-			std::cout << "Handling reads" << std::endl;
-			if (!FD_ISSET(fd, &readfds))
-				continue ;
-			
-			bool is_server = false;
-			for (size_t i = 0; i < _serverfds.size(); i++) {
-				if (fd == _serverfds[i]) {
-					is_server = true;
-					break ;
-				}
+		if (select(max_fd + 1, &readfds_copy, &writefds_copy, NULL, &timeout) < 0)
+			continue;
+
+		for (size_t i = 0; i < _serverfds.size(); i++)
+			if (i < _serverfds.size() && FD_ISSET(_serverfds[i], &readfds_copy))
+				acceptConnection(_serverfds[i]);
+
+		for (size_t j = 0; j < _clientfds.size(); j++) {
+			FD_ZERO(&readfds_copy);
+			memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
+			if (j < _clientfds.size() && FD_ISSET(_clientfds[j], &readfds_copy)) {
+				readRequest(_clientfds[j]);
 			}
 
-			if (is_server) {
-				acceptConnection(fd);
-				std::cout << "New connection: " << fd << "\nTotal connections: " << _connections << std::endl;
-			}
-			else {
-				_socket = fd;
-				handleRequest();
-			}
-		}
-
-		// Handling writes
-		for (int fd = 0; fd < FD_SETSIZE; fd++) {
-			std::cout << "Handling writes" << std::endl;
-			if (!FD_ISSET(fd, &writefds))
-				continue ;
-
-			_socket = fd;
-			// Have to add request parsing and actual response sending here later
-			bool flag = false;
-			for (size_t i = 0; i < FD_SETSIZE; i++) {
-				if (_isparsed[i]) {
-					flag = true;
-					break ;
-				}
-			}
-
-			if (!_isparsed[_socket] && !flag) {
-				std::cout << "Parsing request" << std::endl;
-				if (!parseRequest()) {
-					std::cout << "Executing request" << std::endl;
-					executeRequest();
-				}
-				_isparsed[_socket] = true;
-			}
-
-			if (_isparsed[_socket]) {
-				std::cout << "Sending response" << std::endl;
-				sendResponse();
+			FD_ZERO(&writefds_copy);
+			memcpy(&writefds_copy, &_writefds, sizeof(_writefds));
+			if (j < _clientfds.size() && FD_ISSET(_clientfds[j], &writefds_copy) && _isparsed[_clientfds[j]] == true) {
+				sendResponse(_clientfds[j]);
 			}
 		}
 	}
 }
 
+void Server::run( void ) {
+	init();
+	loop();
+}
+
+/* Error and Exit */
+
 void Server::error( std::string errmsg, bool exitbool ) {
-	std::cerr << errmsg << ": ";
+	std::cerr << RED << errmsg << ": ";
 	perror(NULL);
-	std::cerr << std::endl;
+	std::cerr << CLEAR;
 
 	if (exitbool)
 		exit(1);
 }
 
-int Server::run( void ) {
-	_serverports.push_back(8080);
-	init();
-	std::cout << "Initialized server, starting loop" << std::endl;
-	loop();
-	return 0;
+/* Getters and Setters */
+
+void Server::addPort( int port ) {
+	_ports.push_back(port);
 }
