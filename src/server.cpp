@@ -1,4 +1,4 @@
-#include "rewrite.hpp"
+#include "server.hpp"
 
 /* Construct and Destruct */
 
@@ -55,6 +55,7 @@ void Server::readRequest( int socket ) {
 	std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
+	memset(buffer, '\0', 1024);
 	int bytes_read = recv(socket, buffer, 1024, 0);
 
 	if (bytes_read < 0) {
