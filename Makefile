@@ -1,6 +1,6 @@
 NAME		= webserv
 CPP			= c++
-FLAGS		= -Wall -Werror -Wextra
+FLAGS		= -Wall -Werror -Wextra -fsanitize=address -g3
 INCLUDES	= -I includes
 
 RM			= rm -rf
