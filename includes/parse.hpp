@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/08/23 18:55:35 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/02 16:16:20 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <iostream>
+
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 //class Server {
 //	private:
@@ -69,27 +73,21 @@
 //	start = 5
 //};
 
-struct ErrorPage
-{
-	std::string					path;
-	std::vector<std::string>	allowedMethods;
-	
-};
-
 struct Location
 {
 	std::string					uri;
+	std::string 				index;
 	std::vector<std::string>	allowedMethods;
-	
 };
 
 struct ServerConfig
 {
-	int					listen;
-	std::string			name;
-	std::string			root;
-	std::vector<Location>	locations;
-	std::vector<ErrorPage>	errorPages;
+	int							listen;
+	std::string					name;
+	std::string					root;
+	std::vector<Location>		locations;
+	std::string 				index;
+	std::map<int, std::string>	errorPages;
 };
 
 class Config {
@@ -105,7 +103,9 @@ class Config {
 			server_name = 2,
 			root = 3,
 			location = 4,
-			start = 5
+			indexServ = 5,
+			errorPages = 6,
+			start = 7
 		};
 		// Check_if_port_occupied
 		bool CheckPortTCP(short int dwPort, const char *ipAddressStr);
@@ -116,15 +116,21 @@ class Config {
 		void	parseListen(std::istringstream &iss, ServerConfig *server);
 		void	parseServerName(std::istringstream &iss, ServerConfig *server);
 		void	parseRoot(std::istringstream &iss, ServerConfig *server);
+		void	parseIndexServ(std::istringstream &iss, ServerConfig *server);
 		// Parse Location Block
 		void	parseLocation(std::istringstream &iss, ServerConfig *server);
-		void	parseLocationParams(std::istringstream &iss, struct Location *loc);
+		void	parseLocationParams(std::istringstream &iss, ServerConfig *server, struct Location *loc, std::string& update);
+		// Parse Error_Pages
+		void	parseErrorPages(std::istringstream &iss, ServerConfig *server);
+		
 		std::vector<ServerConfig> get_servers(void) { return _ports; }
 		std::string	getstring(char *av);
 		//void	printfServerConfig(void);
 };
 
+// Utils
 bool	is_punct(int c);
 bool	checkAlpha(const std::string &str);
 bool	checkNum(const std::string &str);
 bool	isValidDir(const char *path);
+bool	isValidFile(const char *path);
