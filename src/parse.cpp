@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 17:07:01 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/02 17:38:52 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,7 +273,7 @@ void	Config::parseIndexServ(std::istringstream &iss, ServerConfig *server){
 		}
 	} while (end == 0);
 	if (!filled)
-		throw std::invalid_argument("Index: No valid file");
+		throw std::invalid_argument("Index: Not valid file");
 	std::cout << "EXIT CONFIG::parseIndexServ" << std::endl << std::endl;
 }
 
@@ -307,13 +307,25 @@ void	Config::parseLocationParams(std::istringstream &iss, ServerConfig *server, 
 			iss >> subs;
 			if (subs.find(";") != -1){
 				std::cout << "Semicolon found" << std::endl;
-				end = 1;
 			}
 			removePunc(subs);
 			if (isValidFile((server->root + "/" + loc->uri + "/" + subs).c_str())){
 				loc->index = subs;
-				std::cout << "Index file path is " << server->index << std::endl;
+				std::cout << "Index file path is " << loc->index << std::endl;
 			}
+			else throw(std::invalid_argument("Invalid Index file path"));
+		}	
+		else if (!subs.compare("autoindex") && !end){
+			std::cout << "In LocIndex" << std::endl;
+			iss >> subs;
+			removePunc(subs);
+			if (subs == "off"){
+				loc->autoindex = false;
+			}
+			else if(subs == "on"){
+				loc->autoindex = true;
+			}
+			else throw(std::invalid_argument("Invalid autoindex bool"));
 		}
 		// Print the word fetched from the istringstream
 		std::cout << "(inParseLocParams)" << subs << "(inParseLocParams)" << std::endl;
@@ -327,6 +339,7 @@ void	Config::parseLocation(std::istringstream &iss, ServerConfig *server){
 	std::cout << "IN CONFIG::PARSELOCATION" << std::endl;
 	std::string subs;
 	struct Location loc;
+	loc.autoindex = false;//default value as false
 	int end = 1;
 	int filled = 0;
 	iss >> subs;
@@ -377,7 +390,7 @@ void	Config::parseErrorPages(std::istringstream &iss, ServerConfig *server){
 		filled = 1;
 	}
 	if (!filled)
-		throw std::invalid_argument("Not valid error page");
+		throw std::invalid_argument("Not valid error page/Not a number");
 	std::cout << "EXIT CONFIG::PARSEErrorPages" << std::endl << std::endl;
 }
 
@@ -499,6 +512,7 @@ int main(int argc, char **argv){
 						std::cout << "location uri: " << (*loc).uri << std::endl;
 					if (!(*loc).index.empty())
 						std::cout << "location index: " << (*loc).index << std::endl;
+					std::cout << "location autoindex: " << (*loc).autoindex << std::endl;
 					if (!(*loc).allowedMethods.empty()){
 						std::cout << "allowedMethods: ";
 						for (std::vector<std::string>::iterator allow = (*loc).allowedMethods.begin(); allow < (*loc).allowedMethods.end(); allow++)
