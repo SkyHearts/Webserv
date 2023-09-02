@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/01 19:27:25 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/01 19:40:45 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,6 @@ void Request::parseRequest( void ) {
 		_content.insert(std::pair< std::string, std::string >(key, value));
 		_headSize++;
 	}
-
-	
 }
 
 std::string Request::processRequest( std::string req ) {

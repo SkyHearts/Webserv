@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/01 17:49:21 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/02 17:37:56 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ enum request {
 	UNKNOWN
 };
 
+
 class Request {
 	private:
 		std::string _request;
@@ -29,6 +30,7 @@ class Request {
 		std::string _path;
 		std::string _http;
 		std::map< std::string, std::string > _content;
+		std::map< int, std::string > _statusCode;
 
 	public:
 		Request( void );
