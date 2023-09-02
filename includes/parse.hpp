@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 16:16:20 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/02 17:22:37 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ struct Location
 	std::string					uri;
 	std::string 				index;
 	std::vector<std::string>	allowedMethods;
+	bool autoindex;
 };
 
 struct ServerConfig
