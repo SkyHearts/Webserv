@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <fstream>
 
 #define RED "\033[31m"
 #define GREEN "\033[32m"

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/02 17:37:56 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/02 18:17:01 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,19 @@ class Request {
 		std::string _method;
 		std::string _path;
 		std::string _http;
+
+		int _statusCode;
+
 		std::map< std::string, std::string > _content;
-		std::map< int, std::string > _statusCode;
+		std::map< int, std::string > _statusCodes;
 
 	public:
 		Request( void );
 		~Request( void );
+
+		void initStatusCodes( void );
 		void parseRequest( void );
-		std::string Request::processRequest( std::string req );
+		void setResponse( void );
+		void setStatusCode( void );
+		std::string processRequest( std::string req );
 };

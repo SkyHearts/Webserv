@@ -1,6 +1,7 @@
 #pragma once
 
 #include "headers.hpp"
+#include "request.hpp"
 
 class Server {
 	private:
@@ -13,7 +14,7 @@ class Server {
 
 		void init( void );
 		void acceptConnection( int serverfd );
-		void readRequest( int socket );
+		void readRequest( int socket, Request &request );
 		void sendResponse( int socket );
 		void closeConnection( int socket );
 		void loop( void );

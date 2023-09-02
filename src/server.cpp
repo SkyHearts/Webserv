@@ -51,7 +51,7 @@ void Server::acceptConnection( int serverfd ) {
 	std::cout << GREEN << "Accepted new connection from client fd " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
-void Server::readRequest( int socket ) {
+void Server::readRequest( int socket, Request &request ) {
 	std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
@@ -76,8 +76,8 @@ void Server::readRequest( int socket ) {
 	std::cout << GREEN << "Received " << bytes_read << " bytes" << std::endl;
 	std::cout << CLEAR << "Client says:\n" << buffer << std::endl;
 
-	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
-	_response[socket] = response;
+	// std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
+	_response[socket] = request.processRequest(buffer);
 	_isparsed[socket] = true;
 
 	FD_CLR(socket, &_readfds);
@@ -122,6 +122,7 @@ void Server::closeConnection( int socket ) {
 void Server::loop( void ) {
 	fd_set readfds_copy, writefds_copy;
 	timeval timeout;
+	Request request;
 
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
@@ -150,7 +151,7 @@ void Server::loop( void ) {
 			FD_ZERO(&readfds_copy);
 			memcpy(&readfds_copy, &_readfds, sizeof(_readfds));
 			if (j < _clientfds.size() && FD_ISSET(_clientfds[j], &readfds_copy)) {
-				readRequest(_clientfds[j]);
+				readRequest(_clientfds[j], request);
 			}
 
 			FD_ZERO(&writefds_copy);
