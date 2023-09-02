@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/08/29 14:59:17 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/01 19:40:45 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@ Request::~Request( void ) {}
 
 /*============================================================================*/
 
-void Request::parseRequest( std::string req ) {
+void Request::parseRequest( void ) {
 
-	req.erase(remove(req.begin(), req.end(), '\r'), req.end()); //line break in request is \r\n, this removes \r
+	_request.erase(remove(_request.begin(), _request.end(), '\r'), _request.end()); //line break in request is \r\n, this removes \r
 
-	std::stringstream request(req);
+	std::stringstream request(_request);
 	std::string line, key, value;
 
 	getline(request, line);
@@ -43,5 +43,14 @@ void Request::parseRequest( std::string req ) {
 		_content.insert(std::pair< std::string, std::string >(key, value));
 		_headSize++;
 	}
-	// how do i handle put content ???
+}
+
+std::string Request::processRequest( std::string req ) {
+	_request = req;
+	parseRequest();
+	//filter error
+	//set status code
+	//set html
+
+	return _response;
 }
