@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 17:38:52 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/02 19:06:54 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,10 @@ bool	is_punct(int c)
 // else return false
 bool checkAlpha(const std::string &str){
     bool retVal = false;
-    for(int i = 0; i < str.size(); i++){
-        if( (!isalpha(str[i]) || !isspace(str[i])) && str[i] == ';'){
+	const char *tmp_str = str.c_str();
+	int size = strlen(tmp_str);
+    for(int i = 0; i < size; i++){
+        if( (!isalpha(tmp_str[i]) || !isspace(tmp_str[i])) && tmp_str[i] == ';'){
             retVal = true;
             std::cout << "Input must only contain letters\n";
             break;
@@ -86,14 +88,25 @@ bool	isValidFile(const char *path){
 // else return false
 bool checkNum(const std::string &str){
     bool retVal = false;
-    for(int i = 0; i < str.size(); i++){
-        if( !isnumber(str[i]) && str[i] != ';'){
+	const char *tmp_str = str.c_str();
+	int size = strlen(tmp_str);
+    for(int i = 0; i < size; i++){
+        if( !isnumber(tmp_str[i]) && tmp_str[i] != ';'){
             retVal = true;
             std::cout << "Input must only contain numbers\n";
             break;
         }
     }
     return retVal;
+}
+
+bool containsDuplicate( const std::vector<int>& nums ){
+    if( nums.empty() ) return false ;
+	for (size_t i = 0; i < nums.size() - 1; ++i)
+		for (size_t j = i + 1; j < nums.size(); ++j)
+			if (nums[i] == nums[j])
+				return true;
+	return false;
 }
 
 //If connected, return false
@@ -203,7 +216,7 @@ void	Config::parseListen(std::istringstream &iss, ServerConfig *server){
 		iss >> subs;
 		if (checkNum(subs))
 			throw std::invalid_argument("Numbers only for ports");
-		if (subs.find(";") != -1){
+		if (subs.find(";") != size_t(-1)){
 			std::cout << "Semicolon found" << std::endl;
 			end = 1;
 		}
@@ -226,7 +239,7 @@ void	Config::parseRoot(std::istringstream &iss, ServerConfig *server){
 	do {
 		std::string subs;
 		iss >> subs;
-		if (subs.find(";") != -1){
+		if (subs.find(";") != size_t(-1)){
 			std::cout << "Semicolon found" << std::endl;
 			end = 1;
 		}
@@ -259,7 +272,7 @@ void	Config::parseIndexServ(std::istringstream &iss, ServerConfig *server){
 	do {
 		std::string subs;
 		iss >> subs;
-		if (subs.find(";") != -1){
+		if (subs.find(";") != size_t(-1)){
 			std::cout << "Semicolon found" << std::endl;
 			end = 1;
 		}
@@ -284,7 +297,7 @@ void	Config::parseLocationParams(std::istringstream &iss, ServerConfig *server, 
 	do {
 		iss >> subs;
 		std::cout << "(Start2)" << subs << "(End2)" << std::endl;
-		if (subs.find("}") != -1){
+		if (subs.find("}") != size_t(-1)){
 			std::cout << "Exit location params found" << std::endl;
 			end = 1;
 		}
@@ -293,7 +306,7 @@ void	Config::parseLocationParams(std::istringstream &iss, ServerConfig *server, 
 			bool stop = false;
 			while (!stop){
 				iss >> subs;
-				if (subs.find(";") != -1){
+				if (subs.find(";") != size_t(-1)){
 					std::cout << "Semicolon found" << std::endl;
 					removePunc(subs);
 					stop = true;
@@ -305,7 +318,7 @@ void	Config::parseLocationParams(std::istringstream &iss, ServerConfig *server, 
 		else if (!subs.compare("index") && !end){
 			std::cout << "In LocIndex" << std::endl;
 			iss >> subs;
-			if (subs.find(";") != -1){
+			if (subs.find(";") != size_t(-1)){
 				std::cout << "Semicolon found" << std::endl;
 			}
 			removePunc(subs);
@@ -341,7 +354,7 @@ void	Config::parseLocation(std::istringstream &iss, ServerConfig *server){
 	struct Location loc;
 	loc.autoindex = false;//default value as false
 	int end = 1;
-	int filled = 0;
+	//int filled = 0;
 	iss >> subs;
 	std::cout << "(Start2)" << subs << "(End2)" << std::endl;
 	if (isValidDir((server->root + subs).c_str()))
@@ -353,7 +366,7 @@ void	Config::parseLocation(std::istringstream &iss, ServerConfig *server){
 	do {
 		iss >> subs;
 		std::cout << "(Start2)" << subs << "(End2)" << std::endl;
-		if (subs.find("{") != -1){
+		if (subs.find("{") != size_t(-1)){
 			std::cout << "start location block found" << std::endl;
 			end = 0;
 		}
@@ -363,7 +376,7 @@ void	Config::parseLocation(std::istringstream &iss, ServerConfig *server){
 		}
 		// Print the word fetched from the istringstream
 		std::cout << "(inParseLoc)" << subs << "(inParseLoc)" << std::endl;
-		if (subs.find("}") != -1){
+		if (subs.find("}") != size_t(-1)){
 			std::cout << "Exit location block found" << std::endl;
 			end = 1;
 		}
@@ -409,11 +422,11 @@ void	Config::parseServerBlock(std::istringstream &iss){
         // from the istringstream
         std::cout << "(Start2)" << subs << "(End2)" << std::endl;
 		// exit server block
-		if (subs.find("{") != -1){
+		if (subs.find("{") != size_t(-1)){
 			std::cout << "Start Bracket found" << std::endl;
 			end = 0;
 		}
-		if (subs.find("}") != -1){
+		if (subs.find("}") != size_t(-1)){
 			std::cout << "Close Bracket found" << std::endl;
 			end = 1;
 		}
@@ -466,10 +479,24 @@ void	Config::parse(std::string &file){
         std::cout << "(Start)" << subs << "(End)" << std::endl;
 
 		// parse to correct variable
-		if (subs.find("server") != -1)
+		if (subs.find("server") != size_t(-1))
 			Config::parseServerBlock(iss);
  
     } while (iss);
+}
+
+void	Config::checkDupPorts(){
+	std::vector<ServerConfig> ports = this->get_servers();
+	std::vector<ServerConfig>::iterator iter;
+	std::vector<int> tmp_ports;
+	std::cout << std::endl;
+	for(iter = ports.begin(); iter < ports.end(); iter++)
+	{
+		std::cout << "Check Dup Listen: " << (*iter).listen << std::endl;
+		tmp_ports.push_back((*iter).listen);
+	}
+	if (containsDuplicate(tmp_ports))
+		throw std::invalid_argument("Congif file contains duplicate ports");
 }
 
 Config::Config(char *av){
@@ -478,63 +505,64 @@ Config::Config(char *av){
 	std::string serverConfig = Config::getstring(av);
 	std::cout << std::endl;
 	Config::parse(serverConfig);
+	Config::checkDupPorts();
 }
 
 
-int main(int argc, char **argv){
-	try // or write in parseServerBlock
-	{
-		Config S(argv[1]);
-		std::cout << std::endl << std::endl << std::endl;
+//int main(int argc, char **argv){
+//	try // or write in parseServerBlock
+//	{
+//		Config S(argv[1]);
+//		std::cout << std::endl << std::endl << std::endl;
 		
-		std::vector<ServerConfig> ports = S.get_servers();
-		int ports_size = ports.size();
-		std::vector<ServerConfig>::iterator iter;
-		for(iter = ports.begin(); iter < ports.end(); iter++)
-		{
-			std::cout << "Server {" << std::endl;
-			std::cout << iter->name << std::endl;
-			std::cout << "Listen: " << (*iter).listen << std::endl;
-			std::cout << "Root: " << (*iter).root << std::endl;
-			std::cout << "Index: " << (*iter).index << std::endl;
-			if(!(*iter).errorPages.empty()){
-				std::cout << "KEY\tELEMENT\n";
-				for (std::map<int, std::string>::iterator itr = (*iter).errorPages.begin(); itr != (*iter).errorPages.end(); ++itr) {
-					std::cout << itr->first << '\t' << itr->second << '\n';
-				}
-			}
-			std::cout << std::endl;
-			if (!(*iter).locations.empty())
-			{
-				for (std::vector<Location>::iterator loc = (*iter).locations.begin(); loc < (*iter).locations.end(); loc++)
-				{
-					if (!(*loc).uri.empty())
-						std::cout << "location uri: " << (*loc).uri << std::endl;
-					if (!(*loc).index.empty())
-						std::cout << "location index: " << (*loc).index << std::endl;
-					std::cout << "location autoindex: " << (*loc).autoindex << std::endl;
-					if (!(*loc).allowedMethods.empty()){
-						std::cout << "allowedMethods: ";
-						for (std::vector<std::string>::iterator allow = (*loc).allowedMethods.begin(); allow < (*loc).allowedMethods.end(); allow++)
-						{
-							std::cout << (*allow) << " ";
-						}
-						std::cout << std::endl;
-					}
-					std::cout << std::endl;
-				}
-			}
-			std::cout << "}" << std::endl;
-		}
-		std::cout << std::endl;
-		//if (!S.get_servers().empty())
-		//	 ;//free servers
-	}
-	catch (std::invalid_argument& e)
-	{
-        std::cerr << "Config error:" << e.what() << std::endl;
-			//write free here?
-        return -1;
-		//exit(1);
-    }
-}
+//		std::vector<ServerConfig> ports = S.get_servers();
+//		int ports_size = ports.size();
+//		std::vector<ServerConfig>::iterator iter;
+//		for(iter = ports.begin(); iter < ports.end(); iter++)
+//		{
+//			std::cout << "Server {" << std::endl;
+//			std::cout << iter->name << std::endl;
+//			std::cout << "Listen: " << (*iter).listen << std::endl;
+//			std::cout << "Root: " << (*iter).root << std::endl;
+//			std::cout << "Index: " << (*iter).index << std::endl;
+//			if(!(*iter).errorPages.empty()){
+//				std::cout << "KEY\tELEMENT\n";
+//				for (std::map<int, std::string>::iterator itr = (*iter).errorPages.begin(); itr != (*iter).errorPages.end(); ++itr) {
+//					std::cout << itr->first << '\t' << itr->second << '\n';
+//				}
+//			}
+//			std::cout << std::endl;
+//			if (!(*iter).locations.empty())
+//			{
+//				for (std::vector<Location>::iterator loc = (*iter).locations.begin(); loc < (*iter).locations.end(); loc++)
+//				{
+//					if (!(*loc).uri.empty())
+//						std::cout << "location uri: " << (*loc).uri << std::endl;
+//					if (!(*loc).index.empty())
+//						std::cout << "location index: " << (*loc).index << std::endl;
+//					std::cout << "location autoindex: " << (*loc).autoindex << std::endl;
+//					if (!(*loc).allowedMethods.empty()){
+//						std::cout << "allowedMethods: ";
+//						for (std::vector<std::string>::iterator allow = (*loc).allowedMethods.begin(); allow < (*loc).allowedMethods.end(); allow++)
+//						{
+//							std::cout << (*allow) << " ";
+//						}
+//						std::cout << std::endl;
+//					}
+//					std::cout << std::endl;
+//				}
+//			}
+//			std::cout << "}" << std::endl;
+//		}
+//		std::cout << std::endl;
+//		//if (!S.get_servers().empty())
+//		//	 ;//free servers
+//	}
+//	catch (std::invalid_argument& e)
+//	{
+//        std::cerr << "Config error:" << e.what() << std::endl;
+//			//write free here?
+//        return -1;
+//		//exit(1);
+//    }
+//}

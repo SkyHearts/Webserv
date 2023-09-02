@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 17:22:37 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/02 18:02:56 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,6 +127,8 @@ class Config {
 		std::vector<ServerConfig> get_servers(void) { return _ports; }
 		std::string	getstring(char *av);
 		//void	printfServerConfig(void);
+
+		void	checkDupPorts(void);
 };
 
 // Utils
@@ -135,3 +137,4 @@ bool	checkAlpha(const std::string &str);
 bool	checkNum(const std::string &str);
 bool	isValidDir(const char *path);
 bool	isValidFile(const char *path);
+bool	containsDuplicate(const std::vector<int>& nums);
