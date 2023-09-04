@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/04 16:06:39 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/04 16:11:53 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void Request::parseRequest( void ) {
 void Request::checkPath( void ) {
 	if (_path == "/") {
 		_path.clear();
-		_path.append("html/default.html");
+		_path.append("html/defaul.html");
 	}
 	else 
 		_path.erase(0,1);
