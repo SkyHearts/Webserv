@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/02 18:17:01 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/04 15:58:09 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,12 @@ class Request {
 		std::string _response;
 
 		int	_headSize;
+		// size_t _payloadSize;
 		std::string _method;
 		std::string _path;
 		std::string _http;
 
+		std::ifstream _file;
 		int _statusCode;
 
 		std::map< std::string, std::string > _content;
@@ -42,6 +44,7 @@ class Request {
 		void initStatusCodes( void );
 		void parseRequest( void );
 		void setResponse( void );
-		void setStatusCode( void );
+		void checkPath( void );
+
 		std::string processRequest( std::string req );
 };
