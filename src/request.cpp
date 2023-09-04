@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/02 18:17:44 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/04 13:56:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,9 @@ Request::~Request( void ) {}
 
 void Request::initStatusCodes( void ) {
 	_statusCodes[200] = "OK";
-	_statusCodes[404] = "NOT FOUND";
-	_statusCodes[405] = "METHOD NOT ALLOWED";
+	_statusCodes[404] = "Not Found";
+	_statusCodes[405] = "Method Not Allowed";
+	_statusCodes[501] = "Not Implemented";
 }
 
 void Request::parseRequest( void ) {
@@ -67,6 +68,7 @@ void Request::setResponse( void ) {
 		return ;
 	}
 
+	_response.clear();
 	_response.append("HTTP/1.1 " + std::to_string(_statusCode) + " " + _statusCodes[_statusCode] + "\r\n");
 	_response.append("Content-Type: text/html\r\n\r\n");
 
@@ -74,6 +76,7 @@ void Request::setResponse( void ) {
 	while (std::getline(file, line)) {
 		_response.append(line);
 	}
+	file.close();
 }
 
 std::string Request::processRequest( std::string req ) {
