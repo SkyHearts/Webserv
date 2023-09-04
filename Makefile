@@ -5,7 +5,7 @@ INCLUDES	= -I includes
 
 RM			= rm -rf
 
-FILES		= main server parse
+FILES		= main server parse request
 
 SRCS		= $(addsuffix .cpp, $(addprefix src/, $(FILES)))
 
