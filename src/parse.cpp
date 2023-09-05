@@ -3,25 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 19:06:54 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/05 14:18:49 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/parse.hpp"
-//#include <string>
-//#include <fstream>
-//#include <sstream>
-//#include <cctype>
-
-//#include <map>
-//#include <stdexcept>
-//#include <sys/stat.h>
-//#include <stdlib.h>
-//#include <dirent.h>
-//#include <iostream>
+#include "parse.hpp"
 
 // if char is ';' or '}' return true
 // else retuen false;
@@ -158,8 +147,8 @@ Config::~Config( void ){
 }
 
 //reads and return the full string from a file						  
-std::string	Config::getstring(char *av){
-	std::ifstream fsFile(av);
+std::string	Config::getstring( std::string config_file ){
+	std::ifstream fsFile(config_file);
 	std::string ret;
 	if (!fsFile){
 		std::cout << "File not found" << std::endl;
@@ -499,10 +488,10 @@ void	Config::checkDupPorts(){
 		throw std::invalid_argument("Congif file contains duplicate ports");
 }
 
-Config::Config(char *av){
-	std::ifstream file(av);
-	std::cout << "File: " << av << std::endl;
-	std::string serverConfig = Config::getstring(av);
+Config::Config( std::string config_file ) {
+	std::ifstream file(config_file);
+	std::cout << "File: " << config_file << std::endl;
+	std::string serverConfig = Config::getstring(config_file);
 	std::cout << std::endl;
 	Config::parse(serverConfig);
 	Config::checkDupPorts();
