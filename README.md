@@ -16,7 +16,7 @@ Technically non-existent. **But,**
 
 ## Mars
 I have no clue what I'm doing. But here's the plan — sort of:
-* From the server loop, the request string is passed into parseResponse() of the request class.
+* From the server loop, the request string is passed into ```parseResponse()``` of the request class.
 * The request content is split into whatever variables I felt were necessary at the moment.
 * Validate path and set status code accordingly.
 * Read and append details from respective html files.
