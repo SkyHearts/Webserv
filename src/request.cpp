@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/05 14:38:38 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/05 15:05:57 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void Request::parseRequest( void ) {
 void Request::checkPath( void ) {
 	if (_path == "/") {
 		_path.clear();
-		_path.append("html/default.html");
+		_path.append("html/index.html");
 	}
 	else 
 		_path.erase(0,1);

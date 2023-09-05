@@ -81,7 +81,7 @@ void Server::readRequest( int socket, Request &request ) {
 			break ;
 	}
 
-	std::cout << GREEN << "Received " << sizeof(client_data) << " bytes" << std::endl;
+	std::cout << GREEN << "Received " << client_data.size() << " bytes" << std::endl;
 	std::cout << CLEAR << client_data << std::endl;
 
 	// std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
