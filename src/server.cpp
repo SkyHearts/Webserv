@@ -55,29 +55,37 @@ void Server::readRequest( int socket, Request &request ) {
 	std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
-	memset(buffer, '\0', 1024);
-	int bytes_read = recv(socket, buffer, 1024, 0);
+	std::string client_data;
 
-	if (bytes_read < 0) {
-		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			return ;
-		else {
-			error("recv", false);
+	while (1) {
+		memset(buffer, '\0', sizeof(buffer));
+		long bytes_read = recv(socket, buffer, sizeof(buffer) - 1, 0);
+
+		if (bytes_read < 0) {
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+				return ;
+			else {
+				error("recv", false);
+				closeConnection(socket);
+				return ;
+			}
+		}
+		else if (bytes_read == 0) {
+			std::cout << BLUE << "Client " << socket << " disconnected" << CLEAR << std::endl;
 			closeConnection(socket);
 			return ;
 		}
-	}
-	else if (bytes_read == 0) {
-		std::cout << BLUE << "Client " << socket << " disconnected" << CLEAR << std::endl;
-		closeConnection(socket);
-		return ;
+
+		client_data += buffer;
+		if (bytes_read < (long)(sizeof(buffer) - 1))
+			break ;
 	}
 
-	std::cout << GREEN << "Received " << bytes_read << " bytes" << std::endl;
-	std::cout << CLEAR << "Client says:\n" << buffer << std::endl;
+	std::cout << GREEN << "Received " << sizeof(client_data) << " bytes" << std::endl;
+	std::cout << CLEAR << client_data << std::endl;
 
 	// std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
-	_response[socket] = request.processRequest(buffer);
+	_response[socket] = request.processRequest(client_data);
 	_isparsed[socket] = true;
 
 	FD_CLR(socket, &_readfds);
