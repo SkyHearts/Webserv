@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/04 15:58:09 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/05 17:31:26 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ class Request {
 
 		std::ifstream _file;
 		int _statusCode;
+
+		bool _isImg;
 
 		std::map< std::string, std::string > _content;
 		std::map< int, std::string > _statusCodes;

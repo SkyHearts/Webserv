@@ -84,7 +84,6 @@ void Server::readRequest( int socket, Request &request ) {
 	std::cout << GREEN << "Received " << client_data.size() << " bytes" << std::endl;
 	std::cout << CLEAR << client_data << std::endl;
 
-	// std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World!</h1></body></html>";
 	_response[socket] = request.processRequest(client_data);
 	_isparsed[socket] = true;
 
@@ -92,28 +91,63 @@ void Server::readRequest( int socket, Request &request ) {
 	FD_SET(socket, &_writefds);
 }
 
-void Server::sendResponse( int socket ) {
+// void Server::sendResponse( int socket ) {
+// 	std::cout << YELLOW << "Attempting to send response to client " << socket << CLEAR << std::endl;
+
+// 	size_t total_sent = _sentbytes[socket];
+// 	const char *response = _response[socket].c_str();
+// 	size_t response_len = _response[socket].length();
+
+// 	size_t sentbytes = send(socket, response + total_sent, response_len - total_sent, 0);
+
+// 	if (sentbytes < 0) {
+// 		error("send", false);
+// 		return ;
+// 	}
+
+// 	_sentbytes[socket] += sentbytes;
+// 	if ((size_t)_sentbytes[socket] >= response_len) {
+// 		FD_CLR(socket, &_writefds);
+// 		FD_SET(socket, &_readfds);
+// 	}
+
+// 	std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
+// 	closeConnection(socket);
+// }
+
+void Server::sendResponse(int socket) {
 	std::cout << YELLOW << "Attempting to send response to client " << socket << CLEAR << std::endl;
 
-	size_t total_sent = _sentbytes[socket];
 	const char *response = _response[socket].c_str();
 	size_t response_len = _response[socket].length();
+	size_t total_sent = _sentbytes[socket];
 
-	size_t sentbytes = send(socket, response + total_sent, response_len - total_sent, 0);
+	size_t chunk_size = 4096;
+	size_t remaining = response_len - total_sent;
 
-	if (sentbytes < 0) {
-		error("send", false);
-		return ;
+	if (remaining > 0) {
+		size_t sentbytes = send(socket, response + total_sent, std::min(chunk_size, remaining), 0);
+
+		if (sentbytes < 0) {
+			error("send", false);
+			return;
+		}
+
+		_sentbytes[socket] += sentbytes;
+
+		if ((size_t)_sentbytes[socket] >= response_len) {
+			FD_CLR(socket, &_writefds);
+			FD_SET(socket, &_readfds);
+		}
+
+		std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
 	}
 
-	_sentbytes[socket] += sentbytes;
-	if ((size_t)_sentbytes[socket] >= response_len) {
-		FD_CLR(socket, &_writefds);
-		FD_SET(socket, &_readfds);
-	}
-
-	std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
-	closeConnection(socket);
+	// If there is remaining data, keep this socket in the write set
+	if (_sentbytes[socket] < (int)response_len)
+		FD_SET(socket, &_writefds);
+	else
+		closeConnection(socket);
 }
 
 void Server::closeConnection( int socket ) {
@@ -134,8 +168,8 @@ void Server::loop( void ) {
 
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000;
 
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
