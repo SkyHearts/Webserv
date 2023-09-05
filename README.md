@@ -38,6 +38,7 @@ I have no clue what I'm doing. But here's the plan — sort of:
 [C++ Web Server from Scratch](https://youtu.be/YwHErWJIh6Y)
 
 [cclaude's 42 Webserv Github Page](https://github.com/cclaude42/webserv)
+
 **Disclaimer: Do NOT copy another persons work. Cclaude's page includes a very detailed Readme page with very helpful resources that we used as references.**
 
 [HTTP related RFCs](https://httpwg.org/specs/)
