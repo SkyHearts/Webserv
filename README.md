@@ -22,10 +22,12 @@ I have no clue what I'm doing. But here's the plan — sort of:
 * Read and append details from respective html files.
 * Response returned to the server class.
 <br>
+
 * For now I am only handling GET requests.
 * I don't know how to deal with POST.
 * I don't know how to deal with DELETE either.
 <br>
+
 * I decided to split the response handling to the respective methods, with each individual class. Still a WIP.
 
 ## JJ
