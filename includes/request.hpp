@@ -6,18 +6,21 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/04 15:58:09 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/05 15:06:27 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "headers.hpp"
+#include "responseGet.hpp"
+#include "responsePost.hpp"
+#include "responseDelete.hpp"
 
-enum request {
-	GET,
-	POST,
-	DELETE,
-	UNKNOWN
-};
+// enum request {
+// 	GET,
+// 	POST,
+// 	DELETE,
+// 	UNKNOWN
+// };
 
 
 class Request {

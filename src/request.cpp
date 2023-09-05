@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/04 16:11:53 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/05 15:05:18 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,10 +91,18 @@ std::string Request::processRequest( std::string req ) {
 	_request = req;
 	parseRequest();
 	
-	//check method and run method stuff
+	if (_method == "GET") {
+		responseGet get;
+		_response = get.getResponse();
+	}
+	else if (_method == "POST") {
 
+	}
+	else if (_method == "DELETE") {
+
+	}
 	checkPath();
-	setResponse(); //default atm
+	setResponse();
 
 	return _response;
 }
