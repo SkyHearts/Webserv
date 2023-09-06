@@ -1,36 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.hpp                                        :+:      :+:    :+:   */
+/*   responseGet.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:01:52 by nnorazma         ###   ########.fr       */
+/*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/09/06 19:03:36 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #include "headers.hpp"
-#include "responseGet.hpp"
-#include "responsePost.hpp"
-#include "responseDelete.hpp"
+#include "response.hpp"
 
-class Request {
+class ResponseGet : public Response {
 	private:
-		int	_headSize; //not needed but keep for now
-		std::string _request;
-		std::string _response;
-		std::string _method;
+		ResponseGet( void ); //unused
+
+		int _statusCode;
+		std::ifstream _file;
 		std::string _path;
-		std::string _http;
 
-		std::map< std::string, std::string > _content;
-
+		void setContentType( void );
+		void checkPath( void );
 
 	public:
-		Request( void );
-		~Request( void );
+		ResponseGet( std::string filePath );
+		~ResponseGet( void );
 
-		void parseRequest( void );
-		std::string processRequest( std::string req );
+		void generateResponse( void );
+		std::string getResponse( void ) const;
 };
