@@ -29,6 +29,7 @@ I have no clue what I'm doing. But here's the plan — sort of:
 <br>
 
 * I decided to split the response handling to the respective methods, with each individual class. Still a WIP.
+	* Created a base class for responses. For obvious reasons.
 
 ## JJ
 
