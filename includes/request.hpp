@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/05 15:06:27 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/06 16:19:10 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Request {
 		std::ifstream _file;
 		int _statusCode;
 
-		std::map< std::string, std::string > _content;
+		std::map< std::string, std::string > _content, _contentType;
 		std::map< int, std::string > _statusCodes;
 
 	public:
