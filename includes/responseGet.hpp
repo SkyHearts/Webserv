@@ -6,30 +6,28 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 16:30:17 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/06 19:03:36 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "headers.hpp"
+#include "response.hpp"
 
-class responseGet {
+class ResponseGet : public Response {
 	private:
-		responseGet( void ); //unused
+		ResponseGet( void ); //unused
 
 		int _statusCode;
+		std::ifstream _file;
 		std::string _path;
-		std::string _contentType;
-		std::string _response;
-		std::map< std::string, std::string > _contentTypes;
 
-		void contentTypeInit( void );
 		void setContentType( void );
 		void checkPath( void );
 
 	public:
-		responseGet( std::string filePath );
-		~responseGet( void );
+		ResponseGet( std::string filePath );
+		~ResponseGet( void );
 
 		void generateResponse( void );
 		std::string getResponse( void ) const;
