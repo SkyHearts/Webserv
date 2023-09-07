@@ -8,11 +8,26 @@ Contributors to this project are:
 
 ## Current Workflow
 Technically non-existent. **But,**
+* **JJ:** [Configuration file parsing and CGI](#jj)
 * **Hong You:** [Main server handling.](#hong-you)
 * **Me:** [Handling requests and responses.](#mars)
-* **JJ:** [Configuration and CGI](#jj)
+
+## JJ
 
 ## Hong You
+The part I worked on deals with the main handler loop of the server. This covers the following:
+
+<b>Initialisation</b>
+* Creating the socket
+* Binding the socket to the port
+* Listening for incoming connections
+* Accepting connections
+* Closing connections
+
+<b>Connections</b>
+* Reading from the socket(s)
+* Writing to the socket(s)
+* Closing connections with the socket(s)
 
 ## Mars
 I have no clue what I'm doing. But here's the plan — sort of:
@@ -29,8 +44,6 @@ I have no clue what I'm doing. But here's the plan — sort of:
 <br>
 
 * I decided to split the response handling to the respective methods, with each individual class. Still a WIP.
-
-## JJ
 
 ## References
 [Web Server Concepts and Examples](https://www.youtube.com/watch?v=9J1nJOivdyw)
