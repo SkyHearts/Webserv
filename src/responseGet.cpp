@@ -6,16 +6,18 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:00:58 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/07 12:19:27 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "responseGet.hpp"
 
 /*============================================================================*/
-ResponseGet::ResponseGet( void ) { }
+ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
-ResponseGet::ResponseGet( std::string filePath ) : Response(), _path(filePath) {
+ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
+	_path.append(filePath);
+
 	checkPath();
 	generateResponse();
 }

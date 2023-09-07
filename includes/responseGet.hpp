@@ -6,22 +6,19 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:03:36 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/07 12:19:48 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "headers.hpp"
-#include "response.hpp"
+#include "responseBase.hpp"
 
-class ResponseGet : public Response {
+class ResponseGet : public ResponseBase {
 	private:
-		ResponseGet( void ); //unused
-
-		int _statusCode;
 		std::ifstream _file;
-		std::string _path;
 
+		ResponseGet( void ); //unused
 		void setContentType( void );
 		void checkPath( void );
 

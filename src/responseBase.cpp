@@ -1,12 +1,12 @@
-#include "response.hpp"
+#include "responseBase.hpp"
 
 /*============================================================================*/
-Response::Response( void ) { }
+ResponseBase::ResponseBase( void ) { }
 
-Response::~Response( void ) { }
+ResponseBase::~ResponseBase( void ) { }
 /*============================================================================*/
 
-void Response::initStatusCodes( void ) {
+void ResponseBase::initStatusCodes( void ) {
 	_statusCodes[200] = "OK";
 	_statusCodes[201] = "Created";
 	_statusCodes[202] = "Accepted";
@@ -16,7 +16,7 @@ void Response::initStatusCodes( void ) {
 	_statusCodes[501] = "Not Implemented";
 }
 
-// void Response::initContentTypes( void ) {
+// void ResponseBase::initContentTypes( void ) {
 // 	_contentTypes["html"] = "text/html";
 // 	_contentTypes["css"] = "text/css";
 // 	_contentTypes["js"] = "text/javascript";
@@ -26,6 +26,6 @@ void Response::initStatusCodes( void ) {
 // 	_contentTypes["ico"] = "image/x-icon";
 // }
 
-std::string Response::getResponse( void ) const {
+std::string ResponseBase::getResponse( void ) const {
 	return (_response);
 }
