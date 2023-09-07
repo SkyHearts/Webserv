@@ -1,36 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.hpp                                        :+:      :+:    :+:   */
+/*   responseDelete.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:01:52 by nnorazma         ###   ########.fr       */
+/*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/09/06 16:12:39 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #include "headers.hpp"
-#include "responseGet.hpp"
-#include "responsePost.hpp"
-#include "responseDelete.hpp"
 
-class Request {
+class responseDelete {
 	private:
-		int	_headSize; //not needed but keep for now
-		std::string _request;
 		std::string _response;
-		std::string _method;
-		std::string _path;
-		std::string _http;
-
-		std::map< std::string, std::string > _content;
-
+		int _statusCode;
 
 	public:
-		Request( void );
-		~Request( void );
+		responseDelete( void );
+		~responseDelete( void );
 
-		void parseRequest( void );
-		std::string processRequest( std::string req );
+		std::string getResponse( void );
 };

@@ -2,16 +2,10 @@
 #include "parse.hpp"
 #include <fstream>
 
-int parse_config( std::string config_file ) {
+static int isValidExtension( std::string config_file ) {
 	std::string extension = ".conf";
 	if (config_file.length() < extension.length() || config_file.compare(config_file.length() - extension.length(), extension.length(), extension)) {
 		std::cerr << RED << "Error: Invalid or missing .conf extension" << CLEAR << std::endl;
-		return 1;
-	}
-	
-	std::ifstream file(config_file.c_str());
-	if (!file.is_open()) {
-		std::cerr << RED << "Error: Unable to open configuration file" << CLEAR << std::endl;
 		return 1;
 	}
 
@@ -19,28 +13,28 @@ int parse_config( std::string config_file ) {
 }
 
 int main( int ac, char **av ) {
-
 	if (ac < 0 || ac > 2) {
 		std::cerr << RED << "Error: Invalid usage\nUsage: ./webserv [file.conf]" << CLEAR << std::endl;
 		return 1;
 	}
+
 	std::string config_file = "server.conf";
 	if (ac == 2)
 		config_file = av[1];
-	if (parse_config(config_file))
+	else
+		std::cout << "Using default config file: server.conf" << std::endl;
+	if (isValidExtension(config_file))
 		return 1;
 
-	Server server;
-	// Add ports to listen on
 	try
 	{
-		Config S(av[1]);
+		Server server;
+
+		Config S(config_file);
 		std::vector<ServerConfig> ports = S.get_servers();
-		std::vector<ServerConfig>::iterator iter;
-		for(iter = ports.begin(); iter < ports.end(); iter++)
-		{
+		for(std::vector<ServerConfig>::iterator iter = ports.begin(); iter < ports.end(); iter++)
 			server.addPort((*iter).listen);
-		}
+
 		server.run();
 	}
 	catch (std::invalid_argument& e)
@@ -48,9 +42,9 @@ int main( int ac, char **av ) {
         std::cerr << "Config error:" << e.what() << std::endl;
         return -1;
     }
+
 	return 0;
 }
-
 
 /* Test config class, prints out all information parse by config class */
 //int main(int argc, char **argv){

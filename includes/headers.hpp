@@ -1,18 +1,22 @@
 #pragma once
 
-#include <iostream>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <netdb.h>
 #include <netinet/in.h>
-#include <fcntl.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <sys/stat.h>
+#include <stdexcept>
 #include <unistd.h>
-#include <vector>
-#include <map>
+#include <iostream>
+#include <dirent.h>
 #include <sstream>
 #include <fstream>
+#include <netdb.h>
+#include <fcntl.h>
+#include <vector>
+#include <cctype>
+#include <map>
 
 #define RED "\033[31m"
 #define GREEN "\033[32m"

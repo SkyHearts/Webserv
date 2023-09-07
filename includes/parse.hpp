@@ -3,30 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/02 18:02:56 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/05 14:20:50 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+#include "headers.hpp"
 #include "server.hpp"
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <cctype>
-
-#include <map>
-#include <stdexcept>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <iostream>
-
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 //class Server {
 //	private:
@@ -94,9 +81,10 @@ struct ServerConfig
 class Config {
 	private:
 		std::vector<ServerConfig>	_ports;
-	public:
 		Config( void );
-		Config(char *av);
+
+	public:
+		Config( std::string config_file );
 		~Config( void );
 		enum	serverBlock{
 			notDefined = 0,
@@ -125,7 +113,7 @@ class Config {
 		void	parseErrorPages(std::istringstream &iss, ServerConfig *server);
 		
 		std::vector<ServerConfig> get_servers(void) { return _ports; }
-		std::string	getstring(char *av);
+		std::string	getstring( std::string config_file );
 		//void	printfServerConfig(void);
 
 		void	checkDupPorts(void);
