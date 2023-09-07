@@ -16,15 +16,15 @@ void ResponseBase::initStatusCodes( void ) {
 	_statusCodes[501] = "Not Implemented";
 }
 
-// void ResponseBase::initContentTypes( void ) {
-// 	_contentTypes["html"] = "text/html";
-// 	_contentTypes["css"] = "text/css";
-// 	_contentTypes["js"] = "text/javascript";
-// 	_contentTypes["png"] = "image/png";
-// 	_contentTypes["jpg"] = "image/jpeg";
-// 	_contentTypes["jpeg"] = "image/jpeg";
-// 	_contentTypes["ico"] = "image/x-icon";
-// }
+void ResponseBase::initContentTypes( void ) {
+	_contentTypes["html"] = "text/html";
+	_contentTypes["css"] = "text/css";
+	_contentTypes["js"] = "text/javascript";
+	_contentTypes["png"] = "image/png";
+	_contentTypes["jpg"] = "image/jpeg";
+	_contentTypes["jpeg"] = "image/jpeg";
+	_contentTypes["ico"] = "image/x-icon";
+}
 
 std::string ResponseBase::getResponse( void ) const {
 	return (_response);

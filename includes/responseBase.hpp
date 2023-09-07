@@ -8,7 +8,7 @@ class ResponseBase {
 		std::string _path;
 		int _statusCode;
 		bool _isImg;
-		// std::map< std::string, std::string > _contentTypes;
+		std::map< std::string, std::string > _contentTypes;
 		std::map< int, std::string > _statusCodes;
 
 	public:
