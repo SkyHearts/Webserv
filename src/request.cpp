@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/07 12:02:22 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/08 12:51:51 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void Request::parseRequest( void ) {
 	std::istringstream head(line);
 	head >> _method >> _path >> _http;
 
-	_headSize = 0;
+	_path.erase(0, 1); //remove the first "/"
 	while (getline(request, line, '\n') && !line.empty()) {
 		try {
 			key = line.substr(0, line.find(':'));
@@ -41,7 +41,6 @@ void Request::parseRequest( void ) {
 			break ;
 		} 
 		_content.insert(std::pair< std::string, std::string >(key, value));
-		_headSize++;
 	}
 }
 

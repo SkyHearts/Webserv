@@ -35,6 +35,7 @@ int main( int ac, char **av ) {
 		for(std::vector<ServerConfig>::iterator iter = ports.begin(); iter < ports.end(); iter++)
 			server.addPort((*iter).listen);
 
+		// need pass config info into server, then into response
 		server.run();
 	}
 	catch (std::invalid_argument& e)
