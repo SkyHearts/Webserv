@@ -8,6 +8,13 @@ Server::~Server( void ) {}
 
 /* Members */
 
+/*
+	For each port stored
+	- Create a socket
+	- Set socket options
+	- Bind socket to port
+	- Listen on socket
+*/
 void Server::init( void ) {
 	for (size_t i = 0; i < _ports.size(); i++) {
 		int serverfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,6 +40,14 @@ void Server::init( void ) {
 	}
 }
 
+/*
+	Accept a connection from a client
+	- Accept connection
+	- Set socket to non-blocking
+	- Add client socket to clientfds
+	- Add client address to clientaddrs
+	- Add client socket to readfds
+*/
 void Server::acceptConnection( int serverfd ) {
 	sockaddr_in clientaddr;
 	socklen_t clientaddrlen = sizeof(clientaddr);
@@ -48,11 +63,18 @@ void Server::acceptConnection( int serverfd ) {
 	_clientaddrs[clientfd] = clientaddr;
 	FD_SET(clientfd, &_readfds);
 
-	std::cout << GREEN << "Accepted new connection from client fd " << GREEN_BOLD << clientfd << CLEAR << std::endl;
+	std::cout << GREEN << "Accepted new connection on socket " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
+/*
+	Read a request from a client
+	- Read data from client
+	- Process request
+	- Add response to corresponding socket
+	- Switch client socket from readfds to writefds
+*/
 void Server::readRequest( int socket, Request &request ) {
-	// std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
+	std::cout << YELLOW << "Attempting to read from socket " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
 	std::string client_data;
@@ -66,15 +88,11 @@ void Server::readRequest( int socket, Request &request ) {
 				return ;
 			else {
 				error("recv", false);
-				closeConnection(socket);
-				return ;
+				return closeConnection(socket);
 			}
 		}
-		else if (bytes_read == 0) {
-			std::cout << BLUE << "Client " << socket << " disconnected" << CLEAR << std::endl;
-			closeConnection(socket);
-			return ;
-		}
+		else if (bytes_read == 0)
+			return closeConnection(socket);
 
 		client_data += buffer;
 		if (bytes_read < (long)(sizeof(buffer) - 1))
@@ -91,32 +109,13 @@ void Server::readRequest( int socket, Request &request ) {
 	FD_SET(socket, &_writefds);
 }
 
-// void Server::sendResponse( int socket ) {
-// 	std::cout << YELLOW << "Attempting to send response to client " << socket << CLEAR << std::endl;
-
-// 	size_t total_sent = _sentbytes[socket];
-// 	const char *response = _response[socket].c_str();
-// 	size_t response_len = _response[socket].length();
-
-// 	size_t sentbytes = send(socket, response + total_sent, response_len - total_sent, 0);
-
-// 	if (sentbytes < 0) {
-// 		error("send", false);
-// 		return ;
-// 	}
-
-// 	_sentbytes[socket] += sentbytes;
-// 	if ((size_t)_sentbytes[socket] >= response_len) {
-// 		FD_CLR(socket, &_writefds);
-// 		FD_SET(socket, &_readfds);
-// 	}
-
-// 	std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
-// 	closeConnection(socket);
-// }
-
-void Server::sendResponse(int socket) {
-	std::cout << YELLOW << "Attempting to send response to client " << socket << CLEAR << std::endl;
+/*
+	Send a response to a client
+	- Send data to client
+	- Close connection if all data has been sent
+*/
+void Server::sendResponse( int socket ) {
+	std::cout << YELLOW << "Attempting to send response to socket " << socket << CLEAR << std::endl;
 
 	const char *response = _response[socket].c_str();
 	size_t response_len = _response[socket].length();
@@ -134,22 +133,20 @@ void Server::sendResponse(int socket) {
 		}
 
 		_sentbytes[socket] += sentbytes;
-
-		if ((size_t)_sentbytes[socket] >= response_len) {
-			FD_CLR(socket, &_writefds);
-			FD_SET(socket, &_readfds);
-		}
-
-		std::cout << GREEN << "Sent " << sentbytes << " bytes to client " << socket << "!" << CLEAR << std::endl;
+		std::cout << GREEN << "Sent " << sentbytes << " bytes to socket " << socket << "!" << CLEAR << std::endl;
 	}
 
-	// If there is remaining data, keep this socket in the write set
 	if (_sentbytes[socket] < (int)response_len)
 		FD_SET(socket, &_writefds);
 	else
 		closeConnection(socket);
 }
 
+/*
+	Close a connection with a client
+	- Remove all socket information from storage
+	- Close socket
+*/
 void Server::closeConnection( int socket ) {
 	_clientfds.erase(std::remove(_clientfds.begin(), _clientfds.end(), socket), _clientfds.end());
 	_clientaddrs.erase(socket);
@@ -161,6 +158,13 @@ void Server::closeConnection( int socket ) {
 	std::cout << BLUE << "Closed connection on socket " << socket << "\n" << CLEAR << std::endl;
 }
 
+/*
+	Main server loop, loops through all stored sockets
+	- Add server sockets to readfds
+	- Accept connections from clients
+	- Read requests from clients
+	- Send responses to clients
+*/
 void Server::loop( void ) {
 	fd_set readfds_copy, writefds_copy;
 	timeval timeout;
