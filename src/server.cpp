@@ -52,7 +52,7 @@ void Server::acceptConnection( int serverfd ) {
 }
 
 void Server::readRequest( int socket, Request &request ) {
-	std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
+	// std::cout << YELLOW << "Attempting to read from client " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
 	std::string client_data;

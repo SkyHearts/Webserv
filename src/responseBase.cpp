@@ -1,7 +1,10 @@
 #include "responseBase.hpp"
 
 /*============================================================================*/
-ResponseBase::ResponseBase( void ) { }
+ResponseBase::ResponseBase( void ) {
+	initStatusCodes();
+	initContentTypes();
+}
 
 ResponseBase::~ResponseBase( void ) { }
 /*============================================================================*/
@@ -28,4 +31,12 @@ void ResponseBase::initContentTypes( void ) {
 
 std::string ResponseBase::getResponse( void ) const {
 	return (_response);
+}
+
+std::map< std::string, std::string > ResponseBase::getContentTypes( void ) const {
+	return (_contentTypes);
+}
+
+std::map< int, std::string > ResponseBase::getStatusCodes( void ) const {
+	return (_statusCodes);
 }
