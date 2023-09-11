@@ -33,6 +33,14 @@ std::string ResponseBase::getResponse( void ) const {
 	return (_response);
 }
 
+void ResponseBase::setContentType ( std::string type ) {
+	_contentType = type;
+}
+
+void ResponseBase::setStatusCode ( int code ) {
+	_statusCode = code;
+}
+
 std::map< std::string, std::string > ResponseBase::getContentTypes( void ) const {
 	return (_contentTypes);
 }

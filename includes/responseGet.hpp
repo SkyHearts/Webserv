@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/07 12:19:48 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/11 13:35:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ class ResponseGet : public ResponseBase {
 		std::ifstream _file;
 
 		ResponseGet( void ); //unused
-		void setContentType( void );
 		void checkPath( void );
 
 	public:

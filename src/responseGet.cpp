@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/08 16:10:39 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/11 15:23:43 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,6 @@ ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
 
 ResponseGet::~ResponseGet( void ) { }
 /*============================================================================*/
-
-void ResponseGet::setContentType( void ) {
-
-}
 
 static std::string fileExtension( const std::string& filename, const std::map< std::string, std::string > &types ) {
 
@@ -47,29 +43,29 @@ void ResponseGet::checkPath( void ) {
 	_isImg = false;
 
 	if (_path.empty()) {
-		_statusCode = 200;
+		setStatusCode(200);
+		setContentType("html");
 		_path.append("html/index.html");
 	}
 	else {
 		try {
-			_contentType = fileExtension(_path, getContentTypes());
-			_statusCode = 200;
+			setContentType(fileExtension(_path, getContentTypes()));
+			setStatusCode(200);
 		}
 		catch ( std::exception &e ) {
-			std::cout << "invalid path" << std::endl;
 			std::cout << e.what() << std::endl;
-			_statusCode = 404;
+			setStatusCode(404);
 			_path.clear();
 			_path.append("html/" + std::to_string(_statusCode) + ".html");
 		}
 	}
 
-	if (_contentType == "png" || _contentType == "jpg" || _contentType == "jpeg")
+	if (_contentType == "png" || _contentType == "jpg" || _contentType == "jpeg" || _contentType == "ico")
 		_isImg = true;
 
 	_file.open(_path);
 	if (!_file.is_open())
-		_statusCode = 500;
+		setStatusCode(500);
 }
 
 
@@ -87,7 +83,7 @@ void ResponseGet::generateResponse( void ) {
 		_response.append("HTTP/1.1 " + std::to_string(_statusCode) + " " + _statusCodes[_statusCode] + "\r\n");
 
 		if (_isImg) {
-			_response.append("Content-Type: image/png\r\n\r\n");
+			_response.append("Content-Type: " + _contentTypes[_contentType] + "\r\n\r\n");
 
 			char img_buffer[1024];
 			while (!_file.eof()) {
@@ -96,7 +92,10 @@ void ResponseGet::generateResponse( void ) {
 			}
 		}
 		else {
-			_response.append("Content-Type: text/html\r\n\r\n");
+			_response.append("Content-Type: ");
+			_response.append(_contentTypes[_contentType]);
+			_response.append("\r\n\r\n");
+			std::cout << "This content type = " << _contentTypes[_contentType] << std::endl;
 
 			std::string line;
 			while (std::getline(_file, line))
