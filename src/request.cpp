@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42kl.edu.my>          +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/05 19:23:59 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/11 16:00:48 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ static bool hasExtension(const std::string& filename, const std::string& extensi
 void Request::checkPath( void ) {
 	_isImg = false;
 
+	std::cout << "PATH = " << _path << std::endl;
 	if (_path == "/") {
 		_path.clear();
 		_path.append("html/index.html");
@@ -118,12 +119,10 @@ void Request::setResponse( void ) {
 
 std::string Request::processRequest( std::string req ) {
 	_request = req;
+	std::cout << RED << "REQUEST\n" << req << CLEAR;
 	parseRequest();
-	
-	//check method and run method stuff
-
 	checkPath();
-	setResponse(); //default atm
+	setResponse();
 
 	return _response;
 }
