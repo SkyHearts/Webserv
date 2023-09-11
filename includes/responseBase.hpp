@@ -24,6 +24,7 @@ class ResponseBase {
 		void initContentTypes( void );
 		virtual void generateResponse( void ) = 0;
 		std::string getResponse( void ) const;
+		std::string getPath( void ) const { return _path; }
 		void setContentType ( std::string type );
 		void setStatusCode ( int code );
 		std::map< std::string, std::string > getContentTypes( void ) const;
