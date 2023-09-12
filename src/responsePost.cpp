@@ -4,8 +4,20 @@
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
 
 ResponsePost::ResponsePost( std::string filePath ) : ResponseBase() {
-	_path.append(filePath);
+	this->_path.append(filePath);
+
+	checkPath();
+	generateResponse();
 }
 
 ResponsePost::~ResponsePost( void ) { }
 /*============================================================================*/
+
+void ResponsePost::generateResponse( void ) {
+
+}
+
+void ResponsePost::checkPath( void ) {
+
+
+}

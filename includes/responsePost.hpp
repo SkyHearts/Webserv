@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/07 12:20:43 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 19:06:58 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,12 @@ class ResponsePost : public ResponseBase{
 		ResponsePost( void ); //unused
 		void setContentType( void );
 
+		std::string _fileName;
+
 	public:
 		ResponsePost( std::string filePath );
 		~ResponsePost( void );
 
-		std::string getResponse( void );
+		void checkPath( void );
+		void generateResponse( void );
 };
