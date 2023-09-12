@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/11 19:38:03 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 15:04:47 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,7 @@ void ResponseBase::initContentTypes( void ) {
 	_contentTypes["jpg"] = "image/jpeg";
 	_contentTypes["jpeg"] = "image/jpeg";
 	_contentTypes["ico"] = "image/x-icon";
-}
-
-std::string ResponseBase::getResponse( void ) const {
-	return (_response);
+	_contentTypes["plain"] = "text/plain";
 }
 
 void ResponseBase::setContentType ( std::string type ) {
@@ -59,4 +56,8 @@ std::map< std::string, std::string > ResponseBase::getContentTypes( void ) const
 
 std::map< int, std::string > ResponseBase::getStatusCodes( void ) const {
 	return (_statusCodes);
+}
+
+std::string ResponseBase::getResponse( void ) const {
+	return (_response);
 }

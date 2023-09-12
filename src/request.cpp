@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/08 12:51:51 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 15:03:22 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,10 @@ std::string Request::processRequest( std::string req ) {
 	// 	responseDelete del;
 	// 	_response = del.getResponse();
 	// }
+	else {
+		ResponseUnknown unknown;
+		_response = unknown.getResponse();
+	}
 
 	return _response;
 }

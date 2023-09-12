@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/11 19:36:13 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 17:25:47 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ void ResponseGet::setStatusCodeGet( void ) {
 		setStatusCode(200);
 	else {
 		setStatusCode(404);
+		setContentType("html");
 		_file.open("html/" + std::to_string(_statusCode) + ".html");
 	}
 }
@@ -65,29 +66,27 @@ void ResponseGet::setStatusCodeGet( void ) {
 void ResponseGet::generateResponse( void ) {
 	this->_response.clear();
 
-	std::string type = this->_contentTypes[this->_contentType];
-	std::cout << "Content type: " << _contentType << std::endl;
 	try {
 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
 
 		if (this->_isImg) {
-			std::cout << "Content-type: " << type << std::endl;
-			this->_response.append("Content-Type: " + type + "\r\n\r\n");
+			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 
 			char img_buffer[1024];
 			while (!this->_file.eof()) {
 				this->_file.read(img_buffer, sizeof(img_buffer));
-				this->_response.append(img_buffer, this->_file.gcount());
+				this->_response.append(img_buffer, this->_file.gcount());				
 			}
 		}
 		else {
-			this->_response.append("Content-Type: " + type + "\r\n\r\n");
+			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 			std::string line;
-			while (std::getline(this->_file, line))
+			while (std::getline(this->_file, line)) 
 				this->_response.append(line);
+			std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
 		}
 
-		// if (_file.fail()) { throw std::runtime_error("Error"); }
+		if (_file.bad()) { throw std::runtime_error("Error"); }
 		this->_file.close();
 	}
 	catch (std::exception &e) {
@@ -99,9 +98,4 @@ void ResponseGet::generateResponse( void ) {
 		this->_response.append(std::to_string(this->_contentLength));
 		this->_response.append(ISE_HTML);
 	}
-}
-
-
-std::string ResponseGet::getResponse( void ) const {
-	return (this->_response);
 }
