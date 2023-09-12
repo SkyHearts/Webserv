@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/12 14:59:17 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 18:05:48 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,12 @@
 
 class Request {
 	private:
-		// int	_headSize; //not needed but keep for now
 		std::string _request;
 		std::string _response;
 		std::string _method;
 		std::string _path;
 		std::string _http;
-
+		std::string _contentBody;
 		std::map< std::string, std::string > _content;
 
 

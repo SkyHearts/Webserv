@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/12 15:03:22 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 18:54:31 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,15 @@ void Request::parseRequest( void ) {
 	std::istringstream head(line);
 	head >> _method >> _path >> _http;
 
-	_path.erase(0, 1); //remove the first "/"
+	//Store rest of header in a map.
+	_path.erase(0, 1);
+
+	int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
+		if (line == "\r")
+			break;
+		if (line == "\r\n\r\n")
+			break;
 		try {
 			key = line.substr(0, line.find(':'));
 			value = line.substr(line.find(':') + 2);
@@ -41,7 +48,20 @@ void Request::parseRequest( void ) {
 			break ;
 		} 
 		_content.insert(std::pair< std::string, std::string >(key, value));
+		headsize++;
 	}
+
+	//Store put content.
+	std::cout << "\nheadsize: " << headsize << std::endl;
+	if (!request.eof()) {
+		char temp[1024];
+		while (!request.eof()) {
+			request.read(temp, sizeof(temp));
+			_contentBody.append(temp);
+		}
+		std::cout << "contentbody:\n[" << _contentBody << "]" << std::endl;
+	}
+	
 }
 
 std::string Request::processRequest( std::string req ) {
