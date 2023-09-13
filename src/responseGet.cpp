@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/12 17:25:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/13 16:11:37 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,10 @@ static std::string fileExtension( const std::string& filename ) {
 	return "INVALID";
 }
 
-
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
+	_path.erase(0, 1);
 	if (this->_path.empty()) {
 		setContentType("html");
 		this->_path.append("html/index.html");
@@ -72,10 +72,11 @@ void ResponseGet::generateResponse( void ) {
 		if (this->_isImg) {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 
-			char img_buffer[1024];
+			char imgBuffer[1024];
+			std::memset(imgBuffer, 0, sizeof(imgBuffer));
 			while (!this->_file.eof()) {
-				this->_file.read(img_buffer, sizeof(img_buffer));
-				this->_response.append(img_buffer, this->_file.gcount());				
+				this->_file.read(imgBuffer, sizeof(imgBuffer));
+				this->_response.append(imgBuffer, this->_file.gcount());				
 			}
 		}
 		else {

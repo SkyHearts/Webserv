@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/12 18:54:31 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/13 16:11:54 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,24 @@ Request::~Request( void ) {}
 
 /*============================================================================*/
 
+void Request::clearResources( void ) {
+	this->_request.clear();
+	this->_response.clear();
+	this->_method.clear();
+	this->_path.clear();
+	this->_http.clear();
+	this->_header.clear();
+	this->_body.clear();
+}
+
+std::map< std::string, std::string > Request::getHeader( void ) const {
+	return (_header);
+}
+
+std::string Request::getBody( void ) const {
+	return (_body);
+}
+
 void Request::parseRequest( void ) {
 	_request.erase(remove(_request.begin(), _request.end(), '\r'), _request.end()); //line break in request is \r\n, this removes \r
 
@@ -31,8 +49,6 @@ void Request::parseRequest( void ) {
 	head >> _method >> _path >> _http;
 
 	//Store rest of header in a map.
-	_path.erase(0, 1);
-
 	int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
 		if (line == "\r")
@@ -47,24 +63,26 @@ void Request::parseRequest( void ) {
 		catch (std::exception const &e) {
 			break ;
 		} 
-		_content.insert(std::pair< std::string, std::string >(key, value));
+		_header.insert(std::pair< std::string, std::string >(key, value));
 		headsize++;
 	}
 
-	//Store put content.
-	std::cout << "\nheadsize: " << headsize << std::endl;
+	//Store POST content.
 	if (!request.eof()) {
 		char temp[1024];
+		std::memset(temp, 0, sizeof(temp));
 		while (!request.eof()) {
 			request.read(temp, sizeof(temp));
-			_contentBody.append(temp);
+			_body.append(temp);
 		}
-		std::cout << "contentbody:\n[" << _contentBody << "]" << std::endl;
+		std::cout << "Body:\n[" << _body << "]" << std::endl;
 	}
 	
 }
 
 std::string Request::processRequest( std::string req ) {
+	clearResources();
+
 	_request = req;
 	parseRequest();
 	
@@ -72,10 +90,10 @@ std::string Request::processRequest( std::string req ) {
 		ResponseGet get(_path);
 		_response = get.getResponse();
 	}
-	// else if (_method == "POST") {
-	// 	responsePost post;
-	// 	_response = post.getResponse();
-	// }
+	else if (_method == "POST") {
+		ResponsePost post(this->_path, getHeader(), getBody());
+		_response = post.getResponse();
+	}
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
 	// 	_response = del.getResponse();
