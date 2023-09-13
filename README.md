@@ -67,21 +67,25 @@ The part I worked on deals with the main handler loop of the server. This covers
 
 ## Mars
 I have no clue what I'm doing. But here's the plan — sort of:
-* From the server loop, the request string is passed into ```parseResponse()``` of the request class.
-* The request content is split into whatever variables I felt were necessary at the moment.
-* Validate path and set status code accordingly.
-* Read and append details from respective html files.
-* Response returned to the server class.
+* From the server loop, the request string is passed into ```parseResponse()``` of the **request** class.
+* The request content is split into the main header line, the remaining header content, and —if available— the request body.
+* Responses are split according to method. **GET**, **POST**, **DELETE**, and any unimplemented methods are labeled **UNKNOWN**.
+* Based on method, the corresponding classes are instantiated.
 <br>
 
-* For now I am only handling GET requests.
-* I don't know how to deal with POST.
-* I don't know how to deal with DELETE either.
-<br>
+#### BASE RESPONSE
+* The response base contains details that will be used across the methods. (Obviously.)
+* Status Codes and Content-Types are defined here.
+#### GET
+* For now I've only handled *200 OK*, *404 Not Found*, and *500 Internal Server Error*.
+* Waiting for CGI to be integrated into the server before I handle *403 Forbidden*
 
-* I decided to split the response handling to the respective methods, with each individual class. Still a WIP.
-	* Created a base class for responses. For obvious reasons.
+#### POST
+* WIP, working on path and file validation.
+* I plan to handle *200 OK*, *400 Bad Request*, *403 Forbidden*, and *409 Conflict*, and *413 Payload Too Large*.
 
+#### UNKNOWN
+* Sends a simple response with a *500 Method Not Implemented*.
 ## References
 [Web Server Concepts and Examples](https://www.youtube.com/watch?v=9J1nJOivdyw)
 
