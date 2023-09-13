@@ -34,7 +34,7 @@ void Server::init( void ) {
 		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[_serverfds[i]], sizeof(_serveraddrs[_serverfds[i]])) < 0)
 			error("bind");
 
-		if (listen(_serverfds[i], 10) < 0)
+		if (listen(_serverfds[i], 1024) < 0)
 			error("listen");
 		std::cout << YELLOW << "Initialised port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
 	}
@@ -74,7 +74,7 @@ void Server::acceptConnection( int serverfd ) {
 	- Switch client socket from readfds to writefds
 */
 void Server::readRequest( int socket, Request &request ) {
-	std::cout << YELLOW << "Attempting to read from socket " << socket << CLEAR << std::endl;
+	// std::cout << YELLOW << "Attempting to read from socket " << socket << CLEAR << std::endl;
 
 	char buffer[1024];
 	std::string client_data;
@@ -115,7 +115,7 @@ void Server::readRequest( int socket, Request &request ) {
 	- Close connection if all data has been sent
 */
 void Server::sendResponse( int socket ) {
-	std::cout << YELLOW << "Attempting to send response to socket " << socket << CLEAR << std::endl;
+	// std::cout << YELLOW << "Attempting to send response to socket " << socket << CLEAR << std::endl;
 
 	const char *response = _response[socket].c_str();
 	size_t response_len = _response[socket].length();
@@ -133,7 +133,7 @@ void Server::sendResponse( int socket ) {
 		}
 
 		_sentbytes[socket] += sentbytes;
-		std::cout << GREEN << "Sent " << sentbytes << " bytes to socket " << socket << "!" << CLEAR << std::endl;
+		// std::cout << GREEN << "Sent " << sentbytes << " bytes to socket " << socket << "!" << CLEAR << std::endl;
 	}
 
 	if (_sentbytes[socket] < (int)response_len)
