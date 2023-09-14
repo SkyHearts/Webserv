@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 13:55:38 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 19:22:39 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,6 @@ void Request::parseRequest( void ) {
 		headsize++;
 	}
 
-	//Store POST content.
 	if (!request.eof()) {
 		char temp[1024];
 		std::memset(temp, 0, sizeof(temp));
@@ -95,17 +94,18 @@ std::string Request::processRequest( std::string req ) {
 		ResponseGet get(_path);
 		_response = get.getResponse();
 	}
-	else if (_method == "POST") {
-		ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
-		_response = post.getResponse();
-	}
+	// else if (_method == "POST") {
+	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
+	// 	_response = post.getResponse();
+	//	
+	// }
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
-	// 	_response = del.getResponse();
+	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
 	// }
 	else {
-		ResponseUnknown unknown;
-		_response = unknown.getResponse();
+		ResponseGet unkown("html/501.html");
+		_response = unkown.getResponse();
 	}
 
 	return _response;

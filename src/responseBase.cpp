@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/13 17:12:40 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 17:01:43 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,6 @@ std::map< int, std::string > ResponseBase::getStatusCodes( void ) const {
 	return (_statusCodes);
 }
 
-std::string ResponseBase::getResponse( void ) const {
+std::string ResponseBase::getResponse( void ) {
 	return (_response);
 }
