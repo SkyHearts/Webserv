@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/13 18:04:29 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 13:55:38 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,10 @@ std::map< std::string, std::string > Request::getHeader( void ) const {
 
 std::string Request::getBody( void ) const {
 	return (_body);
+}
+
+size_t Request::getPayload( void ) const {
+	return (_payloadSize);
 }
 
 void Request::parseRequest( void ) {
@@ -84,16 +88,17 @@ std::string Request::processRequest( std::string req ) {
 	clearResources();
 
 	_request = req;
+	_payloadSize = req.size();
 	parseRequest();
 	
 	if (_method == "GET") {
 		ResponseGet get(_path);
 		_response = get.getResponse();
 	}
-	// else if (_method == "POST") {
-	// 	ResponsePost post(this->_path, getHeader(), getBody());
-	// 	_response = post.getResponse();
-	// }
+	else if (_method == "POST") {
+		ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
+		_response = post.getResponse();
+	}
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
 	// 	_response = del.getResponse();

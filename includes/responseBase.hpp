@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:37:55 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/11 19:37:56 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 13:55:09 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class ResponseBase {
 		std::string _contentType;
 		std::size_t _contentLength;
 		std::string _path;
+		std::string _fileName;
+		size_t _payload;
 		int _statusCode;
 		bool _isImg;
 		std::map< std::string, std::string > _contentTypes;

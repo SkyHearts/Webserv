@@ -3,18 +3,20 @@
 /*============================================================================*/
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
 
-ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody) : ResponseBase() {
+ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload) : ResponseBase() {
 	clearResources();
 
 	this->_path.append(filePath);
 	this->_requestHeader = reqHead;
 	this->_requestBody.append(reqBody);
+	this->_payload = payload;
 
 	std::cout << CLEAR << std::endl;
 	checkPath(); //dir exists and permissions
 
 	//set content type
 	//check if file exists
+	//createResource();
 	generateResponse();
 }
 

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/13 16:03:35 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 13:50:28 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class Request {
 		std::string _path;
 		std::string _http;
 		std::string _body;
+		size_t _payloadSize;
 		std::map< std::string, std::string > _header;
 
 
@@ -36,4 +37,5 @@ class Request {
 		std::string processRequest( std::string req );
 		std::map< std::string, std::string > getHeader( void ) const;
 		std::string getBody( void ) const;
+		size_t getPayload( void ) const;
 };
