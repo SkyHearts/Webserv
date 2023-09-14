@@ -35,6 +35,7 @@ int main( int ac, char **av ) {
 		for(std::vector<ServerConfig>::iterator iter = ports.begin(); iter < ports.end(); iter++)
 			server.addPort((*iter).listen);
 
+		// need pass config info into server, then into response
 		server.run();
 	}
 	catch (std::invalid_argument& e)
@@ -56,6 +57,7 @@ int main( int ac, char **av ) {
 		
 //		std::vector<ServerConfig> ports = S.get_servers();
 //		std::vector<ServerConfig>::iterator iter;
+//		//Iterate through server block
 //		for(iter = ports.begin(); iter < ports.end(); iter++)
 //		{
 //			std::cout << "Server {" << std::endl;
@@ -63,6 +65,7 @@ int main( int ac, char **av ) {
 //			std::cout << "Listen: " << (*iter).listen << std::endl;
 //			std::cout << "Root: " << (*iter).root << std::endl;
 //			std::cout << "Index: " << (*iter).index << std::endl;
+//			//Iterate through error pages map
 //			if(!(*iter).errorPages.empty()){
 //				std::cout << "KEY\tELEMENT\n";
 //				for (std::map<int, std::string>::iterator itr = (*iter).errorPages.begin(); itr != (*iter).errorPages.end(); ++itr) {
@@ -70,15 +73,20 @@ int main( int ac, char **av ) {
 //				}
 //			}
 //			std::cout << std::endl;
+//			//Iterate through location
 //			if (!(*iter).locations.empty())
 //			{
 //				for (std::vector<Location>::iterator loc = (*iter).locations.begin(); loc < (*iter).locations.end(); loc++)
 //				{
+//					//Location URI (localhost)/cgi-bin, URI =/cgi-bin
 //					if (!(*loc).uri.empty())
 //						std::cout << "location uri: " << (*loc).uri << std::endl;
+//					//Location Index
 //					if (!(*loc).index.empty())
 //						std::cout << "location index: " << (*loc).index << std::endl;
+//					//Location autoindex on/off
 //					std::cout << "location autoindex: " << (*loc).autoindex << std::endl;
+//					//Location all alowed methods
 //					if (!(*loc).allowedMethods.empty()){
 //						std::cout << "allowedMethods: ";
 //						for (std::vector<std::string>::iterator allow = (*loc).allowedMethods.begin(); allow < (*loc).allowedMethods.end(); allow++)
