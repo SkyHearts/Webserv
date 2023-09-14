@@ -4,14 +4,29 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Post Test</title>
+
+		<style>
+			form {
+				border: 2px solid #000; /* 2px solid border with a black color */
+				padding: 20px; /* Optional: Add padding to create some space inside the form */
+			}
+
+			h1 {
+				text-align: center;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Send a POST Request</h1>
 		<form method="post">
 			<label for="textInput">Enter Text:</label>
 			<input type="text" id="textInput" name="text_input" required>
 			<br><br>
 			<input type="submit" value="Submit">
+		</form>
+
+		<form method="post" enctype="multipart/form-data">
+			<input type="file" name="fileToUpload" id="fileToUpload">
+			<input type="submit" value="Upload File">
 		</form>
 	</body>
 </html>
