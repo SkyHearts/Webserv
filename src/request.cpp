@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 13:14:58 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/15 16:29:50 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "request.hpp"
+#include "cgi_handler.hpp"
 
 /*============================================================================*/
 
@@ -114,9 +115,14 @@ std::string Request::processRequest( std::string req ) {
 	// 	responseDelete del;
 	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
 	// }
+
 	else {
-		ResponseGet unkown("/501.html");
-		_response = unkown.getResponse();
+		ResponseUnknown unknown;
+	//if path directory is cgi-bin and valid cgi program/file
+	cgi_handler cgi;
+
+	cgi.execCGI(this->_content, "html/" + this->_path, )
+		_response = unknown.getResponse();
 	}
 
 	return _response;
