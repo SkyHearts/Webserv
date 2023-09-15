@@ -85,7 +85,7 @@ I have no clue what I'm doing. But here's the plan — sort of:
 * I plan to handle *200 OK*, *400 Bad Request*, *403 Forbidden*, and *409 Conflict*, and *413 Payload Too Large*.
 
 #### UNKNOWN
-* Sends a simple response with a *500 Method Not Implemented*.
+* Sends a simple response with a *501 Method Not Implemented*.
 ## References
 [Web Server Concepts and Examples](https://www.youtube.com/watch?v=9J1nJOivdyw)
 

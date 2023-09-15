@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 15:45:52 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/15 13:54:17 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ void ResponseGet::checkPath( void ) {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico")
 			this->_isImg = true;
+		if (this->_contentType == "html")
+			_path.insert(0, "html/");
 	}
 
 	setStatusCodeGet();
@@ -74,12 +76,14 @@ void ResponseGet::checkPath( void ) {
 void ResponseGet::setStatusCodeGet( void ) {
 	this->_file.open(this->_path);
 
-	if (this->_file.is_open() && (this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
-		setStatusCode(200);
+	if (this->_file.is_open() && (this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
+		if (_path == "html/501.html") setStatusCode(501);
+		else setStatusCode(200);
+	}
 	else {
 		setStatusCode(404);
 		setContentType("html");
-		_file.open("html/" + std::to_string(_statusCode) + ".html");
+		_file.open("html/404.html");
 	}
 }
 
@@ -115,15 +119,16 @@ void ResponseGet::generateResponse( void ) {
 		}
 
 		if (_file.bad()) { throw std::runtime_error("Error"); }
-		this->_file.close();
 	}
 	catch (std::exception &e) {
 		this->_response.clear();
 		
 		this->_response.append(ISE_500);
-		std::string body = std::string(ISE_HTML);
+		std::string body = ISE_MESSAGE;
+		std::cout << "500 body:\n" << body << std::endl;
 		this->_contentLength = body.length();
 		this->_response.append(std::to_string(this->_contentLength));
-		this->_response.append(ISE_HTML);
+		this->_response.append(body);
 	}
+	this->_file.close();
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 16:17:55 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/15 16:29:50 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,10 @@ std::string Request::getBody( void ) const {
 	return (_body);
 }
 
+size_t Request::getPayload( void ) const {
+	return (_payloadSize);
+}
+
 /*
 	Parse and save a client request into its
 	header and content components
@@ -75,7 +79,6 @@ void Request::parseRequest( void ) {
 		headsize++;
 	}
 
-	//Store POST content.
 	if (!request.eof()) {
 		char temp[1024];
 		std::memset(temp, 0, sizeof(temp));
@@ -96,7 +99,7 @@ std::string Request::processRequest( std::string req ) {
 	clearResources();
 
 	_request = req;
-	std::cout << RED << "REQUEST\n" << req << CLEAR;
+	_payloadSize = req.size();
 	parseRequest();
 	
 	if (_method == "GET") {
@@ -104,12 +107,13 @@ std::string Request::processRequest( std::string req ) {
 		_response = get.getResponse();
 	}
 	// else if (_method == "POST") {
-	// 	ResponsePost post(this->_path, getHeader(), getBody());
+	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
 	// 	_response = post.getResponse();
+	//	
 	// }
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
-	// 	_response = del.getResponse();
+	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
 	// }
 
 	else {
