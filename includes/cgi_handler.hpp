@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/07 13:15:42 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/15 16:10:33 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,14 @@
 //} WebEnv;
 
 //To help return response?
-class cgi_response
+class uri
 {
-	protected:
-	std::string _header;
+	private:
+	void parsehttp(std::string url);
 	public:
 	//Get func
-	std::string getHeader(void) {return _header;}
+	std::string path, name, host;
+	int port;
 };
 
 class cgi_handler
@@ -48,17 +49,21 @@ class cgi_handler
 	//Get funct _env;
 	char** getEnv(void) { return _env; }
 
+	//Utils
+	void reassginDArray(char **dest, char **src);
+	void delDArray(char **dArray);
+
+
 	//Set _env
-	void createEnv(void);
+	void createEnv(std::map<std::string, std::string> content);
 	void addEnv(std::string envVar);
-	void delEnv(char **env);
-	void reassginEnv(char **dest, char **src);
 	
 	//Set argv, arg[0] = path to cgi
-	void createArg(void);
+	void addArg(std::string arg);
+	void createArg(std::string path);
 	
 	//Execute in child process using execve
-	void execCGI(std::string path, char **argv);
+	void execCGI(std::map<std::string, std::string> content, std::string path);
 };
 
 int getCharDArraySize(char** array);
