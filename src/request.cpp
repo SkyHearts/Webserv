@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 19:22:39 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/15 12:28:55 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ std::string Request::processRequest( std::string req ) {
 	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
 	// }
 	else {
-		ResponseGet unkown("html/501.html");
+		ResponseGet unkown("/501.html");
 		_response = unkown.getResponse();
 	}
 
