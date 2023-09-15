@@ -10,7 +10,7 @@ class Server {
 		std::map<int, sockaddr_in>	_serveraddrs, _clientaddrs;
 		std::map<int, std::string>	_response;
 		std::map<int, bool>			_isparsed;
-		std::map<int, int>			_sentbytes;
+		std::map<int, long>			_sentbytes;
 
 		void init( void );
 		void acceptConnection( int serverfd );

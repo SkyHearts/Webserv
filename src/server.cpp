@@ -133,8 +133,11 @@ void Server::sendResponse( int socket ) {
 
 	if (_sentbytes[socket] < (int)response_len)
 		FD_SET(socket, &_writefds);
-	else
+	else {
+		std::cout << GREEN << "Sent " << _sentbytes[socket] << " bytes" << std::endl;
 		closeConnection(socket);
+	}
+
 }
 
 /*

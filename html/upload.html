@@ -17,15 +17,15 @@
 		</style>
 	</head>
 	<body>
-		<form method="post">
+		<form action="upload" method="post">
 			<label for="textInput">Enter Text:</label>
-			<input type="text" id="textInput" name="text_input" required>
+			<input type="text" id="textInput" name="text">
 			<br><br>
 			<input type="submit" value="Submit">
 		</form>
 
-		<form method="post" enctype="multipart/form-data">
-			<input type="file" name="fileToUpload" id="fileToUpload">
+		<form action="upload" method="post" enctype="multipart/form-data">
+			<input type="file" id="fileInput" name="file">
 			<input type="submit" value="Upload File">
 		</form>
 	</body>

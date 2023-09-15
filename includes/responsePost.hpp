@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responsePost.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 16:03:32 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/15 14:01:13 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,10 @@ typedef struct fileData {
 
 class ResponsePost : public ResponseBase{
 	private:
-		ResponsePost( void ); //unused
-		void setContentType( void );
+		ResponsePost( void );
+		void setContentType( std::string );
 
-		std::string _requestBody;
+		std::string _requestBody, _boundary;
 		std::vector< fileData > _formData;
 		std::map < std::string, std::string > _requestHeader;
 
@@ -34,5 +34,7 @@ class ResponsePost : public ResponseBase{
 		void clearResources( void );
 		void createResource( void );
 		void checkPath( void );
+		bool checkPermissions( void );
+		void set405( void );
 		void generateResponse( void );
 };
