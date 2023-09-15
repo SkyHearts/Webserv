@@ -1,12 +1,12 @@
 #include "server.hpp"
 
-/* Construct and Destruct */
+/** ---------- Construct and Destruct ---------- */
 
 Server::Server( void ) {}
 
 Server::~Server( void ) {}
 
-/* Members */
+/** ---------- Members ---------- **/
 
 /*
 	For each port stored
@@ -34,7 +34,7 @@ void Server::init( void ) {
 		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[_serverfds[i]], sizeof(_serveraddrs[_serverfds[i]])) < 0)
 			error("bind");
 
-		if (listen(_serverfds[i], 10) < 0)
+		if (listen(_serverfds[i], 1024) < 0)
 			error("listen");
 		std::cout << YELLOW << "Initialised port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
 	}
@@ -74,8 +74,6 @@ void Server::acceptConnection( int serverfd ) {
 	- Switch client socket from readfds to writefds
 */
 void Server::readRequest( int socket, Request &request ) {
-	std::cout << YELLOW << "Attempting to read from socket " << socket << CLEAR << std::endl;
-
 	char buffer[1024];
 	std::string client_data;
 
@@ -115,8 +113,6 @@ void Server::readRequest( int socket, Request &request ) {
 	- Close connection if all data has been sent
 */
 void Server::sendResponse( int socket ) {
-	std::cout << YELLOW << "Attempting to send response to socket " << socket << CLEAR << std::endl;
-
 	const char *response = _response[socket].c_str();
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
@@ -133,7 +129,6 @@ void Server::sendResponse( int socket ) {
 		}
 
 		_sentbytes[socket] += sentbytes;
-		std::cout << GREEN << "Sent " << sentbytes << " bytes to socket " << socket << "!" << CLEAR << std::endl;
 	}
 
 	if (_sentbytes[socket] < (int)response_len)
@@ -209,12 +204,16 @@ void Server::loop( void ) {
 	}
 }
 
+/*
+	The Server::run( void ) function encompases the
+	initialisation and looping of the server
+*/
 void Server::run( void ) {
 	init();
 	loop();
 }
 
-/* Error and Exit */
+/** ---------- Error and Exit ---------- **/
 
 void Server::error( std::string errmsg, bool exitbool ) {
 	std::cerr << RED << errmsg << ": ";
@@ -225,7 +224,7 @@ void Server::error( std::string errmsg, bool exitbool ) {
 		exit(1);
 }
 
-/* Getters and Setters */
+/** ---------- Getters and Setters ---------- **/
 
 void Server::addPort( int port ) {
 	_ports.push_back(port);

@@ -3,91 +3,127 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:00:58 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/14 15:45:52 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "responseGet.hpp"
 
 /*============================================================================*/
-ResponseGet::ResponseGet( void ) { }
 
-ResponseGet::ResponseGet( std::string filePath ) : Response(), _path(filePath) {
+ResponseGet::ResponseGet( void ) : ResponseBase() { }
+
+ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
+	this->_path.append(filePath);
 	checkPath();
 	generateResponse();
 }
 
 ResponseGet::~ResponseGet( void ) { }
+
 /*============================================================================*/
 
-void ResponseGet::setContentType( void ) {
-
-}
-
-static std::string hasExtension( const std::string& filename, const std::string& extension ) {
+/*
+	Find the file extension of a given filename
+	- Find the last dot in the filename
+	- If there is a dot and it is not the last character in the filename
+	- - Return the extension
+	- Else return "INVALID"
+*/
+static std::string fileExtension( const std::string& filename ) {
 	size_t dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos && dotPos < filename.length() - 1) {
 		std::string foundExtension = filename.substr(dotPos + 1);
-		if (foundExtension == extension)
-			return foundExtension;
+		return (foundExtension);
 	}
-
-	return "";
+	return "INVALID";
 }
 
+/*
+	Find the content type of a given file extension
+	- If the extension is in the map
+	- - Return the content type
+*/
 void ResponseGet::checkPath( void ) {
-	_isImg = false;
+	this->_isImg = false;
 
-	if (_path == "/") {
-		_path.clear();
-		_path.append("html/index.html");
-	}
-	else if (hasExtension(_path, "png") != "") {
-		_isImg = true;
-		_path.erase(0,1);
-		std::cout << _path << std::endl;
-	}
-	else
-		_path.erase(0,1);
-
-	_file.open(_path);
-	if (_file.is_open())
-		_statusCode = 200;
-	else
-		_statusCode = 404;
-
-	if (_statusCode != 200)
-		_file.open("html/" + std::to_string(_statusCode) + ".html");
-}
-
-
-void ResponseGet::generateResponse( void ) {
-	_response.clear();
-	_response.append("HTTP/1.1 " + std::to_string(_statusCode) + " " + _statusCodes[_statusCode] + "\r\n");
-
-	if (_isImg) {
-		_response.append("Content-Type: image/png\r\n\r\n");
-
-		char img_buffer[1024];
-		while (!_file.eof()) {
-			_file.read(img_buffer, sizeof(img_buffer));
-			_response.append(img_buffer, _file.gcount());
-		}
+	_path.erase(0, 1);
+	if (this->_path.empty()) {
+		setContentType("html");
+		this->_path.append("html/index.html");
 	}
 	else {
-		_response.append("Content-Type: text/html\r\n\r\n");
-
-		std::string line;
-		while (std::getline(_file, line))
-			_response.append(line);
+		setContentType(fileExtension(this->_path));
+		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico")
+			this->_isImg = true;
 	}
 
-	_file.close();
+	setStatusCodeGet();
 }
 
-std::string ResponseGet::getResponse( void ) const {
-	return (_response);
+/*
+	Set the status code of a GET request
+	- If the file is found and the content type is valid
+	- - Set the status code to 200
+	- Else
+	- - Set the status code to 404
+*/
+void ResponseGet::setStatusCodeGet( void ) {
+	this->_file.open(this->_path);
+
+	if (this->_file.is_open() && (this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
+		setStatusCode(200);
+	else {
+		setStatusCode(404);
+		setContentType("html");
+		_file.open("html/" + std::to_string(_statusCode) + ".html");
+	}
+}
+
+/*
+	Generate the response for a GET request
+	- Append the content type to the response
+	- Append the requested file contents to the response
+	- If the file is bad, throw an exception
+	- Close the file
+*/
+void ResponseGet::generateResponse( void ) {
+	this->_response.clear();
+
+	try {
+		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+
+		if (this->_isImg) {
+			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+
+			char imgBuffer[1024];
+			std::memset(imgBuffer, 0, sizeof(imgBuffer));
+			while (!this->_file.eof()) {
+				this->_file.read(imgBuffer, sizeof(imgBuffer));
+				this->_response.append(imgBuffer, this->_file.gcount());				
+			}
+		}
+		else {
+			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+			std::string line;
+			while (std::getline(this->_file, line)) 
+				this->_response.append(line);
+			std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
+		}
+
+		if (_file.bad()) { throw std::runtime_error("Error"); }
+		this->_file.close();
+	}
+	catch (std::exception &e) {
+		this->_response.clear();
+		
+		this->_response.append(ISE_500);
+		std::string body = std::string(ISE_HTML);
+		this->_contentLength = body.length();
+		this->_response.append(std::to_string(this->_contentLength));
+		this->_response.append(ISE_HTML);
+	}
 }

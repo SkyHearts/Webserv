@@ -6,21 +6,28 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/05 15:13:59 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/13 15:49:38 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "headers.hpp"
+#include "responseBase.hpp"
 
-class responsePost {
+class ResponsePost : public ResponseBase{
 	private:
-		std::string _response;
-		int _statusCode;
+		ResponsePost( void ); //unused
+		void setContentType( void );
+
+		std::string _fileName;
+		std::map < std::string, std::string > _requestHeader;
+		std::string _requestBody;
 
 	public:
-		responsePost( void );
-		~responsePost( void );
+		ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody);
+		~ResponsePost( void );
 
-		std::string getResponse( void );
+		void clearResources( void );
+		void checkPath( void );
+		void generateResponse( void );
 };

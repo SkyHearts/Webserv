@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/12 15:47:20 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/15 16:17:55 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,37 @@
 
 /*============================================================================*/
 
-Request::Request( void ) {
-	// initStatusCodes();
-}
+Request::Request( void ) {}
 
 Request::~Request( void ) {}
 
 /*============================================================================*/
 
+/*
+	Clear all resource buffers
+*/
+void Request::clearResources( void ) {
+	this->_request.clear();
+	this->_response.clear();
+	this->_method.clear();
+	this->_path.clear();
+	this->_http.clear();
+	this->_header.clear();
+	this->_body.clear();
+}
+
+std::map< std::string, std::string > Request::getHeader( void ) const {
+	return (_header);
+}
+
+std::string Request::getBody( void ) const {
+	return (_body);
+}
+
+/*
+	Parse and save a client request into its
+	header and content components
+*/
 void Request::parseRequest( void ) {
 	_request.erase(remove(_request.begin(), _request.end(), '\r'), _request.end()); //line break in request is \r\n, this removes \r
 
@@ -33,8 +56,13 @@ void Request::parseRequest( void ) {
 	std::istringstream head(line);
 	head >> _method >> _path >> _http;
 
-	_headSize = 0;
+	//Store rest of header in a map.
+	int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
+		if (line == "\r")
+			break ;
+		if (line == "\r\n\r\n")
+			break ;
 		try {
 			key = line.substr(0, line.find(':'));
 			value = line.substr(line.find(':') + 2);
@@ -43,13 +71,32 @@ void Request::parseRequest( void ) {
 		catch (std::exception const &e) {
 			break ;
 		} 
-		_content.insert(std::pair< std::string, std::string >(key, value));
-		_headSize++;
+		_header.insert(std::pair< std::string, std::string >(key, value));
+		headsize++;
 	}
+
+	//Store POST content.
+	if (!request.eof()) {
+		char temp[1024];
+		std::memset(temp, 0, sizeof(temp));
+		while (!request.eof()) {
+			request.read(temp, sizeof(temp));
+			_body.append(temp);
+		}
+		std::cout << "Body:\n[" << _body << "]" << std::endl;
+	}
+	
 }
 
+/*
+	Request handler to generate responses based on
+	the type of client request
+*/
 std::string Request::processRequest( std::string req ) {
+	clearResources();
+
 	_request = req;
+	std::cout << RED << "REQUEST\n" << req << CLEAR;
 	parseRequest();
 	
 	if (_method == "GET") {
@@ -57,7 +104,7 @@ std::string Request::processRequest( std::string req ) {
 		_response = get.getResponse();
 	}
 	// else if (_method == "POST") {
-	// 	responsePost post;
+	// 	ResponsePost post(this->_path, getHeader(), getBody());
 	// 	_response = post.getResponse();
 	// }
 	// else if (_method == "DELETE") {
@@ -65,10 +112,14 @@ std::string Request::processRequest( std::string req ) {
 	// 	_response = del.getResponse();
 	// }
 
+	else {
+		ResponseUnknown unknown;
 	//if path directory is cgi-bin and valid cgi program/file
 	cgi_handler cgi;
 
 	cgi.execCGI(this->_content, "html/" + this->_path, )
+		_response = unknown.getResponse();
+	}
 
 	return _response;
 }
