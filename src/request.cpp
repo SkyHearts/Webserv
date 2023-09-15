@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 19:02:24 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/12 15:47:20 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "request.hpp"
+#include "cgi_handler.hpp"
 
 /*============================================================================*/
 
@@ -63,6 +64,11 @@ std::string Request::processRequest( std::string req ) {
 	// 	responseDelete del;
 	// 	_response = del.getResponse();
 	// }
+
+	//if path directory is cgi-bin and valid cgi program/file
+	cgi_handler cgi;
+
+	cgi.execCGI(this->_content, "html/" + this->_path, )
 
 	return _response;
 }
