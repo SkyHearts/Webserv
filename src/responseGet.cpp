@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 12:27:37 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:16:35 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "responseGet.hpp"
 
 /*============================================================================*/
+
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
 ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
@@ -22,8 +23,16 @@ ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
 }
 
 ResponseGet::~ResponseGet( void ) { }
+
 /*============================================================================*/
 
+/*
+	Find the file extension of a given filename
+	- Find the last dot in the filename
+	- If there is a dot and it is not the last character in the filename
+	- - Return the extension
+	- Else return "INVALID"
+*/
 static std::string fileExtension( const std::string& filename ) {
 	size_t dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos && dotPos < filename.length() - 1) {
@@ -33,6 +42,11 @@ static std::string fileExtension( const std::string& filename ) {
 	return "INVALID";
 }
 
+/*
+	Find the content type of a given file extension
+	- If the extension is in the map
+	- - Return the content type
+*/
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
@@ -52,6 +66,13 @@ void ResponseGet::checkPath( void ) {
 	setStatusCodeGet();
 }
 
+/*
+	Set the status code of a GET request
+	- If the file is found and the content type is valid
+	- - Set the status code to 200
+	- Else
+	- - Set the status code to 404
+*/
 void ResponseGet::setStatusCodeGet( void ) {
 	this->_file.open(this->_path);
 
@@ -66,7 +87,13 @@ void ResponseGet::setStatusCodeGet( void ) {
 	}
 }
 
-
+/*
+	Generate the response for a GET request
+	- Append the content type to the response
+	- Append the requested file contents to the response
+	- If the file is bad, throw an exception
+	- Close the file
+*/
 void ResponseGet::generateResponse( void ) {
 	this->_response.clear();
 

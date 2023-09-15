@@ -3,47 +3,47 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/07 13:21:41 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/14 16:12:10 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/cgi_handler.hpp"
 
-int getCharDArraySize(char** array){
+int getCharDArraySize(char** array) {
 	int i = 0;
 	while (array[i] != NULL)
 		i++;
 	return (i);
 }
 
-cgi_handler::cgi_handler() : _env(NULL){
+cgi_handler::cgi_handler() : _env(NULL) {
 	//_env = NULL;
 	std::cout << "Default constructor" << std::endl;
 }
 
-cgi_handler::~cgi_handler( void ){
+cgi_handler::~cgi_handler( void ) {
 	std::cout << "Deconstruct Config" << std::endl;
 	//delete env
-	//for(int i = 0; i < (sizeof(_env) / sizeof(char*)); ++i) {
+	//for (int i = 0; i < (sizeof(_env) / sizeof(char*)); ++i) {
     //    delete[] _env[i];   
     //}
     ////Free the array of pointers
     //delete[] _env;
 }
 
-void cgi_handler::reassginEnv(char **dest, char **src){
+void cgi_handler::reassginEnv(char **dest, char **src) {
 	for (int i = 0; i < getCharDArraySize(src); ++i)
 		dest[i] = src[i];
 	delete[] src;		
 }
 
-void cgi_handler::addEnv(std::string envVar){
+void cgi_handler::addEnv(std::string envVar) {
 	int envSize;
 	char** tmp_env;
-	if (_env == NULL){
+	if (_env == NULL) {
 		_env = new char*[2];
 		_env[0] = strdup(envVar.c_str());
 		_env[1] = NULL;
@@ -58,7 +58,7 @@ void cgi_handler::addEnv(std::string envVar){
 	}
 }
 
-void cgi_handler::createEnv(void){
+void cgi_handler::createEnv(void) {
 	addEnv("SERVER_SOFTWARE = WebServ");
 	addEnv("SERVER_PORT =");// + getPort() from parse request
 	addEnv("REQUEST_METHOD =");// + getMethod() from parse request
@@ -68,14 +68,14 @@ void cgi_handler::createEnv(void){
 	addEnv("HTTP_ACCEPT =");
 }
 
-void cgi_handler::execCGI(std::string path, char **argv){
+void cgi_handler::execCGI(std::string path, char **argv) {
 	pid_t pid;
 	std::string response;
 	char **arg;
 	createEnv();
 
 	//// Print env
-	//for(int i = 0; i < getCharDArraySize(_env); ++i) {
+	//for (int i = 0; i < getCharDArraySize(_env); ++i) {
 	//	std::cout << i << " ";
 	//	std::cout << _env[i] << std::endl;   
     //}
@@ -83,7 +83,7 @@ void cgi_handler::execCGI(std::string path, char **argv){
 	if (pipe(pipefd) == -1)
 		std::cout << "CGI pipe error" << std::endl;
 	pid = fork();
-	if (pid == 0){
+	if (pid == 0) {
 		//child
 		close(pipefd[0]);	// Close reading end
 		dup2(pipefd[1], 1);	// send stdout to the pipe
@@ -97,7 +97,7 @@ void cgi_handler::execCGI(std::string path, char **argv){
 		//parent
 		int status;
 		waitpid(pid, &status, 0);
-		if (WIFEXITED(status) && WEXITSTATUS(status) == 0){
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
 			char buffer[1024];
             int bytes_read = read(pipefd[0], buffer, sizeof(buffer));
             if (bytes_read > 0)
@@ -116,15 +116,15 @@ void cgi_handler::execCGI(std::string path, char **argv){
 	//return (response); //without header, etc
 }
 
-void cgi_handler::delEnv(char **env){
-	for(int i = 0; i < getCharDArraySize(env); ++i) {
+void cgi_handler::delEnv(char **env) {
+	for (int i = 0; i < getCharDArraySize(env); ++i) {
 		delete[] env[i];   
     }
     delete[] env;
 }
 
 // to test cgi files, ./a.out <path to files>
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 	cgi_handler cgi;
 	cgi.execCGI("path", argv);
 	//system("leaks a.out");

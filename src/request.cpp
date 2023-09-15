@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 12:28:55 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/15 13:14:58 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@ Request::~Request( void ) {}
 
 /*============================================================================*/
 
+/*
+	Clear all resource buffers
+*/
 void Request::clearResources( void ) {
 	this->_request.clear();
 	this->_response.clear();
@@ -42,6 +45,10 @@ size_t Request::getPayload( void ) const {
 	return (_payloadSize);
 }
 
+/*
+	Parse and save a client request into its
+	header and content components
+*/
 void Request::parseRequest( void ) {
 	_request.erase(remove(_request.begin(), _request.end(), '\r'), _request.end()); //line break in request is \r\n, this removes \r
 
@@ -56,9 +63,9 @@ void Request::parseRequest( void ) {
 	int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
 		if (line == "\r")
-			break;
+			break ;
 		if (line == "\r\n\r\n")
-			break;
+			break ;
 		try {
 			key = line.substr(0, line.find(':'));
 			value = line.substr(line.find(':') + 2);
@@ -83,6 +90,10 @@ void Request::parseRequest( void ) {
 	
 }
 
+/*
+	Request handler to generate responses based on
+	the type of client request
+*/
 std::string Request::processRequest( std::string req ) {
 	clearResources();
 
