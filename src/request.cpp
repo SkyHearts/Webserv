@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 16:29:50 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/15 16:37:32 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,13 +117,15 @@ std::string Request::processRequest( std::string req ) {
 	// }
 
 	else {
-		ResponseUnknown unknown;
-	//if path directory is cgi-bin and valid cgi program/file
-	cgi_handler cgi;
-
-	cgi.execCGI(this->_content, "html/" + this->_path, )
+		ResponseGet unknown("/501.html");
 		_response = unknown.getResponse();
 	}
+	
+	//if path directory is cgi-bin and valid cgi program/file
+	// cgi_handler cgi;
+
+	// cgi.execCGI(this->_content, "html/" + this->_path, );
+	// 	_response = unknown.getResponse();
 
 	return _response;
 }
