@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/14 16:15:25 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/16 11:38:46 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,22 +59,6 @@
 //	location = 4,
 //	start = 5
 //};
-
-struct Location {
-	std::string					uri;
-	std::string 				index;
-	std::vector<std::string>	allowedMethods;
-	bool autoindex;
-};
-
-struct ServerConfig {
-	int							listen;
-	std::string					name;
-	std::string					root;
-	std::vector<Location>		locations;
-	std::string 				index;
-	std::map<int, std::string>	errorPages;
-};
 
 class Config {
 	private:

@@ -97,8 +97,8 @@ void Server::readRequest( int socket, Request &request ) {
 			break ;
 	}
 
-	std::cout << GREEN << "Received " << client_data.size() << " bytes" << std::endl;
-	std::cout << CLEAR << client_data << std::endl;
+	std::cout << GREEN << "Received " << client_data.size() << " bytes\n" << std::endl;
+	std::cout << CLEAR << client_data;
 
 	_response[socket] = request.processRequest(client_data);
 	_isparsed[socket] = true;

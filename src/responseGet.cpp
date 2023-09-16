@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 13:54:17 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/16 11:07:45 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void ResponseGet::generateResponse( void ) {
 			std::string line;
 			while (std::getline(this->_file, line)) 
 				this->_response.append(line);
-			std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
+			// std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
 		}
 
 		if (_file.bad()) { throw std::runtime_error("Error"); }

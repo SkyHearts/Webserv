@@ -30,3 +30,19 @@
 #define UIR "Upgrade-Insecure-Requests"
 #define UA "User-Agent"
 #define ACCEPT "Accept"
+
+struct Location {
+	std::string					uri;
+	std::string 				index;
+	std::vector<std::string>	allowedMethods;
+	bool autoindex;
+};
+
+struct ServerConfig {
+	int							listen;
+	std::string					name;
+	std::string					root;
+	std::vector<Location>		locations;
+	std::string 				index;
+	std::map<int, std::string>	errorPages;
+};

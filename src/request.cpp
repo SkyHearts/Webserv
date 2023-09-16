@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 16:37:32 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/16 11:02:29 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,8 @@ void Request::parseRequest( void ) {
 			request.read(temp, sizeof(temp));
 			_body.append(temp);
 		}
-		std::cout << "Body:\n[" << _body << "]" << std::endl;
+		if (_body.size() > 0)
+			std::cout << "Body:\n[" << _body << "]" << std::endl;
 	}
 	
 }
