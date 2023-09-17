@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/16 10:51:27 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/17 17:25:46 by hongyou          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ std::string	Config::getstring( std::string config_file ) {
 	Maps strings to values to enable strings to be used in switch case
 */
 void Config::initEnumServerBlock( std::map<std::string, serverBlock> &s_mapStringValues ) {
-	s_mapStringValues["listen"] = listen;
+	s_mapStringValues["listen"] = listenenum;
 	s_mapStringValues["server_name"] = server_name;
 	s_mapStringValues["root"] = root;
 	s_mapStringValues["location"] = location;
@@ -361,7 +361,7 @@ void Config::parseServerBlock( std::istringstream &iss ) {
 		}
 
 		switch (s_mapStringValues[subs]) {
-			case listen:
+			case listenenum:
 				// std::cout << "Parse Listen" << std::endl;
 				parseListen(iss, &server);
 				break ;

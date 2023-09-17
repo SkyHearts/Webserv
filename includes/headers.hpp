@@ -31,6 +31,17 @@
 #define UA "User-Agent"
 #define ACCEPT "Accept"
 
+enum serverBlock {
+	notDefined = 0,
+	listenenum = 1,
+	server_name = 2,
+	root = 3,
+	location = 4,
+	indexServ = 5,
+	errorPages = 6,
+	start = 7
+};
+
 struct Location {
 	std::string					uri;
 	std::string 				index;

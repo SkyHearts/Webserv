@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/16 11:02:29 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/17 18:01:55 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void Request::parseRequest( void ) {
 	head >> _method >> _path >> _http;
 
 	//Store rest of header in a map.
-	int headsize = 0;
+	// int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
 		if (line == "\r")
 			break ;
@@ -76,7 +76,7 @@ void Request::parseRequest( void ) {
 			break ;
 		} 
 		_header.insert(std::pair< std::string, std::string >(key, value));
-		headsize++;
+		// headsize++;
 	}
 
 	if (!request.eof()) {
@@ -89,22 +89,21 @@ void Request::parseRequest( void ) {
 		if (_body.size() > 0)
 			std::cout << "Body:\n[" << _body << "]" << std::endl;
 	}
-	
 }
 
 /*
 	Request handler to generate responses based on
 	the type of client request
 */
-std::string Request::processRequest( std::string req ) {
+std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 	clearResources();
 
 	_request = req;
 	_payloadSize = req.size();
 	parseRequest();
-	
+
 	if (_method == "GET") {
-		ResponseGet get(_path);
+		ResponseGet get(_path, portinfo);
 		_response = get.getResponse();
 	}
 	// else if (_method == "POST") {
@@ -118,7 +117,7 @@ std::string Request::processRequest( std::string req ) {
 	// }
 
 	else {
-		ResponseGet unknown("/501.html");
+		ResponseGet unknown("/501.html", portinfo);
 		_response = unknown.getResponse();
 	}
 	

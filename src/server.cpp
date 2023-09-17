@@ -100,7 +100,28 @@ void Server::readRequest( int socket, Request &request ) {
 	std::cout << GREEN << "Received " << client_data.size() << " bytes\n" << std::endl;
 	std::cout << CLEAR << client_data;
 
-	_response[socket] = request.processRequest(client_data);
+	int port = 80;
+	size_t host_pos = client_data.find("Host: ");
+	if (host_pos != std::string::npos) {
+		size_t port_pos = host_pos + 6;
+		size_t colon_pos = client_data.find(":", port_pos);
+		size_t end_pos = client_data.find("\n", port_pos);
+
+		if (colon_pos != std::string::npos && colon_pos < end_pos) {
+			std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
+			port = std::stoi(port_str);
+		}
+	}
+
+	int connected_port_index = 0;
+	for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
+		if ((*iter).listen == port)
+			break ;
+		connected_port_index++;
+	}
+
+	ServerConfig portinfo = configinfo[connected_port_index];
+	_response[socket] = request.processRequest(client_data, portinfo);
 	_isparsed[socket] = true;
 
 	FD_CLR(socket, &_readfds);

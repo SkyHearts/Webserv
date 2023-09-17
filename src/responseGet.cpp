@@ -16,8 +16,10 @@
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
-ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
+ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
+	_portinfo = portinfo;
 	this->_path.append(filePath);
+
 	checkPath();
 	generateResponse();
 }
@@ -53,7 +55,7 @@ void ResponseGet::checkPath( void ) {
 	_path.erase(0, 1);
 	if (this->_path.empty()) {
 		setContentType("html");
-		this->_path.append("html/index.html");
+		this->_path.append(_portinfo.root + "/" + _portinfo.index);
 	}
 	else {
 		setContentType(fileExtension(this->_path));

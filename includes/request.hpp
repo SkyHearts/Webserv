@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 19:21:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/17 18:01:40 by hongyou          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,13 @@ class Request {
 		size_t _payloadSize;
 		std::map< std::string, std::string > _header;
 
-
 	public:
 		Request( void );
 		~Request( void );
 
 		void clearResources( void );
 		void parseRequest( void );
-		std::string processRequest( std::string req );
+		std::string processRequest( std::string req, ServerConfig portinfo );
 		std::map< std::string, std::string > getHeader( void ) const;
 		std::string getBody( void ) const;
 		size_t getPayload( void ) const;
