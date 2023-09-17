@@ -22,6 +22,8 @@ class Server {
 		void error( std::string errmsg, bool exitbool = true );
 
 	public:
+		std::vector<ServerConfig>	configinfo;
+
 		Server();
 		~Server();
 

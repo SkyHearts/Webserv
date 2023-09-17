@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 13:54:17 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/16 11:07:45 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,10 @@
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
-ResponseGet::ResponseGet( std::string filePath ) : ResponseBase() {
+ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
+	_portinfo = portinfo;
 	this->_path.append(filePath);
+
 	checkPath();
 	generateResponse();
 }
@@ -53,7 +55,7 @@ void ResponseGet::checkPath( void ) {
 	_path.erase(0, 1);
 	if (this->_path.empty()) {
 		setContentType("html");
-		this->_path.append("html/index.html");
+		this->_path.append(_portinfo.root + "/" + _portinfo.index);
 	}
 	else {
 		setContentType(fileExtension(this->_path));
@@ -115,7 +117,7 @@ void ResponseGet::generateResponse( void ) {
 			std::string line;
 			while (std::getline(this->_file, line)) 
 				this->_response.append(line);
-			std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
+			// std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
 		}
 
 		if (_file.bad()) { throw std::runtime_error("Error"); }

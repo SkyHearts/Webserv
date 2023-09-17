@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/14 16:15:25 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/17 17:21:46 by hongyou          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,39 +60,12 @@
 //	start = 5
 //};
 
-struct Location {
-	std::string					uri;
-	std::string 				index;
-	std::vector<std::string>	allowedMethods;
-	bool autoindex;
-};
-
-struct ServerConfig {
-	int							listen;
-	std::string					name;
-	std::string					root;
-	std::vector<Location>		locations;
-	std::string 				index;
-	std::map<int, std::string>	errorPages;
-};
-
 class Config {
 	private:
 		std::vector<ServerConfig>	_ports;
 		Config( void );
 
 	public:
-		enum serverBlock {
-			notDefined = 0,
-			listen = 1,
-			server_name = 2,
-			root = 3,
-			location = 4,
-			indexServ = 5,
-			errorPages = 6,
-			start = 7
-		};
-
 		Config( std::string config_file );
 		~Config( void );
 

@@ -30,3 +30,30 @@
 #define UIR "Upgrade-Insecure-Requests"
 #define UA "User-Agent"
 #define ACCEPT "Accept"
+
+enum serverBlock {
+	notDefined = 0,
+	listenenum = 1,
+	server_name = 2,
+	root = 3,
+	location = 4,
+	indexServ = 5,
+	errorPages = 6,
+	start = 7
+};
+
+struct Location {
+	std::string					uri;
+	std::string 				index;
+	std::vector<std::string>	allowedMethods;
+	bool autoindex;
+};
+
+struct ServerConfig {
+	int							listen;
+	std::string					name;
+	std::string					root;
+	std::vector<Location>		locations;
+	std::string 				index;
+	std::map<int, std::string>	errorPages;
+};

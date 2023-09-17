@@ -35,15 +35,14 @@ void ResponsePost::set405( void ) {
 	file.open("html/405.html");
 	_response.clear();
 
-	try {
-		_response.append("HTTP/1.1 405 Not Found\r\n");
-		_response.append("Content-Type: text/html\r\n\r\n");
+	// try {
+	// 	_response.append("HTTP/1.1 405 Not Found\r\n");
+	// 	_response.append("Content-Type: text/html\r\n\r\n");
 		
-		std::string line;
-		while (std::getline(file, line))
-			_response.append(line);
-		
-	}
+	// 	std::string line;
+	// 	while (std::getline(file, line))
+	// 		_response.append(line);
+	// }
 }
 
 bool ResponsePost::checkPermissions( void ) {

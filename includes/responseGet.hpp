@@ -18,9 +18,11 @@ class ResponseGet : public ResponseBase {
 	private:
 		ResponseGet( void );
 		std::ifstream _file;
+		ServerConfig _portinfo;
 
 	public:
-		ResponseGet( std::string filePath );
+
+		ResponseGet( std::string filePath, ServerConfig portinfo );
 		~ResponseGet( void );
 
 		void checkPath( void );
