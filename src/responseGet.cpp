@@ -6,7 +6,7 @@
 /*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/16 11:07:45 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/18 11:30:20 by hwong            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ static std::string fileExtension( const std::string& filename ) {
 		std::string foundExtension = filename.substr(dotPos + 1);
 		return (foundExtension);
 	}
-	return "INVALID";
+	return "";
 }
 
 /*
@@ -54,15 +54,33 @@ void ResponseGet::checkPath( void ) {
 
 	_path.erase(0, 1);
 	if (this->_path.empty()) {
+		std::cout << "in here" << std::endl;
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
+		std::cout << "path: " << _path << std::endl;
 	}
 	else {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico")
 			this->_isImg = true;
-		if (this->_contentType == "html")
-			_path.insert(0, "html/");
+		else if (this->_contentType == "html")
+			_path.insert(0, "html");
+		else if (this->_contentType == "") {
+			setContentType("html");
+			_path.insert(0, "/");
+			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+				if (this->_path.find((*iter).uri) != std::string::npos) {
+					if ((*iter).index.empty()) {
+						setStatusCode(404);
+						_path.append(_portinfo.errorPages[404]);
+					}
+					else {
+						_path.clear();
+						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+					}
+				}
+			}
+		}
 	}
 
 	setStatusCodeGet();
@@ -85,7 +103,7 @@ void ResponseGet::setStatusCodeGet( void ) {
 	else {
 		setStatusCode(404);
 		setContentType("html");
-		_file.open("html/404.html");
+		_file.open(_portinfo.errorPages[404]);
 	}
 }
 
