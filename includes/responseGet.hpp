@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/15 13:23:23 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/18 15:42:07 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class ResponseGet : public ResponseBase {
 		~ResponseGet( void );
 
 		void checkPath( void );
+		bool checkPermissions( std::string method );
 		void setStatusCodeGet( void );
 		void generateResponse( void );
 };

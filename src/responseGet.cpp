@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/18 11:30:20 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/18 16:15:13 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,22 +70,31 @@ void ResponseGet::checkPath( void ) {
 			_path.insert(0, "/");
 			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 				if (this->_path.find((*iter).uri) != std::string::npos) {
-					if ((*iter).index.empty()) {
-						setStatusCode(404);
-						_path.append(_portinfo.errorPages[404]);
-					}
-					else {
-						_path.clear();
+					_path.clear();
+					if (!(*iter).index.empty())
 						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
-					}
 				}
 			}
 		}
 	}
-
 	setStatusCodeGet();
 }
 
+bool ResponseGet::checkPermissions( std::string method ) {
+	bool found = true;
+
+	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
+		if (this->_path.find((*it).uri) != std::string::npos) {
+			found = false;
+			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
+				if (*it2 == method)
+					found = true;
+			}
+		}
+	}
+
+	return found;
+}
 /*
 	Set the status code of a GET request
 	- If the file is found and the content type is valid
@@ -94,13 +103,20 @@ void ResponseGet::checkPath( void ) {
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
-	this->_file.open(this->_path);
+	// this->_file.open(this->_path);
 
-	if (this->_file.is_open() && (this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
-		if (_path == "html/501.html") setStatusCode(501);
-		else setStatusCode(200);
+	if (!checkPermissions("GET")) {
+		setStatusCode(405);
+		this->_file.open(this->_portinfo.errorPages[405]);
 	}
-	else {
+	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
+		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
+		else setStatusCode(200);
+
+		this->_file.open(this->_path);
+	}
+
+	if (!this->_file.is_open()) {
 		setStatusCode(404);
 		setContentType("html");
 		_file.open(_portinfo.errorPages[404]);
