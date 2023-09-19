@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
 #include <dirent.h>
 #include <sstream>
 #include <fstream>
@@ -17,6 +18,8 @@
 #include <vector>
 #include <cctype>
 #include <map>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define RED "\033[31m"
 #define GREEN "\033[32m"
@@ -30,6 +33,9 @@
 #define UIR "Upgrade-Insecure-Requests"
 #define UA "User-Agent"
 #define ACCEPT "Accept"
+
+#define ROOT_DEFAULT "../html"
+#define INDEX_DEFAULT "/index.html"
 
 enum serverBlock {
 	notDefined = 0,

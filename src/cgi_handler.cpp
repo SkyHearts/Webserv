@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/19 23:08:22 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/19 23:10:11 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,5 +208,6 @@ int main(int argc, char **argv){
 		std::cout << sample_payload[i] << std::endl;   
     }
 	cgi.execCGI(content, "sampleCGI/sampleCGI_c", const_cast<char **>(sample_payload));
+	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
 	//system("leaks a.out");
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/15 16:10:33 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/19 21:31:11 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,8 @@ class cgi_handler
 
 
 	//Set _env
-	void createEnv(std::map<std::string, std::string> content);
+	void createEnv(std::map<std::string, std::string> content, char** payload);
+	void addCharEnvs(char** payload);
 	void addEnv(std::string envVar);
 	
 	//Set argv, arg[0] = path to cgi
@@ -63,7 +64,7 @@ class cgi_handler
 	void createArg(std::string path);
 	
 	//Execute in child process using execve
-	void execCGI(std::map<std::string, std::string> content, std::string path);
+	void execCGI(std::map<std::string, std::string> content, std::string path, char** payload = NULL);
 };
 
 int getCharDArraySize(char** array);
