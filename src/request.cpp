@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hwong <hwong@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/17 18:01:55 by hwong            ###   ########.fr       */
+/*   Updated: 2023/09/18 16:11:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,6 @@ void Request::parseRequest( void ) {
 	std::istringstream head(line);
 	head >> _method >> _path >> _http;
 
-	//Store rest of header in a map.
-	// int headsize = 0;
 	while (getline(request, line, '\n') && !line.empty()) {
 		if (line == "\r")
 			break ;
@@ -76,7 +74,6 @@ void Request::parseRequest( void ) {
 			break ;
 		} 
 		_header.insert(std::pair< std::string, std::string >(key, value));
-		// headsize++;
 	}
 
 	if (!request.eof()) {
@@ -117,7 +114,7 @@ std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 	// }
 
 	else {
-		ResponseGet unknown("/501.html", portinfo);
+		ResponseGet unknown(portinfo.errorPages[501], portinfo);
 		_response = unknown.getResponse();
 	}
 	
