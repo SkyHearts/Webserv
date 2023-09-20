@@ -106,7 +106,6 @@ std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 	// else if (_method == "POST") {
 	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
 	// 	_response = post.getResponse();
-	//	
 	// }
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;

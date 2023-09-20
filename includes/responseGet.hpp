@@ -26,7 +26,6 @@ class ResponseGet : public ResponseBase {
 		~ResponseGet( void );
 
 		void checkPath( void );
-		bool checkPermissions( std::string method );
 		void setStatusCodeGet( void );
 		void generateResponse( void );
 };

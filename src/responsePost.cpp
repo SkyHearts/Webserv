@@ -11,7 +11,7 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_requestBody.append(reqBody);
 	this->_payload = payload;
 
-	std::cout << CLEAR << std::endl;
+	std::cout << CLEAR << "\nRequest Body:\n[" << _requestBody << "]" << std::endl;
 	checkPath(); //dir exists and permissions
 
 	//set content type

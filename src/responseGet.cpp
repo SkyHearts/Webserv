@@ -80,21 +80,6 @@ void ResponseGet::checkPath( void ) {
 	setStatusCodeGet();
 }
 
-bool ResponseGet::checkPermissions( std::string method ) {
-	bool found = true;
-
-	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
-		if (this->_path.find((*it).uri) != std::string::npos) {
-			found = false;
-			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
-			}
-		}
-	}
-
-	return found;
-}
 /*
 	Set the status code of a GET request
 	- If the file is found and the content type is valid
@@ -105,7 +90,7 @@ bool ResponseGet::checkPermissions( std::string method ) {
 void ResponseGet::setStatusCodeGet( void ) {
 	// this->_file.open(this->_path);
 
-	if (!checkPermissions("GET")) {
+	if (!checkPermissions("GET", _path, _portinfo)) {
 		setStatusCode(405);
 		this->_file.open(this->_portinfo.errorPages[405]);
 	}
