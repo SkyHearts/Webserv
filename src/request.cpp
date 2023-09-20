@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/18 16:11:21 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/20 13:36:46 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 		_response = get.getResponse();
 	}
 	// else if (_method == "POST") {
-	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
+	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
 	// 	_response = post.getResponse();
 	//	
 	// }

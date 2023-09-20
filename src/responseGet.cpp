@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/18 16:15:13 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/20 13:42:07 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,21 +80,6 @@ void ResponseGet::checkPath( void ) {
 	setStatusCodeGet();
 }
 
-bool ResponseGet::checkPermissions( std::string method ) {
-	bool found = true;
-
-	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
-		if (this->_path.find((*it).uri) != std::string::npos) {
-			found = false;
-			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
-			}
-		}
-	}
-
-	return found;
-}
 /*
 	Set the status code of a GET request
 	- If the file is found and the content type is valid
@@ -103,8 +88,6 @@ bool ResponseGet::checkPermissions( std::string method ) {
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
-	// this->_file.open(this->_path);
-
 	if (!checkPermissions("GET")) {
 		setStatusCode(405);
 		this->_file.open(this->_portinfo.errorPages[405]);
@@ -151,7 +134,6 @@ void ResponseGet::generateResponse( void ) {
 			std::string line;
 			while (std::getline(this->_file, line)) 
 				this->_response.append(line);
-			// std::cout << RED << "RESPONSE:\n" << _response << CLEAR << std::endl;
 		}
 
 		if (_file.bad()) { throw std::runtime_error("Error"); }

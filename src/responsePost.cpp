@@ -3,20 +3,19 @@
 /*============================================================================*/
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
 
-ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload) : ResponseBase() {
+ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload, ServerConfig portinfo) : ResponseBase() {
 	clearResources();
 
+	this->_portinfo = portinfo;
 	this->_path.append(filePath);
 	this->_requestHeader = reqHead;
 	this->_requestBody.append(reqBody);
 	this->_payload = payload;
 
-	std::cout << CLEAR << std::endl;
-	checkPath(); //dir exists and permissions
-
-	//set content type
-	//check if file exists
-	//createResource();
+	if (checkPermissions("POST")) {
+		saveData();
+		//createResource();
+	}
 	generateResponse();
 }
 
@@ -27,6 +26,23 @@ void ResponsePost::clearResources( void ) {
 	this->_fileName.clear();
 	this->_requestHeader.clear();
 	this->_requestBody.clear();
+}
+
+void ResponsePost::saveData( void ) {
+	std::string search = _requestHeader["Content-Type"];
+	this->_boundary = search.substr(search.find("boundary=") + 1);
+
+	std::ofstream tempFile;
+	std::istringstream formBody(this->_requestBody);
+	std::string line;
+	tempFile.open(root + "/rawData");
+	if (!this->_boundary.empty()) {
+		//bound\r\n
+		//head\r\n
+		//\r\n
+		//body\r\n
+		//bound
+	}
 }
 
 void ResponsePost::set405( void ) {
@@ -43,22 +59,4 @@ void ResponsePost::set405( void ) {
 	// 	while (std::getline(file, line))
 	// 		_response.append(line);
 	// }
-}
-
-bool ResponsePost::checkPermissions( void ) {
-	// something something _path
-	return (false);
-}
-
-void ResponsePost::checkPath( void ) {
-	struct stat pathStat;
-
-	if (stat(this->_path.c_str(), &pathStat) == 0) {
-		if (!checkPermissions())
-			set405();
-
-	}
-	else {
-		std::cout << "doesnt exist" << std::endl;
-	}
 }
