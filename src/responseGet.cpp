@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:42:07 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/21 14:52:34 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ void ResponseGet::generateResponse( void ) {
 		else {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 			std::string line;
-			while (std::getline(this->_file, line)) 
+			while (getline(this->_file, line)) 
 				this->_response.append(line);
 		}
 

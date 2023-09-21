@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:36:46 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/21 15:34:26 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,8 @@ void Request::parseRequest( void ) {
 			request.read(temp, sizeof(temp));
 			_body.append(temp);
 		}
-		if (_body.size() > 0)
-			std::cout << "Body:\n[" << _body << "]" << std::endl;
+		// if (_body.size() > 0)
+		// 	std::cout << "Body:\n[" << _body << "]" << std::endl;
 	}
 }
 
@@ -103,11 +103,11 @@ std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 		ResponseGet get(_path, portinfo);
 		_response = get.getResponse();
 	}
-	// else if (_method == "POST") {
-	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
-	// 	_response = post.getResponse();
-	//	
-	// }
+	else if (_method == "POST") {
+		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
+		_response = post.getResponse();
+		
+	}
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
 	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());

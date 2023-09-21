@@ -34,15 +34,44 @@ void ResponsePost::saveData( void ) {
 
 	std::ofstream tempFile;
 	std::istringstream formBody(this->_requestBody);
-	std::string line;
-	tempFile.open(root + "/rawData");
-	if (!this->_boundary.empty()) {
-		//bound\r\n
-		//head\r\n
-		//\r\n
-		//body\r\n
-		//bound
+	std::string line, temp, key, value;
+	std::map< std::string, std::string > formHead;
+
+	tempFile.open(this->_portinfo.root + "/rawData");
+	if (!this->_boundary.empty())
+		std::getline(formBody, line);
+	while (getline(formBody, line)) {
+		if (line == "\r\n\r\n")
+			break;
+		try {
+			key = line.substr(0, line.find(':'));
+			value = line.substr(line.find(':') + 2);
+			std::cout.flush();
+		}
+		catch (std::exception const &e) {
+			break ;
+		}
+		formHead.insert(std::pair< std::string, std::string >(key, value));
 	}
+	
+	getline(formBody, line, '\n');
+	temp.append(line);
+	while (getline(formBody, line, '\n') && !line.empty()) {
+		tempFile << temp;
+		if (line == _boundary)
+			break ;
+		if (line != _boundary)
+			tempFile << "\n";
+		temp.clear();
+		temp.append(line);
+	}
+
+	std::cout << RED << "FORM HEAD AND BODY" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = formHead.begin(); it != formHead.end(); it++)
+		std::cout << "Key: " << (*it).first << " | Value: " << (*it).second << std::endl;
+
+	std::cout << "\nBODY:\n" << std::endl;
+	std::cout << _requestBody << CLEAR << std::endl;
 }
 
 void ResponsePost::set405( void ) {
@@ -60,3 +89,8 @@ void ResponsePost::set405( void ) {
 	// 		_response.append(line);
 	// }
 }
+
+void ResponsePost::generateResponse( void ) {
+	_response.append("bla");
+}
+
