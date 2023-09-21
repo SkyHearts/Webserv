@@ -34,8 +34,11 @@
 #define UA "User-Agent"
 #define ACCEPT "Accept"
 
-#define ROOT_DEFAULT "../html"
+#define ROOT_DEFAULT "html"
 #define INDEX_DEFAULT "/index.html"
+#define e404_DEFAULT "html/404.html"
+#define e405_DEFAULT "html/405.html"
+#define e501_DEFAULT "html/501.html"
 
 enum serverBlock {
 	notDefined = 0,
