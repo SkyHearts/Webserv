@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/17 17:21:46 by hongyou          ###   ########.fr       */
+/*   Updated: 2023/09/21 11:05:24 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ class Config {
 		std::string	getstring( std::string config_file );
 
 		void	checkDupPorts( void );
+        void	checkDefaults( ServerConfig &server );
 };
 
 bool	is_punct( int c );
