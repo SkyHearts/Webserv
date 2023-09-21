@@ -158,7 +158,6 @@ void Server::sendResponse( int socket ) {
 		std::cout << GREEN << "Sent " << _sentbytes[socket] << " bytes" << std::endl;
 		closeConnection(socket);
 	}
-
 }
 
 /*

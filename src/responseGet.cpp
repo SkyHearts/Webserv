@@ -54,10 +54,8 @@ void ResponseGet::checkPath( void ) {
 
 	_path.erase(0, 1);
 	if (this->_path.empty()) {
-		std::cout << "in here" << std::endl;
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
-		std::cout << "path: " << _path << std::endl;
 	}
 	else {
 		setContentType(fileExtension(this->_path));
