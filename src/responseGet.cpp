@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/21 14:52:34 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/22 18:28:57 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,8 @@ void ResponseGet::checkPath( void ) {
 
 	_path.erase(0, 1);
 	if (this->_path.empty()) {
-		std::cout << "in here" << std::endl;
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
-		std::cout << "path: " << _path << std::endl;
 	}
 	else {
 		setContentType(fileExtension(this->_path));
@@ -122,12 +120,13 @@ void ResponseGet::generateResponse( void ) {
 		if (this->_isImg) {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 
-			char imgBuffer[1024];
-			std::memset(imgBuffer, 0, sizeof(imgBuffer));
+			char *imgBuffer = new char[1024];
+			std::memset(imgBuffer, 0, 1024);
 			while (!this->_file.eof()) {
-				this->_file.read(imgBuffer, sizeof(imgBuffer));
+				this->_file.read(imgBuffer, 1024);
 				this->_response.append(imgBuffer, this->_file.gcount());				
 			}
+			delete [] imgBuffer;
 		}
 		else {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");

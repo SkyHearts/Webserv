@@ -1,4 +1,5 @@
 .vscode
 *.out
+*.o
 .DS_Store
 JJtestcodes.cpp

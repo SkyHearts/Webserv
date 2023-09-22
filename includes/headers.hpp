@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
 #include <dirent.h>
 #include <sstream>
 #include <fstream>
@@ -17,6 +18,8 @@
 #include <vector>
 #include <cctype>
 #include <map>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define RED "\033[31m"
 #define GREEN "\033[32m"
@@ -30,6 +33,15 @@
 #define UIR "Upgrade-Insecure-Requests"
 #define UA "User-Agent"
 #define ACCEPT "Accept"
+
+#define ROOT_DEFAULT "html"
+#define INDEX_DEFAULT "/index.html"
+#define e404_DEFAULT "html/404.html"
+#define e405_DEFAULT "html/405.html"
+#define e501_DEFAULT "html/501.html"
+
+#define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "
+#define ISE_MESSAGE "\r\n\r\n<!DOCTYPE html>\n<html>\n<head>\n<title>Internal Server Error.</title>\n</head>\n<body>\n<h1>500 Internal Server Error</h1>\n<p>The Trinity Server has encountered an error and was unable to complete your request.</p>\n</body>\n</html>"
 
 enum serverBlock {
 	notDefined = 0,

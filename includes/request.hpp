@@ -18,7 +18,7 @@
 
 class Request {
 	private:
-		std::string _request;
+		char		*_request;
 		std::string _response;
 		std::string _method;
 		std::string _path;
@@ -33,7 +33,7 @@ class Request {
 
 		void clearResources( void );
 		void parseRequest( void );
-		std::string processRequest( std::string req, ServerConfig portinfo );
+		std::string processRequest( char *req, ServerConfig portinfo );
 		std::map< std::string, std::string > getHeader( void ) const;
 		std::string getBody( void ) const;
 		size_t getPayload( void ) const;

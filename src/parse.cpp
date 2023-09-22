@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/17 17:25:46 by hongyou          ###   ########.fr       */
+/*   Updated: 2023/09/21 11:30:18 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,9 @@ void Config::initEnumServerBlock( std::map<std::string, serverBlock> &s_mapStrin
 	s_mapStringValues["{"] = start;
 }
 
+/*
+	Inserts server block server name
+*/
 void Config::parseServerName( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::PARSESERVERNAME" << std::endl;
 	std::string subs;
@@ -121,6 +124,9 @@ void Config::parseServerName( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::PARSESERVERNAME" << std::endl << std::endl;
 }
 
+/*
+	Inserts server block listening port
+*/
 void Config::parseListen( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::PARSELISTEN" << std::endl;
 	int end = 0;
@@ -150,6 +156,9 @@ void Config::parseListen( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::PARSELISTEN" << std::endl << std::endl;
 }	
 
+/*
+	Inserts server block root
+*/
 void Config::parseRoot( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::PARSEROOT" << std::endl;
 	int end = 0;
@@ -184,6 +193,9 @@ void Config::parseRoot( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::PARSEROOT" << std::endl << std::endl;
 }
 
+/*
+	Inserts server block index
+*/
 void Config::parseIndexServ( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::parseIndexServ" << std::endl;
 	int end = 0;
@@ -212,6 +224,9 @@ void Config::parseIndexServ( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::parseIndexServ" << std::endl << std::endl;
 }
 
+/*
+	Check word by word and pass to relevant function to fill Location struct similar to parseServerBlock()
+*/
 void Config::parseLocationParams( std::istringstream &iss, ServerConfig *server, struct Location *loc, std::string& update ) {
 	// std::cout << "IN CONFIG::PARSELOCATIONPARAMS" << std::endl;
 	std::string subs;
@@ -274,7 +289,7 @@ void Config::parseLocationParams( std::istringstream &iss, ServerConfig *server,
 }
 
 /*
-	Inserts index and allowedMethods in location blocks
+	Inserts index, uri, autoindex and allowedMethods in location blocks using parseLocationParams()
 */
 void Config::parseLocation( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::PARSELOCATION" << std::endl;
@@ -315,6 +330,10 @@ void Config::parseLocation( std::istringstream &iss, ServerConfig *server ) {
 	server->locations.push_back(loc);
 }
 
+/*
+	Parse error page in conf
+	Maps them to std::map <errnum(int), path(string)> errorPages
+*/
 void Config::parseErrorPages( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "IN CONFIG::PARSEErrorPages" << std::endl;
 	int filled = 0;
@@ -339,11 +358,42 @@ void Config::parseErrorPages( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::PARSEErrorPages" << std::endl << std::endl;
 }
 
+/* 
+	Check if all struct is filled, if not the default path will be filled instead
+*/
+void	Config::checkDefaults( ServerConfig &server ) {
+	if (server.root.empty()) {
+		server.root = ROOT_DEFAULT;
+		std::cout << server.name << " is using root default" << std::endl;
+	}
+	if (server.index.empty()) {
+		server.index = INDEX_DEFAULT;
+		std::cout << server.name << " is using index default" << std::endl;
+	}
+	if (!server.errorPages.count(404)) {
+		server.errorPages[404] = e404_DEFAULT;
+		std::cout << server.name << " is using 404 default" << std::endl;
+	}
+	if (!server.errorPages.count(405)) {
+		server.errorPages[405] = e405_DEFAULT;
+		std::cout << server.name << " is using 405 default" << std::endl;
+	}
+	if (!server.errorPages.count(501)) {
+		server.errorPages[501] = e501_DEFAULT;
+		std::cout << server.name << " is using 501 default" << std::endl;
+	}
+}
+
+/*
+	Go through each word in conf and pass to relevant function to parse variable in ServerConfig struct
+*/
 void Config::parseServerBlock( std::istringstream &iss ) {
 	std::map<std::string, serverBlock> s_mapStringValues;
 	Config::initEnumServerBlock(s_mapStringValues);
 	struct ServerConfig server;
 	int end = 1;
+	static int serverBlockIndex = 1;
+	server.name = "Serverblock " + std::to_string(serverBlockIndex);
 
 	// std::cout << "IN CONFIG::PARSESERVERBLOCK" << std::endl;
 	do {
@@ -389,11 +439,15 @@ void Config::parseServerBlock( std::istringstream &iss ) {
 				continue ;
 		}
 	} while (end == 0);
-
+    checkDefaults(server);
 	this->_ports.push_back(server);
+	serverBlockIndex += 1;
 	// std::cout << "EXIT CONFIG::PARSESERVERBLOCK" << std::endl << std::endl;
 }
 
+/*
+	Starts the parsing of conf file
+*/
 void Config::parse( std::string &file ) {
 	std::istringstream iss(file);
 
@@ -421,7 +475,6 @@ void Config::checkDupPorts( void ) {
 		// std::cout << "Check Dup Listen: " << (*iter).listen << std::endl;
 		tmp_ports.push_back((*iter).listen);
 	}
-
 	if (containsDuplicate(tmp_ports))
 		throw std::invalid_argument("Congif file contains duplicate ports");
 }
@@ -430,7 +483,7 @@ void Config::checkDupPorts( void ) {
 
 /*
 	If char is ';' or '}' return true
-	Else retuen false;
+	Else return false;
 */
 bool is_punct( int c ) {
 	if (c == ';' || c == '{' || c == '}')
@@ -471,7 +524,6 @@ bool isValidDir( const char *path ) {
 		// 	std::cout << path << " is a directory" << std::endl;
 		// else 
 		// 	std::cout << path << " is not a directory" << std::endl;
-
 		return S_ISDIR(info.st_mode);
 	}
 	else
@@ -514,10 +566,13 @@ bool checkNum( const std::string &str ) {
 			break ;
 		}
 	}
-
 	return retVal;
 }
 
+/*
+	If vector of int contains duplicate number return true
+	Else return false
+*/
 bool containsDuplicate( const std::vector<int>& nums ) {
 	if(nums.empty())
 		return false ;
@@ -526,7 +581,6 @@ bool containsDuplicate( const std::vector<int>& nums ) {
 		for (size_t j = i + 1; j < nums.size(); ++j)
 			if (nums[i] == nums[j])
 				return true;
-
 	return false;
 }
 

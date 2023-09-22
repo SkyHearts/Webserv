@@ -13,10 +13,6 @@
 #pragma once
 #include "headers.hpp"
 
-//this is disgusting
-#define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "
-#define ISE_MESSAGE "\r\n\r\n<!DOCTYPE html>\n<html>\n<head>\n<title>Internal Server Error.</title>\n</head>\n<body>\n<h1>500 Internal Server Error</h1>\n<p>The Trinity Server has encountered an error and was unable to complete your request.</p>\n</body>\n</html>"
-
 class ResponseBase {
 	protected:
 		std::string _response;
@@ -37,6 +33,7 @@ class ResponseBase {
 
 		void initStatusCodes( void );
 		void initContentTypes( void );
+		bool checkPermissions( std::string method, std::string path, ServerConfig portinfo );
 		std::string getPath( void ) const { return _path; }
 		std::map< std::string, std::string > getContentTypes( void ) const;
 		std::map< int, std::string > getStatusCodes( void ) const;
