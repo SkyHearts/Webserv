@@ -77,8 +77,6 @@ void Server::readRequest( int socket, Request &request ) {
 	char *client_data = new char[65535];
 	std::memset(client_data, '\0', 65535);
 
-	std::string temp;
-
 	int bytes_read = recv(socket, client_data, 65535, 0);
 
 	if (bytes_read < 0) {
@@ -92,22 +90,21 @@ void Server::readRequest( int socket, Request &request ) {
 	else if (bytes_read == 0)
 		return closeConnection(socket);
 
-	if (client_data[65534] != '\0') {
+	if (bytes_read == 65535) {
 		std::cout << RED << "Request too large" << std::endl;
 
 		_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
 
 		FD_CLR(socket, &_readfds);
 		FD_SET(socket, &_writefds);
-		return closeConnection(socket);
+		return ;
 	}
 
-	temp +=	client_data;
-
-	std::cout << GREEN << "Received " << strlen(client_data) << " bytes\n" << std::endl;
-	std::cout << CLEAR << client_data << std::endl;
-
-	std::cout << RED << temp << CLEAR << std::endl;
+	std::cout << GREEN << "Received " << bytes_read << " bytes\n" << CLEAR << std::endl;
+	if (bytes_read > 15000)
+		std::cout << "Request too large to display" << std::endl;
+	else
+		write(1, client_data, bytes_read);
 
 	int port = 80;
 	char *host_pos = strstr(client_data, "Host: ");
