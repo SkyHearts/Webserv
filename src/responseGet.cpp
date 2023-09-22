@@ -122,12 +122,13 @@ void ResponseGet::generateResponse( void ) {
 		if (this->_isImg) {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
 
-			char imgBuffer[1024];
-			std::memset(imgBuffer, 0, sizeof(imgBuffer));
+			char *imgBuffer = new char[1024];
+			std::memset(imgBuffer, 0, 1024);
 			while (!this->_file.eof()) {
-				this->_file.read(imgBuffer, sizeof(imgBuffer));
+				this->_file.read(imgBuffer, 1024);
 				this->_response.append(imgBuffer, this->_file.gcount());				
 			}
+			delete [] imgBuffer;
 		}
 		else {
 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
