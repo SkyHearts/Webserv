@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/23 18:28:40 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/23 18:54:20 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,10 +162,10 @@ void cgi_handler::execCGI(std::map<std::string, std::string> content, std::strin
 	pid = fork();
 	if (pid == 0) {
 		//child
-		// close(pipefd[0]);	// Close reading end
-		// dup2(pipefd[1], 1);	// send stdout to the pipe
-		// dup2(pipefd[1], 2);	// send stderr to the pipe
-		// close(pipefd[1]);
+		close(pipefd[0]);	// Close reading end
+		dup2(pipefd[1], 1);	// send stdout to the pipe
+		dup2(pipefd[1], 2);	// send stderr to the pipe
+		close(pipefd[1]);
 		execve(_arg[0], _arg, this->_env);
 		exit(1);
 	}
