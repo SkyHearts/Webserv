@@ -15,17 +15,9 @@
 
 /*============================================================================*/
 
-Request::Request( void ) {
-	_request = new char[65535];
-	std::memset(_request, 0, 65535);
-}
+Request::Request( void ) {}
 
-Request::~Request( void ) {
-	if (_request != nullptr) {
-		free(_request);
-		_request = nullptr;
-	}
-}
+Request::~Request( void ) {}
 
 /*============================================================================*/
 
@@ -33,6 +25,7 @@ Request::~Request( void ) {
 	Clear all resource buffers
 */
 void Request::clearResources( void ) {
+	this->_request.clear();
 	this->_method.clear();
 	this->_path.clear();
 	this->_http.clear();
@@ -58,52 +51,46 @@ size_t Request::getPayload( void ) const {
 	header and content components
 */
 void Request::parseRequest() {
-	char* line = strtok(_request, "\r\n");
+	std::istringstream requestStream(_request);
+	std::string line;
 	std::string key, value;
 
-	if (line != nullptr) {
+	if (std::getline(requestStream, line)) {
 		std::istringstream head(line);
 		head >> _method >> _path >> _http;
 	}
 
-	while ((line = strtok(nullptr, "\r\n")) != nullptr && line[0] != '\0') {
-		if (strcmp(line, "\r") == 0)
-			break;
-
+	while (std::getline(requestStream, line, '\n') && !line.empty()) {
+		if (line == "\r")
+			break ;
+		if (line == "\r\n\r\n")
+			break ;
 		try {
-			char* colon_pos = strchr(line, ':');
-			if (colon_pos != nullptr) {
-				*colon_pos = '\0';
-				key = line;
-				value = colon_pos + 2;
-				_header.insert(std::pair<std::string, std::string>(key, value));
-			}
+			key = line.substr(0, line.find(':'));
+			value = line.substr(line.find(':') + 2);
+			std::cout.flush();
 		}
 		catch (std::exception const &e) {
-			break;
-		}	
+			break ;
+		} 
+		_header.insert(std::pair< std::string, std::string >(key, value));
 	}
 
-	char temp[1024];
-	std::memset(temp, 0, sizeof(temp));
-	while ((line = strtok(nullptr, "\r\n")) != nullptr) {
-		strcat(temp, line);
-	}
-	if (strlen(temp) > 0) {
-		_body = temp;
-		std::cout << "Body:\n[" << _body << "]" << std::endl;
-	}
+	std::ostringstream bodyStream;
+	while (std::getline(requestStream, line))
+		bodyStream << line;
+	_body = bodyStream.str();
 }
 
 /*
 	Request handler to generate responses based on
 	the type of client request
 */
-std::string Request::processRequest( char *req, ServerConfig portinfo ) {
+std::string Request::processRequest( std::string req, int req_len, ServerConfig portinfo ) {
 	clearResources();
 
 	_request = req;
-	_payloadSize = strlen(req);
+	_payloadSize = req_len;
 	parseRequest();
 
 	if (_method == "GET") {
