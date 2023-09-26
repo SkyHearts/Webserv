@@ -27,8 +27,8 @@ class ResponsePost : public ResponseBase{
 		~ResponsePost( void );
 
 		void clearResources( void );
-		void handleMultipartFormData( std::string &requestBody );
-		void handleTextData( std::string &requestBody );
+		void handleMultipartFormData( std::string filename, std::string rawData );
+		void handleTextData( std::string requestBody );
 		void saveData( void );
 		void generateResponse( void );
 };

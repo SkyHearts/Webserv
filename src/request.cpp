@@ -77,8 +77,8 @@ void Request::parseRequest() {
 	}
 
 	std::ostringstream bodyStream;
-	while (std::getline(requestStream, line))
-		bodyStream << line;
+	while (std::getline(requestStream, line, '\n'))
+		bodyStream << line << "\n";
 	_body = bodyStream.str();
 }
 
@@ -99,6 +99,9 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	}
 	else if (_method == "POST") {
 		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
+		// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it)
+		// 	std::cout << it->first << " => " << it->second << '\n';
+		// std::cout << getBody() << std::endl;
 		_response = post.getResponse();
 		
 	}

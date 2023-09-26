@@ -53,7 +53,7 @@ static std::string decodeEncoding( std::string &input ) {
 /*
 	Handler for content type of application/x-www-urlencoded
 */
-void ResponsePost::handleTextData( std::string &requestBody ) {
+void ResponsePost::handleTextData( std::string requestBody ) {
 	std::string key, value;
 	std::string data = decodeEncoding(requestBody);
 	std::replace(data.begin(), data.end(), '+', ' ');
@@ -69,111 +69,50 @@ void ResponsePost::handleTextData( std::string &requestBody ) {
 	}
 }
 
-void ResponsePost::handleMultipartFormData( std::string &requestBody ) {
-    // Extract the boundary from the Content-Type header
-    std::string contentTypeHeader = "Content-Type: multipart/form-data; ";
-    size_t boundaryPos = requestBody.find(contentTypeHeader);
-    if (boundaryPos == std::string::npos) {
-        std::cerr << "No Content-Type header found or not multipart/form-data." << std::endl;
-        return;
-    }
-
-    boundaryPos += contentTypeHeader.length();
-    size_t boundaryEnd = requestBody.find("\r\n", boundaryPos);
-    if (boundaryEnd == std::string::npos) {
-        std::cerr << "Invalid Content-Type header format." << std::endl;
-        return;
-    }
-
-    std::string boundary = requestBody.substr(boundaryPos, boundaryEnd - boundaryPos);
-	std::cout << boundary << std::endl;
-
-    // Split the request body into parts using the boundary
-    std::vector<std::string> parts;
-    size_t start = requestBody.find("--" + boundary);
-    while (start != std::string::npos) {
-        size_t end = requestBody.find("--" + boundary, start + boundary.length() + 2);
-        if (end == std::string::npos) {
-            break;  // End of parts
-        }
-        parts.push_back(requestBody.substr(start, end - start));
-        start = end;
-    }
-
-    // Process each part (file or field)
-    for (size_t i = 0; i < parts.size(); ++i) {
-        const std::string& partData = parts[i];
-
-        // Check if it's a file part (contains "filename" in Content-Disposition)
-        if (partData.find("filename") != std::string::npos) {
-            // Parse headers (Content-Disposition and Content-Type)
-            std::string contentDisposition, contentType;
-            std::istringstream partStream(partData);
-
-            while (true) {
-                std::string line;
-                std::getline(partStream, line);
-                if (line.empty()) {
-                    break;  // End of headers
-                } else if (line.find("Content-Disposition:") != std::string::npos) {
-                    contentDisposition = line;
-                } else if (line.find("Content-Type:") != std::string::npos) {
-                    contentType = line;
-                }
-            }
-
-            // Extract the file name from Content-Disposition
-            size_t filenamePos = contentDisposition.find("filename=\"");
-            if (filenamePos != std::string::npos) {
-                filenamePos += 10;  // Skip "filename=\""
-                size_t filenameEnd = contentDisposition.find("\"", filenamePos);
-                if (filenameEnd != std::string::npos) {
-                    std::string filename = contentDisposition.substr(filenamePos, filenameEnd - filenamePos);
-                    std::cout << "Received file: " << filename << std::endl;
-
-                    // Process the file content (e.g., save it to a file)
-                    std::ofstream outputFile(filename.c_str(), std::ios::binary);
-                    outputFile << partStream.rdbuf();
-                    outputFile.close();
-                    std::cout << "Saved file: " << filename << std::endl;
-                }
-            }
-        }
-    }
+void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
+	std::ofstream file(_portinfo.root + "/" + filename);
+	file << rawData;
+	file.close();
 }
 
 void ResponsePost::saveData( void ) {
-	std::string search = _requestHeader["Content-Type"];
-	this->_boundary = search.substr(search.find("boundary=") + 1);
-
-	std::istringstream formBody(this->_requestBody);
-	std::string line, key, value;
-	std::map< std::string, std::string > formHead;
-
-	std::getline(formBody, line);
-
-	while (getline(formBody, line) && !line.empty()) {
-		try {
-			int colon = line.find(':');
-			key = line.substr(0, colon);
-			value = line.substr(colon + 2);
-			formHead.insert(std::pair< std::string, std::string >(key, value));
-		}
-		catch (std::exception const &e) {
-			break;
-		}
-	}
-
 	std::string contentType = _requestHeader["Content-Type"];
-	std::cout << "Content is a " << contentType << std::endl;
 
 	if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
 		handleTextData(_requestBody);
+		return ;
 	}
-	else if (contentType.find("multipart/form-data") != std::string::npos) {
-		std::cout << "Is a file input" << std::endl;
-		handleMultipartFormData(_requestBody);
+
+	_boundary = contentType.substr(contentType.find("boundary=") + 9);
+
+	std::istringstream formBody(_requestBody);
+	std::string line, key, value;
+	std::vector< std::string > formHead;
+
+	std::getline(formBody, line);
+	while (std::getline(formBody, line, '\n') && line != "\r")
+		formHead.push_back(line);
+	std::string filename = formHead[0].substr(formHead[0].find("filename=") + 10);
+	filename = filename.substr(0, filename.find("\""));
+
+	std::ostringstream rawData;
+	std::string rawDataStr;
+	while (std::getline(formBody, line, '\n')) {
+		if (line == "--" + _boundary + "--")
+			break ;
+		rawData << line << "\n";
 	}
+	rawDataStr = rawData.str();
+	size_t lastNL = rawDataStr.find_last_of("\n");
+	if (lastNL != std::string::npos)
+		rawDataStr = rawDataStr.substr(0, lastNL);
+	size_t lastNL2 = rawDataStr.find_last_of("\n");
+	if (lastNL2 != std::string::npos)
+		rawDataStr = rawDataStr.substr(0, lastNL2);
+	rawDataStr = rawDataStr.substr(0, rawDataStr.find_last_of("\n"));
+
+	if (contentType.find("multipart/form-data") != std::string::npos)
+		handleMultipartFormData(filename, rawDataStr);
 }
 
 void ResponsePost::generateResponse( void ) {

@@ -100,7 +100,7 @@ void Server::readRequest( int socket, Request &request ) {
 			break ;
 	}
 
-	if (total_bytes_read >= 500000000) {
+	if (total_bytes_read >= 10000000) {
 		std::cout << RED << "Request too large" << std::endl;
 
 		_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
@@ -134,8 +134,6 @@ void Server::readRequest( int socket, Request &request ) {
 		connected_port_index++;
 	}
 
-	// std::cout << client_data << std::endl;
-
 	ServerConfig portinfo = configinfo[connected_port_index];
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
@@ -154,7 +152,7 @@ void Server::sendResponse( int socket ) {
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
 
-	size_t chunk_size = 4096;
+	size_t chunk_size = 1024;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
@@ -207,7 +205,7 @@ void Server::loop( void ) {
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
+	timeout.tv_usec = 10000;
 
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
