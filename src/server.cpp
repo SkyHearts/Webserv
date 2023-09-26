@@ -94,7 +94,7 @@ void Server::readRequest( int socket, Request &request ) {
 		else if (bytes_read == 0)
 			return closeConnection(socket);
 
-		client_data.append(buffer);
+		client_data.append(buffer, bytes_read);
 		total_bytes_read += bytes_read;
 		if (bytes_read < 1024)
 			break ;
@@ -134,7 +134,7 @@ void Server::readRequest( int socket, Request &request ) {
 		connected_port_index++;
 	}
 
-	std::cout << client_data << std::endl;
+	// std::cout << client_data << std::endl;
 
 	ServerConfig portinfo = configinfo[connected_port_index];
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);

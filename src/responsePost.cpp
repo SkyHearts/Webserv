@@ -70,84 +70,76 @@ void ResponsePost::handleTextData( std::string &requestBody ) {
 }
 
 void ResponsePost::handleMultipartFormData( std::string &requestBody ) {
-	std::cout << "Boundary is " << _boundary << std::endl;
-	std::string boundary = _boundary.substr(2);
+    // Extract the boundary from the Content-Type header
+    std::string contentTypeHeader = "Content-Type: multipart/form-data; ";
+    size_t boundaryPos = requestBody.find(contentTypeHeader);
+    if (boundaryPos == std::string::npos) {
+        std::cerr << "No Content-Type header found or not multipart/form-data." << std::endl;
+        return;
+    }
 
-	// Find the start of the first part
-	size_t start = requestBody.find("--" + boundary);
-	if (start != std::string::npos) {
-		start += boundary.length() + 2; // Skip "--" and boundary
-		size_t end = requestBody.find("--" + boundary, start);
-		if (end != std::string::npos) {
-			std::string partData = requestBody.substr(start, end - start);
+    boundaryPos += contentTypeHeader.length();
+    size_t boundaryEnd = requestBody.find("\r\n", boundaryPos);
+    if (boundaryEnd == std::string::npos) {
+        std::cerr << "Invalid Content-Type header format." << std::endl;
+        return;
+    }
 
-			// Process the part data (file or field)
-			std::istringstream partStream(partData);
+    std::string boundary = requestBody.substr(boundaryPos, boundaryEnd - boundaryPos);
+	std::cout << boundary << std::endl;
 
-			// Check if it's a file part (contains "filename" in Content-Disposition)
-			if (partData.find("filename") != std::string::npos) {
-				// Parse headers (Content-Disposition and Content-Type)
-				std::string contentDisposition, contentType;
-				while (true) {
-					std::string line;
-					std::getline(partStream, line);
-					if (line.empty()) {
-						break; // End of headers
-					} else if (line.find("Content-Disposition:") != std::string::npos) {
-						contentDisposition = line;
-					} else if (line.find("Content-Type:") != std::string::npos) {
-						contentType = line;
-					}
-				}
+    // Split the request body into parts using the boundary
+    std::vector<std::string> parts;
+    size_t start = requestBody.find("--" + boundary);
+    while (start != std::string::npos) {
+        size_t end = requestBody.find("--" + boundary, start + boundary.length() + 2);
+        if (end == std::string::npos) {
+            break;  // End of parts
+        }
+        parts.push_back(requestBody.substr(start, end - start));
+        start = end;
+    }
 
-				// Extract the file name from Content-Disposition
-				size_t filenamePos = contentDisposition.find("filename=\"");
-				if (filenamePos != std::string::npos) {
-					filenamePos += 10; // Skip "filename=\""
-					size_t filenameEnd = contentDisposition.find("\"", filenamePos);
-					if (filenameEnd != std::string::npos) {
-						std::string filename = contentDisposition.substr(filenamePos, filenameEnd - filenamePos);
-						std::cout << "Received file: " << filename << std::endl;
+    // Process each part (file or field)
+    for (size_t i = 0; i < parts.size(); ++i) {
+        const std::string& partData = parts[i];
 
-						// Process the file content (e.g., save it to a file)
-						std::ofstream outputFile(filename, std::ios::binary);
-						while (partStream) {
-							char buffer[4096];
-							partStream.read(buffer, 4096);
-							outputFile.write(buffer, partStream.gcount());
-						}
-						outputFile.close();
-						std::cout << "Saved file: " << filename << std::endl;
-					}
-				}
-			} else {
-				// It's a regular form field (not a file)
-				std::string fieldName;
-				while (true) {
-					std::string line;
-					std::getline(partStream, line);
-					if (line.empty()) {
-						break; // End of headers
-					} else if (line.find("name=") != std::string::npos) {
-						// Extract the field name from Content-Disposition
-						size_t namePos = line.find("name=\"");
-						if (namePos != std::string::npos) {
-							namePos += 6; // Skip "name=\""
-							size_t nameEnd = line.find("\"", namePos);
-							if (nameEnd != std::string::npos) {
-								fieldName = line.substr(namePos, nameEnd - namePos);
-							}
-						}
-					}
-				}
+        // Check if it's a file part (contains "filename" in Content-Disposition)
+        if (partData.find("filename") != std::string::npos) {
+            // Parse headers (Content-Disposition and Content-Type)
+            std::string contentDisposition, contentType;
+            std::istringstream partStream(partData);
 
-				// Extract and print the field value
-				std::string fieldValue;
-				std::getline(partStream, fieldValue);
-				std::cout << "Received form field: " << fieldName << " = " << fieldValue << std::endl;
-			}
-		}
-	}
+            while (true) {
+                std::string line;
+                std::getline(partStream, line);
+                if (line.empty()) {
+                    break;  // End of headers
+                } else if (line.find("Content-Disposition:") != std::string::npos) {
+                    contentDisposition = line;
+                } else if (line.find("Content-Type:") != std::string::npos) {
+                    contentType = line;
+                }
+            }
+
+            // Extract the file name from Content-Disposition
+            size_t filenamePos = contentDisposition.find("filename=\"");
+            if (filenamePos != std::string::npos) {
+                filenamePos += 10;  // Skip "filename=\""
+                size_t filenameEnd = contentDisposition.find("\"", filenamePos);
+                if (filenameEnd != std::string::npos) {
+                    std::string filename = contentDisposition.substr(filenamePos, filenameEnd - filenamePos);
+                    std::cout << "Received file: " << filename << std::endl;
+
+                    // Process the file content (e.g., save it to a file)
+                    std::ofstream outputFile(filename.c_str(), std::ios::binary);
+                    outputFile << partStream.rdbuf();
+                    outputFile.close();
+                    std::cout << "Saved file: " << filename << std::endl;
+                }
+            }
+        }
+    }
 }
 
 void ResponsePost::saveData( void ) {
