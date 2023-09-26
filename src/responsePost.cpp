@@ -109,7 +109,6 @@ void ResponsePost::saveData( void ) {
 	size_t lastNL2 = rawDataStr.find_last_of("\n");
 	if (lastNL2 != std::string::npos)
 		rawDataStr = rawDataStr.substr(0, lastNL2);
-	rawDataStr = rawDataStr.substr(0, rawDataStr.find_last_of("\n"));
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		handleMultipartFormData(filename, rawDataStr);

@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
 /*   Updated: 2023/09/22 18:28:33 by nnorazma         ###   ########.fr       */
@@ -59,6 +59,8 @@ void Request::parseRequest() {
 		std::istringstream head(line);
 		head >> _method >> _path >> _http;
 	}
+	_header.insert(std::pair< std::string, std::string >("Method", _method));
+	_header.insert(std::pair< std::string, std::string >("Path", _path));
 
 	while (std::getline(requestStream, line, '\n') && !line.empty()) {
 		if (line == "\r")

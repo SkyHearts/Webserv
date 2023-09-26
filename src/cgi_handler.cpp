@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/19 23:10:11 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/23 18:54:20 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,17 +93,18 @@ void cgi_handler::addCharEnvs(char** payload){
 	}
 }
 
-void cgi_handler::createEnv(std::map<std::string, std::string> content, char** payload){
-	uri http;
-	
-	addEnv("SERVER_SOFTWARE = WebServ");
-	addEnv("SERVER_PORT =");// + getPort() from parse request
-	addEnv("REQUEST_METHOD =");// + getMethod() from parse request
-	addEnv("PATH_INFO =");
-	addEnv("PATH_TRANSLATED =");
-	addEnv("HTTP_REFERER =");
-	addEnv("HTTP_ACCEPT =");
-	if (payload){
+/*
+    if any of map content does not exist, ENV=<EMPTY>
+*/
+void cgi_handler::createEnv(std::map<std::string, std::string> content, char** payload, ServerConfig portInfo){
+	addEnv("SERVER_SOFTWARE=WebServ");
+	addEnv("SERVER_PORT=" + std::to_string(portInfo.listen));// + getPort() from parse request
+	addEnv("REQUEST_METHOD=" + content["Method"]);// + getMethod() from parse request
+	addEnv("PATH_INFO=" + content["Path"]);
+	addEnv("PATH_TRANSLATED=" + portInfo.root + content["Path"]);
+	addEnv("HTTP_REFERER=" + content["Referer"]);
+	addEnv("HTTP_ACCEPT="+ content["Accept"]) ;
+    if (!payload){
 		std::cout << "In creatEnv Payload" << std::endl;
 		addCharEnvs(payload);
 	}
@@ -139,19 +140,19 @@ void cgi_handler::createArg(std::string path){
 }
 
 
-void cgi_handler::execCGI(std::map<std::string, std::string> content, std::string path, char** payload){
+void cgi_handler::execCGI(std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload){
 	pid_t pid;
 	std::string response;
 	
-	createEnv(content, payload);
+	createEnv(content, payload, portInfo);
 	createArg(path);
-	//// Print env
-	std::cout << std::endl;
-	std::cout << "Print Env" << std::endl;
-	for(int i = 0; i < getCharDArraySize(_env); ++i) {
-		std::cout << i << " ";
-		std::cout << _env[i] << std::endl;   
-    }
+	// // Print env
+	// std::cout << std::endl;
+	// std::cout << "Print Env" << std::endl;
+	// for(int i = 0; i < getCharDArraySize(_env); ++i) {
+	// 	std::cout << i << " ";
+	// 	std::cout << _env[i] << std::endl;   
+    // }
 	// check path
 	std::cout << std::endl;
 	std::cout << "Path: " << this->_arg[0] << std::endl;
@@ -197,17 +198,23 @@ void cgi_handler::execCGI(std::map<std::string, std::string> content, std::strin
 int main(int argc, char **argv){
 	std::map<std::string, std::string> content;
 	cgi_handler cgi;
+    ServerConfig portinfo;
+    portinfo.root = ROOT_DEFAULT;
+    portinfo.listen = 8080;
 	const char *sample_payload[3] = {"payload1=hello", "payload2=world!", NULL};
-
+    content["Path"] = "/cgi-bin/printEnv";
+    content["Method"] = "GET";
+    content["Referer"] = "localhost:8080";
+    content["Accept"] = "text/html";
 	// for(int i = 0; i < 3 != NULL; ++i) {
 	// 	std::cout << i << " ";
 	// 	std::cout << sample_payload[i] << std::endl;   
     // }
-	for(int i = 0; sample_payload[i] != NULL; ++i) {
-		std::cout << i << " ";
-		std::cout << sample_payload[i] << std::endl;   
-    }
-	cgi.execCGI(content, "sampleCGI/sampleCGI_c", const_cast<char **>(sample_payload));
+	// for(int i = 0; sample_payload[i] != NULL; ++i) {
+	// 	std::cout << i << " ";
+	// 	std::cout << sample_payload[i] << std::endl;   
+    // }
+	cgi.execCGI(content, "../html/cgi-bin/printEnv", portinfo, const_cast<char **>(sample_payload));
 	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
 	//system("leaks a.out");
 }
