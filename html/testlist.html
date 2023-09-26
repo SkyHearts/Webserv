@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Post Test</title>
+
+		<style>
+			form {
+				border: 2px solid #000;
+				padding: 20px;
+			}
+			h1 {
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<h1>Directory contents</h1>
+			<table class="sortable">
+				<thead>
+				<tr>
+					<th>Filename</th>
+					<th>Type</th>
+					<th>Size <small>(bytes)</small></th>
+					<th>Date Modified</th>
+				</tr>
+				</thead>
+				<tbody>
+				use for loop to write this part
+				<tr class='$class'>
+					<td><a href='./$namehref'>$name</a></td>
+					<td><a href='./$namehref'>$extn</a></td>
+					<td><a href='./$namehref'>$size</a></td>
+					<td sorttable_customkey='$timekey'><a href='./$namehref'>$modtime</a></td>
+				</tr>
+				</tbody>
+		</div>
+	</body>
+</html>
