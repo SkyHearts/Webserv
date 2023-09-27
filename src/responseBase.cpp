@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/14 17:01:43 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/20 13:40:11 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,22 @@ void ResponseBase::initContentTypes( void ) {
 	_contentTypes["form"] = "multipart/form-data";
 }
 
+bool ResponseBase::checkPermissions( std::string method, std::string path, ServerConfig portinfo ) {
+	bool found = true;
+
+	for (std::vector<Location>::iterator it = portinfo.locations.begin(); it != portinfo.locations.end(); it++) {
+		if (path.find((*it).uri) != std::string::npos) {
+			found = false;
+			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
+				if (*it2 == method)
+					found = true;
+			}
+		}
+	}
+
+	return found;
+}
+
 void ResponseBase::setContentType ( std::string type ) {
 	_contentType = type;
 }
@@ -63,4 +79,20 @@ std::map< int, std::string > ResponseBase::getStatusCodes( void ) const {
 
 std::string ResponseBase::getResponse( void ) {
 	return (_response);
+}
+
+bool ResponseBase::checkPermissions( std::string method ) {
+	bool found = true;
+
+	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
+		if (this->_path.find((*it).uri) != std::string::npos) {
+			found = false;
+			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
+				if (*it2 == method)
+					found = true;
+			}
+		}
+	}
+
+	return found;
 }

@@ -33,7 +33,7 @@ class Request {
 
 		void clearResources( void );
 		void parseRequest( void );
-		std::string processRequest( std::string req, ServerConfig portinfo );
+		std::string processRequest( std::string req, int req_len, ServerConfig portinfo );
 		std::map< std::string, std::string > getHeader( void ) const;
 		std::string getBody( void ) const;
 		size_t getPayload( void ) const;

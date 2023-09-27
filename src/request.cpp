@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/23 13:07:11 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/22 18:28:33 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@ Request::~Request( void ) {}
 */
 void Request::clearResources( void ) {
 	this->_request.clear();
-	this->_response.clear();
 	this->_method.clear();
 	this->_path.clear();
 	this->_http.clear();
+	this->_response.clear();
 	this->_header.clear();
 	this->_body.clear();
 }
@@ -50,19 +50,19 @@ size_t Request::getPayload( void ) const {
 	Parse and save a client request into its
 	header and content components
 */
-void Request::parseRequest( void ) {
-	_request.erase(remove(_request.begin(), _request.end(), '\r'), _request.end()); //line break in request is \r\n, this removes \r
+void Request::parseRequest() {
+	std::istringstream requestStream(_request);
+	std::string line;
+	std::string key, value;
 
-	std::stringstream request(_request);
-	std::string line, key, value;
+	if (std::getline(requestStream, line)) {
+		std::istringstream head(line);
+		head >> _method >> _path >> _http;
+	}
+	_header.insert(std::pair< std::string, std::string >("Method", _method));
+	_header.insert(std::pair< std::string, std::string >("Path", _path));
 
-	getline(request, line);
-	std::istringstream head(line);
-	head >> _method >> _path >> _http;
-    _header.insert(std::pair< std::string, std::string >("Method", _method));
-    _header.insert(std::pair< std::string, std::string >("Path", _path));
-
-	while (getline(request, line, '\n') && !line.empty()) {
+	while (std::getline(requestStream, line, '\n') && !line.empty()) {
 		if (line == "\r")
 			break ;
 		if (line == "\r\n\r\n")
@@ -78,38 +78,35 @@ void Request::parseRequest( void ) {
 		_header.insert(std::pair< std::string, std::string >(key, value));
 	}
 
-	if (!request.eof()) {
-		char temp[1024];
-		std::memset(temp, 0, sizeof(temp));
-		while (!request.eof()) {
-			request.read(temp, sizeof(temp));
-			_body.append(temp);
-		}
-		if (_body.size() > 0)
-			std::cout << "Body:\n[" << _body << "]" << std::endl;
-	}
+	std::ostringstream bodyStream;
+	while (std::getline(requestStream, line, '\n'))
+		bodyStream << line << "\n";
+	_body = bodyStream.str();
 }
 
 /*
 	Request handler to generate responses based on
 	the type of client request
 */
-std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
+std::string Request::processRequest( std::string req, int req_len, ServerConfig portinfo ) {
 	clearResources();
 
 	_request = req;
-	_payloadSize = req.size();
+	_payloadSize = req_len;
 	parseRequest();
 
 	if (_method == "GET") {
 		ResponseGet get(_path, portinfo);
 		_response = get.getResponse();
 	}
-	// else if (_method == "POST") {
-	// 	ResponsePost post(this->_path, getHeader(), getBody(), getPayload());
-	// 	_response = post.getResponse();
-	//	
-	// }
+	else if (_method == "POST") {
+		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
+		// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it)
+		// 	std::cout << it->first << " => " << it->second << '\n';
+		// std::cout << getBody() << std::endl;
+		_response = post.getResponse();
+		
+	}
 	// else if (_method == "DELETE") {
 	// 	responseDelete del;
 	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
