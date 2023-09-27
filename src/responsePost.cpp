@@ -9,13 +9,11 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_portinfo = portinfo;
 	this->_path.append(filePath);
 	this->_requestHeader = reqHead;
-	this->_requestBody.append(reqBody);
+	this->_requestBody = reqBody;
 	this->_payload = payload;
 
-	if (checkPermissions("POST")) {
+	if (checkPermissions("POST"))
 		saveData();
-		//createResource();
-	}
 	generateResponse();
 }
 
@@ -28,69 +26,94 @@ void ResponsePost::clearResources( void ) {
 	this->_requestBody.clear();
 }
 
-void ResponsePost::saveData( void ) {
-	std::string search = _requestHeader["Content-Type"];
-	this->_boundary = search.substr(search.find("boundary=") + 1);
+static std::string decodeEncoding( std::string &input ) {
+	std::string decoded;
+	size_t input_len = input.length();
+	size_t pos = 0;
+	int ascii;
 
-	std::ofstream tempFile;
-	std::istringstream formBody(this->_requestBody);
-	std::string line, temp, key, value;
-	std::map< std::string, std::string > formHead;
+	while (pos < input_len) {
+		if (input[pos] == '%' && (pos + 2) < input_len) {
+			char hex[3] = { input[pos + 1], input[pos + 2], 0 };
 
-	tempFile.open(this->_portinfo.root + "/rawData");
-	if (!this->_boundary.empty())
-		std::getline(formBody, line);
-	while (getline(formBody, line)) {
-		if (line == "\r\n\r\n")
-			break;
-		try {
-			key = line.substr(0, line.find(':'));
-			value = line.substr(line.find(':') + 2);
-			std::cout.flush();
+			if (sscanf(hex, "%x", &ascii) == 1) {
+				decoded += static_cast<char>(ascii);
+				pos += 3;
+			}
+			else
+				decoded += input[pos++];
 		}
-		catch (std::exception const &e) {
-			break ;
-		}
-		formHead.insert(std::pair< std::string, std::string >(key, value));
-	}
-	
-	getline(formBody, line, '\n');
-	temp.append(line);
-	while (getline(formBody, line, '\n') && !line.empty()) {
-		tempFile << temp;
-		if (line == _boundary)
-			break ;
-		if (line != _boundary)
-			tempFile << "\n";
-		temp.clear();
-		temp.append(line);
+		else
+			decoded += input[pos++];
 	}
 
-	std::cout << RED << "FORM HEAD AND BODY" << std::endl;
-	for (std::map<std::string, std::string>::iterator it = formHead.begin(); it != formHead.end(); it++)
-		std::cout << "Key: " << (*it).first << " | Value: " << (*it).second << std::endl;
-
-	std::cout << "\nBODY:\n" << std::endl;
-	std::cout << _requestBody << CLEAR << std::endl;
+	return decoded;
 }
 
-void ResponsePost::set405( void ) {
-	std::ifstream file;
+/*
+	Handler for content type of application/x-www-urlencoded
+*/
+void ResponsePost::handleTextData( std::string requestBody ) {
+	std::string key, value;
+	std::string data = decodeEncoding(requestBody);
+	std::replace(data.begin(), data.end(), '+', ' ');
+	size_t equal = data.find('=');
 
-	file.open("html/405.html");
-	_response.clear();
+	if (equal != std::string::npos) {
+		key = data.substr(0, equal);
+		value = data.substr(equal + 1);
 
-	// try {
-	// 	_response.append("HTTP/1.1 405 Not Found\r\n");
-	// 	_response.append("Content-Type: text/html\r\n\r\n");
-		
-	// 	std::string line;
-	// 	while (std::getline(file, line))
-	// 		_response.append(line);
-	// }
+		std::ofstream file(_portinfo.root + "/" + key + ".txt");
+		file << value;
+		file.close();
+	}
+}
+
+void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
+	std::ofstream file(_portinfo.root + "/" + filename);
+	file << rawData;
+	file.close();
+}
+
+void ResponsePost::saveData( void ) {
+	std::string contentType = _requestHeader["Content-Type"];
+
+	if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
+		handleTextData(_requestBody);
+		return ;
+	}
+
+	_boundary = contentType.substr(contentType.find("boundary=") + 9);
+
+	std::istringstream formBody(_requestBody);
+	std::string line, key, value;
+	std::vector< std::string > formHead;
+
+	std::getline(formBody, line);
+	while (std::getline(formBody, line, '\n') && line != "\r")
+		formHead.push_back(line);
+	std::string filename = formHead[0].substr(formHead[0].find("filename=") + 10);
+	filename = filename.substr(0, filename.find("\""));
+
+	std::ostringstream rawData;
+	std::string rawDataStr;
+	while (std::getline(formBody, line, '\n')) {
+		if (line == "--" + _boundary + "--")
+			break ;
+		rawData << line << "\n";
+	}
+	rawDataStr = rawData.str();
+	size_t lastNL = rawDataStr.find_last_of("\n");
+	if (lastNL != std::string::npos)
+		rawDataStr = rawDataStr.substr(0, lastNL);
+	size_t lastNL2 = rawDataStr.find_last_of("\n");
+	if (lastNL2 != std::string::npos)
+		rawDataStr = rawDataStr.substr(0, lastNL2);
+
+	if (contentType.find("multipart/form-data") != std::string::npos)
+		handleMultipartFormData(filename, rawDataStr);
 }
 
 void ResponsePost::generateResponse( void ) {
 	_response.append("bla");
 }
-

@@ -74,23 +74,33 @@ void Server::acceptConnection( int serverfd ) {
 	- Switch client socket from readfds to writefds
 */
 void Server::readRequest( int socket, Request &request ) {
-	char *client_data = new char[65535];
-	std::memset(client_data, '\0', 65535);
+	int bytes_read;
+	int total_bytes_read = 0;
+	char buffer[1024];
+	std::string client_data;
 
-	int bytes_read = recv(socket, client_data, 65535, 0);
+	while (1) {
+		std::memset(buffer, 0, 1024);
+		bytes_read = recv(socket, buffer, 1024, 0);
 
-	if (bytes_read < 0) {
-		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			return ;
-		else {
-			error("recv", false);
-			return closeConnection(socket);
+		if (bytes_read < 0) {
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+				return ;
+			else {
+				error("recv", false);
+				return closeConnection(socket);
+			}
 		}
-	}
-	else if (bytes_read == 0)
-		return closeConnection(socket);
+		else if (bytes_read == 0)
+			return closeConnection(socket);
 
-	if (bytes_read == 65535) {
+		client_data.append(buffer, bytes_read);
+		total_bytes_read += bytes_read;
+		if (bytes_read < 1024)
+			break ;
+	}
+
+	if (total_bytes_read >= 10000000) {
 		std::cout << RED << "Request too large" << std::endl;
 
 		_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
@@ -100,24 +110,20 @@ void Server::readRequest( int socket, Request &request ) {
 		return ;
 	}
 
-	std::cout << GREEN << "Received " << bytes_read << " bytes\n" << CLEAR << std::endl;
-	if (bytes_read > 15000)
-		std::cout << "Request too large to display" << std::endl;
-	else
-		write(1, client_data, bytes_read);
+	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
 
 	int port = 80;
-	char *host_pos = strstr(client_data, "Host: ");
-	if (host_pos != nullptr) {
-		char *port_pos = host_pos + 6;
-		char *colon_pos = strchr(port_pos, ':');
-		char *end_pos = strchr(port_pos, '\n');
+	std::string host_header = "Host: ";
+	size_t host_pos = client_data.find(host_header);
 
-		if (colon_pos != nullptr && colon_pos < end_pos) {
-			char port_str[8];
-			std::memset(port_str, '\0', strlen(port_str));
-			strncpy(port_str, colon_pos + 1, end_pos - colon_pos - 1);
-			port = atoi(port_str);
+	if (host_pos != std::string::npos) {
+		size_t port_pos = host_pos + host_header.length();
+		size_t colon_pos = client_data.find(':', port_pos);
+		size_t end_pos = client_data.find('\n', port_pos);
+
+		if (colon_pos != std::string::npos && colon_pos < end_pos) {
+			std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
+			port = std::stoi(port_str);
 		}
 	}
 
@@ -129,10 +135,9 @@ void Server::readRequest( int socket, Request &request ) {
 	}
 
 	ServerConfig portinfo = configinfo[connected_port_index];
-	_response[socket] = request.processRequest(client_data, portinfo);
+	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
 
-	free(client_data);
 	FD_CLR(socket, &_readfds);
 	FD_SET(socket, &_writefds);
 }
@@ -147,7 +152,7 @@ void Server::sendResponse( int socket ) {
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
 
-	size_t chunk_size = 4096;
+	size_t chunk_size = 1024;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
@@ -200,7 +205,7 @@ void Server::loop( void ) {
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
+	timeout.tv_usec = 10000;
 
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);

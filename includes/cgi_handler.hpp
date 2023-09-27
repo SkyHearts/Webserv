@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/19 21:31:11 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/23 18:09:17 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,15 +26,15 @@
 //} WebEnv;
 
 //To help return response?
-class uri
-{
-	private:
-	void parsehttp(std::string url);
-	public:
-	//Get func
-	std::string path, name, host;
-	int port;
-};
+// class uri
+// {
+// 	private:
+// 	void parsehttp(std::string url);
+// 	public:
+// 	//Get func
+// 	std::string path, name, host;
+// 	int port;
+// };
 
 class cgi_handler
 {
@@ -55,7 +55,7 @@ class cgi_handler
 
 
 	//Set _env
-	void createEnv(std::map<std::string, std::string> content, char** payload);
+	void createEnv(std::map<std::string, std::string> content, char** payload, ServerConfig portInfo);
 	void addCharEnvs(char** payload);
 	void addEnv(std::string envVar);
 	
@@ -64,7 +64,7 @@ class cgi_handler
 	void createArg(std::string path);
 	
 	//Execute in child process using execve
-	void execCGI(std::map<std::string, std::string> content, std::string path, char** payload = NULL);
+	void execCGI(std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload = NULL);
 };
 
 int getCharDArraySize(char** array);
