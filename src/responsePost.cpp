@@ -69,8 +69,9 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 	}
 }
 
+//check if file already exists.
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
-	std::ofstream file(_portinfo.root + "/" + filename);
+	std::ofstream file(_portinfo.root + "/uploads/" + filename);
 	file << rawData;
 	file.close();
 }
@@ -112,6 +113,8 @@ void ResponsePost::saveData( void ) {
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		handleMultipartFormData(filename, rawDataStr);
+
+	// generate response
 }
 
 void ResponsePost::generateResponse( void ) {
