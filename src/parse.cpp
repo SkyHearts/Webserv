@@ -361,7 +361,7 @@ void Config::parseErrorPages( std::istringstream &iss, ServerConfig *server ) {
 /* 
 	Check if all struct is filled, if not the default path will be filled instead
 */
-void	Config::checkDefaults( ServerConfig &server ){
+void	Config::checkDefaults( ServerConfig &server ) {
 	if (server.root.empty()) {
 		server.root = ROOT_DEFAULT;
 		std::cout << server.name << " is using root default" << std::endl;

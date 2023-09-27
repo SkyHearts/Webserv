@@ -41,6 +41,9 @@
 #define e405_DEFAULT "html/405.html"
 #define e501_DEFAULT "html/501.html"
 
+#define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "
+#define ISE_MESSAGE "\r\n\r\n<!DOCTYPE html>\n<html>\n<head>\n<title>Internal Server Error.</title>\n</head>\n<body>\n<h1>500 Internal Server Error</h1>\n<p>The Trinity Server has encountered an error and was unable to complete your request.</p>\n</body>\n</html>"
+
 enum serverBlock {
 	notDefined = 0,
 	listenenum = 1,
