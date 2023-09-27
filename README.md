@@ -66,26 +66,13 @@ The part I worked on deals with the main handler loop of the server. This covers
 * Closing connections with the socket(s)
 
 ## Mars
-I have no clue what I'm doing. But here's the plan — sort of:
-* From the server loop, the request string is passed into ```parseResponse()``` of the **request** class.
-* The request content is split into the main header line, the remaining header content, and —if available— the request body.
-* Responses are split according to method. **GET**, **POST**, **DELETE**, and any unimplemented methods are labeled **UNKNOWN**.
-* Based on method, the corresponding classes are instantiated.
-<br>
+My job is to handle request parsing and method handling. Here's what I deal with:
 
-#### BASE RESPONSE
-* The response base contains details that will be used across the methods. (Obviously.)
-* Status Codes and Content-Types are defined here.
-#### GET
-* For now I've only handled *200 OK*, *404 Not Found*, and *500 Internal Server Error*.
-* Waiting for CGI to be integrated into the server before I handle *403 Forbidden*
+* Dividing the request into the header and body
+* For all methods I must validate the resource path and validate method permissions.
+* **GET** simple covers locating the required resource, opening and reading the file, and then returning the contents as the response.
+* 
 
-#### POST
-* WIP, working on path and file validation.
-* I plan to handle *200 OK*, *400 Bad Request*, *403 Forbidden*, and *409 Conflict*, and *413 Payload Too Large*.
-
-#### UNKNOWN
-* Sends a simple response with a *501 Method Not Implemented*.
 ## References
 [Web Server Concepts and Examples](https://www.youtube.com/watch?v=9J1nJOivdyw)
 
