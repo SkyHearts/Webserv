@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <vector>
 #include <cctype>
+#include <ctime>
 #include <map>
 #include <sys/types.h>
 #include <sys/wait.h>

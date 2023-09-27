@@ -20,11 +20,17 @@
 				text-align: center;
 				padding: 0 0 12px 0; 
 			}
+			h3 {
+				font-size: 20px;
+				text-align: left;
+				padding: 0 0 12px 0; 
+			}
 			#container {
 			box-shadow: 0 5px 10px -5px rgba(0,0,0,0.5);
 			position: relative;
 			background: white; 
 			}
+			
 			table {
 			background-color: #F3F3F3;
 			border-collapse: collapse;
@@ -81,6 +87,7 @@
 		</style>
 	</head>
 	<body>
+		<!-- Webserver reads until </head> -->
 		<div id="container">
 			<h1>Directory contents</h1>
 			<table class="sortable">
@@ -95,7 +102,7 @@
 				<tbody>
 				use for loop to write this part
 				<tr class='$class'>
-					<td><a href='http://localhost'>localhost</a></td>
+					<td><a href='localhos:8080/html/cgi-bin/upload/'>$name</a></td>
 					<td><a href='./$namehref'>$extn</a></td>
 					<td><a href='./$namehref'>$size</a></td>
 					<td sorttable_customkey='$timekey'><a href='./$namehref'>$modtime</a></td>
