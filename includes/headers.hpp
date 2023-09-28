@@ -39,6 +39,7 @@
 #define e404_DEFAULT "html/404.html"
 #define e405_DEFAULT "html/405.html"
 #define e501_DEFAULT "html/501.html"
+#define MAXCLIENTBODYSIZE_DEFAULT 20000000
 
 #define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "
 #define ISE_MESSAGE "\r\n\r\n<!DOCTYPE html>\n<html>\n<head>\n<title>Internal Server Error.</title>\n</head>\n<body>\n<h1>500 Internal Server Error</h1>\n<p>The Trinity Server has encountered an error and was unable to complete your request.</p>\n</body>\n</html>"
@@ -51,7 +52,9 @@ enum serverBlock {
 	location = 4,
 	indexServ = 5,
 	errorPages = 6,
-	start = 7
+	max_body_size = 7,
+	start = 8,
+	ended = 9
 };
 
 struct Location {
@@ -68,4 +71,5 @@ struct ServerConfig {
 	std::vector<Location>		locations;
 	std::string 				index;
 	std::map<int, std::string>	errorPages;
+	int							maxClientBodySize;
 };
