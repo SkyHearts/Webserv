@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:40:11 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/28 15:10:24 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void ResponseBase::initStatusCodes( void ) {
 	_statusCodes[405] = "Method Not Allowed";
 	_statusCodes[409] = "Conflict";
 	_statusCodes[413] = "Payload Too Large";
+	_statusCodes[500] = "Internal Server Error";
 	_statusCodes[501] = "Not Implemented";
 }
 

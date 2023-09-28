@@ -12,14 +12,21 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_requestBody = reqBody;
 	this->_payload = payload;
 
-	if (checkPermissions("POST"))
+	//path doesnt exist 404 (first to check)
+	//method not allowed 405 (permission check false)
+	//resource exists? 409 (after permissions)
+	if (checkPermissions("POST")) {
 		saveData();
+	}
 	generateResponse();
 }
 
 ResponsePost::~ResponsePost( void ) { }
 /*============================================================================*/
 
+/*
+	Clear up necessary resources to be used next call
+*/
 void ResponsePost::clearResources( void ) {
 	this->_fileName.clear();
 	this->_requestHeader.clear();
@@ -64,18 +71,40 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 		value = data.substr(equal + 1);
 
 		std::ofstream file(_portinfo.root + "/" + key + ".txt");
+		if (!file.is_open()) { setStatusCode(500); }
 		file << value;
+		if (file.bad()) { setStatusCode(500); }
+		else { setStatusCode(201); }
 		file.close();
+	}
+	else {
+		setStatusCode(204);
 	}
 }
 
 //check if file already exists.
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
-	std::ofstream file(_portinfo.root + "/uploads/" + filename);
-	file << rawData;
-	file.close();
+
+	// if file exists 409
+	//else {
+		std::ofstream file(_portinfo.root + "/uploads/" + filename);
+		//not open? 500
+		file << rawData;
+		//bad? 500
+		//else 201
+		file.close();
+	//}
 }
 
+/*
+	1) Search for POST content-type
+	2) if text, handle the text
+	3) if it contains form data;
+		- search for boundary
+		- split form header and body
+		- save the body into rawData (not decoded)
+		- handle multipart/form-data
+*/
 void ResponsePost::saveData( void ) {
 	std::string contentType = _requestHeader["Content-Type"];
 
@@ -114,9 +143,12 @@ void ResponsePost::saveData( void ) {
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		handleMultipartFormData(filename, rawDataStr);
 
-	// generate response
+	// what happens if it happens to not be any of these content types?
 }
 
 void ResponsePost::generateResponse( void ) {
 	_response.append("bla");
+
+	// if (this->_statusCode == 500)
+		// generateResponseISE();
 }
