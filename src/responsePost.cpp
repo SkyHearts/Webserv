@@ -15,9 +15,14 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	//path doesnt exist 404 (first to check)
 	//method not allowed 405 (permission check false)
 	//resource exists? 409 (after permissions)
-	if (checkPermissions("POST")) {
-		saveData();
+	if (validateResource(this->_path)) {
+		if (checkPermissions("POST")) {
+			saveData();
+		}
 	}
+	else
+		setStatusCode(404);
+
 	generateResponse();
 }
 
@@ -31,6 +36,18 @@ void ResponsePost::clearResources( void ) {
 	this->_fileName.clear();
 	this->_requestHeader.clear();
 	this->_requestBody.clear();
+}
+
+bool ResponsePost::validateResource( const std::string &name ) {
+	struct stat sb;
+
+	if (stat(name.c_str(), &sb) == 0) {
+		if (S_ISDIR(sb.st_mode))
+			return true;
+		else if (S_ISREG(sb.st_mode))
+			return true;
+	}
+	return false;
 }
 
 static std::string decodeEncoding( std::string &input ) {
@@ -85,15 +102,17 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 //check if file already exists.
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 
-	// if file exists 409
-	//else {
+	if (validateResource("/" + filename)) {
+		setStatusCode(409);
+	}
+	else {
 		std::ofstream file(_portinfo.root + "/uploads/" + filename);
 		//not open? 500
 		file << rawData;
 		//bad? 500
 		//else 201
 		file.close();
-	//}
+	}
 }
 
 /*

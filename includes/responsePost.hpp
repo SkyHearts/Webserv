@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/21 15:32:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/28 15:48:58 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class ResponsePost : public ResponseBase{
 		void clearResources( void );
 		void handleMultipartFormData( std::string filename, std::string rawData );
 		void handleTextData( std::string requestBody );
+		bool validateResource( const std::string &name );
 		void saveData( void );
 		void generateResponse( void );
 };
