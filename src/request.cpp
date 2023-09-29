@@ -96,6 +96,16 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	parseRequest();
 
 	if (_method == "GET") {
+		// if (_path.find_last_not_of("/") == _path.length() && portinfo.autoindex) {
+		// 	// std::cout << "autoindex" << std::endl;
+		// 	autoindex autoindex(_path, portinfo);
+		// 	_response = autoindex.getResponse();
+		// }
+		// else {
+		// 	ResponseGet get(_path, portinfo);
+		// 	_response = get.getResponse();
+		// }
+
 		ResponseGet get(_path, portinfo);
 		_response = get.getResponse();
 	}
