@@ -12,13 +12,12 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_requestBody = reqBody;
 	this->_payload = payload;
 
-	//path doesnt exist 404 (first to check)
-	//method not allowed 405 (permission check false)
-	//resource exists? 409 (after permissions)
+	std::cout << RED << "path: " << _path << CLEAR << std::endl;
 	if (validateResource(this->_path)) {
-		if (checkPermissions("POST")) {
+		if (checkPermissions("POST"))
 			saveData();
-		}
+		else
+			setStatusCode(405);
 	}
 	else
 		setStatusCode(404);
@@ -48,6 +47,10 @@ bool ResponsePost::validateResource( const std::string &name ) {
 			return true;
 	}
 	return false;
+}
+
+void ResponsePost::setStatusCodePost( int status, int isUpload ) {
+	setStatusCode(status);
 }
 
 static std::string decodeEncoding( std::string &input ) {
@@ -88,10 +91,17 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 		value = data.substr(equal + 1);
 
 		std::ofstream file(_portinfo.root + "/" + key + ".txt");
-		if (!file.is_open()) { setStatusCode(500); }
+		if (!file.is_open()) { 
+			setStatusCode(500);
+			return ;
+		}
 		file << value;
-		if (file.bad()) { setStatusCode(500); }
-		else { setStatusCode(201); }
+		if (file.bad()) {
+			std::cout << RED << "file bad?" << CLEAR << std::endl;
+			setStatusCode(500);
+		}
+		else 
+			setStatusCode(201);
 		file.close();
 	}
 	else {
@@ -99,7 +109,10 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 	}
 }
 
-//check if file already exists.
+/*
+	Planning to split up the saving data section to minimise repeated code for ^ and v.
+	Perhaps pass in address of file and value, and return status code?
+*/
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 
 	if (validateResource("/" + filename)) {
@@ -107,10 +120,10 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 	}
 	else {
 		std::ofstream file(_portinfo.root + "/uploads/" + filename);
-		//not open? 500
+		if (!file.is_open()) { setStatusCode(500); }
 		file << rawData;
-		//bad? 500
-		//else 201
+		if (file.bad()) { setStatusCode(500); }
+		else { setStatusCode(201); }
 		file.close();
 	}
 }
@@ -166,8 +179,24 @@ void ResponsePost::saveData( void ) {
 }
 
 void ResponsePost::generateResponse( void ) {
-	_response.append("bla");
+	this->_response.clear();
+	std::string dest("upload/" + std::to_string(this->_statusCode) + ".html");
+	std::cout << RED << "dest path: " << dest << CLEAR << std::endl;
+	this->_file.open(dest);
+	setContentType("html");
 
-	// if (this->_statusCode == 500)
-		// generateResponseISE();
+	if (!this->_file.is_open()) {
+		std::cout << RED << "file no open?" << CLEAR << std::endl;
+		setStatusCode(500);
+	}
+
+	if (this->_statusCode == 500)
+		_response.append(generateResponseISE());
+	else {
+		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+		this->_response.append("Content-Type: " + this->_contentTypes["html"] + "\r\n\r\n");
+		std::string line;
+		while (getline(this->_file, line))
+			this->_response.append(line);
+	}
 }

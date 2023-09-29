@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/28 15:17:51 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/29 15:56:44 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,10 +140,8 @@ void ResponseGet::generateResponse( void ) {
 	catch (std::exception &e) {
 		this->_response.clear();
 		
-		// generateResponseISE()
 		this->_response.append(ISE_500);
 		std::string body = ISE_MESSAGE;
-		std::cout << "500 body:\n" << body << std::endl;
 		this->_contentLength = body.length();
 		this->_response.append(std::to_string(this->_contentLength));
 		this->_response.append(body);

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/28 15:10:24 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/29 15:57:12 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ bool ResponseBase::checkPermissions( std::string method, std::string path, Serve
 			}
 		}
 	}
-
 	return found;
 }
 
@@ -95,5 +94,17 @@ bool ResponseBase::checkPermissions( std::string method ) {
 		}
 	}
 
-	return found;
+	return (found);
+}
+
+std::string ResponseBase::generateResponseISE ( void ) {
+		std::string response;
+		
+		response.append(ISE_500);
+		std::string body = ISE_MESSAGE;
+		this->_contentLength = body.length();
+		response.append(std::to_string(this->_contentLength));
+		response.append(body);
+
+		return (response);
 }
