@@ -111,6 +111,7 @@ void Server::readRequest( int socket, Request &request ) {
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	std::cout << YELLOW << client_data << CLEAR << std::endl; 
 
 	int port = 80;
 	std::string host_header = "Host: ";

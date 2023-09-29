@@ -12,15 +12,16 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_requestBody = reqBody;
 	this->_payload = payload;
 
-	std::cout << RED << "path: " << _path << CLEAR << std::endl;
-	if (validateResource(this->_path)) {
+	std::cout << RED << "path to dir: " << _path << CLEAR << std::endl;
+	if (validateResource(this->_portinfo.root + this->_path)) {
+		std::cout << RED << "valid dir?" << CLEAR << std::endl;
 		if (checkPermissions("POST"))
 			saveData();
 		else
-			setStatusCode(405);
+			setStatusCodePost(405, 0);
 	}
 	else
-		setStatusCode(404);
+		setStatusCodePost(404, 0);
 
 	generateResponse();
 }
@@ -42,15 +43,34 @@ bool ResponsePost::validateResource( const std::string &name ) {
 
 	if (stat(name.c_str(), &sb) == 0) {
 		if (S_ISDIR(sb.st_mode))
-			return true;
+		{	std::cout << RED << "valid dir?" << CLEAR << std::endl;
+			return true;}
 		else if (S_ISREG(sb.st_mode))
-			return true;
+		{	std::cout << RED << "valid file?" << CLEAR << std::endl;
+			return true;}
 	}
 	return false;
 }
 
+/*
+	Sets the status code for the response.
+	If status is upload related (201, 409, etc), append correct directory to path.
+	Else, open error page.
+	If the file fails to open, set status 500.
+*/
 void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 	setStatusCode(status);
+	setContentType("html");
+
+	std::cout << RED << "path before append: " << this->_path << CLEAR << std::endl;
+	if (isUpload) {
+		this->_path.insert(0, this->_portinfo.root);
+		this->_path.append("/" + std::to_string(this->_statusCode) + ".html");
+	}
+	this->_file.open(this->_path);
+
+	if (!this->_file.is_open())
+		setStatusCode(500);
 }
 
 static std::string decodeEncoding( std::string &input ) {
@@ -92,20 +112,20 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 
 		std::ofstream file(_portinfo.root + "/" + key + ".txt");
 		if (!file.is_open()) { 
-			setStatusCode(500);
+			setStatusCodePost(500, 0);
 			return ;
 		}
 		file << value;
 		if (file.bad()) {
 			std::cout << RED << "file bad?" << CLEAR << std::endl;
-			setStatusCode(500);
+			setStatusCodePost(500, 0);
 		}
 		else 
-			setStatusCode(201);
+			setStatusCodePost(201, 1);
 		file.close();
 	}
 	else {
-		setStatusCode(204);
+		setStatusCodePost(204, 1);
 	}
 }
 
@@ -116,14 +136,14 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 
 	if (validateResource("/" + filename)) {
-		setStatusCode(409);
+		setStatusCodePost(409, 1);
 	}
 	else {
 		std::ofstream file(_portinfo.root + "/uploads/" + filename);
-		if (!file.is_open()) { setStatusCode(500); }
+		if (!file.is_open()) { setStatusCodePost(500, 0); }
 		file << rawData;
-		if (file.bad()) { setStatusCode(500); }
-		else { setStatusCode(201); }
+		if (file.bad()) { setStatusCodePost(500, 0); }
+		else { setStatusCodePost(201, 1); }
 		file.close();
 	}
 }
@@ -179,17 +199,8 @@ void ResponsePost::saveData( void ) {
 }
 
 void ResponsePost::generateResponse( void ) {
-	this->_response.clear();
-	std::string dest("upload/" + std::to_string(this->_statusCode) + ".html");
-	std::cout << RED << "dest path: " << dest << CLEAR << std::endl;
-	this->_file.open(dest);
-	setContentType("html");
 
-	if (!this->_file.is_open()) {
-		std::cout << RED << "file no open?" << CLEAR << std::endl;
-		setStatusCode(500);
-	}
-
+	std::cout << RED << "path to response page: " << _path << CLEAR << std::endl;
 	if (this->_statusCode == 500)
 		_response.append(generateResponseISE());
 	else {
