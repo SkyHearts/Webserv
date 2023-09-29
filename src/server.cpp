@@ -66,6 +66,25 @@ void Server::acceptConnection( int serverfd ) {
 	std::cout << GREEN << "Accepted new connection on socket " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
+// static int extractContentLength( const std::string request ) {
+// 	const std::string contentLengthHeader = "Content-Length: ";
+// 	size_t contentLengthPos = request.find(contentLengthHeader);
+
+// 	if (contentLengthPos != std::string::npos) {
+// 		size_t endOfLinePos = request.find("\r\n", contentLengthPos);
+
+// 		if (endOfLinePos != std::string::npos) {
+// 			std::string lengthStr = request.substr(contentLengthPos + contentLengthHeader.length(), endOfLinePos - (contentLengthPos + contentLengthHeader.length()));
+
+// 			int contentLength;
+// 			if (sscanf(lengthStr.c_str(), "%d", &contentLength) == 1)
+// 				return contentLength;
+// 		}
+// 	}
+
+// 	return -1;
+// }
+
 /*
 	Read a request from a client
 	- Read data from client
@@ -76,8 +95,14 @@ void Server::acceptConnection( int serverfd ) {
 void Server::readRequest( int socket, Request &request ) {
 	int bytes_read;
 	int total_bytes_read = 0;
+	int port = -1;
 	char buffer[1024];
 	std::string client_data;
+	std::string host_header = "Host: ";
+	size_t host_pos;
+	ServerConfig portinfo;
+	// int content_len;
+	portinfo.listen = -1;
 
 	while (1) {
 		std::memset(buffer, 0, 1024);
@@ -96,45 +121,53 @@ void Server::readRequest( int socket, Request &request ) {
 
 		client_data.append(buffer, bytes_read);
 		total_bytes_read += bytes_read;
-		if (bytes_read < 1024)
+
+		if (port == -1) {
+			host_pos = client_data.find(host_header);
+			if (host_pos != std::string::npos) {
+				size_t port_pos = host_pos + host_header.length();
+				size_t colon_pos = client_data.find(':', port_pos);
+				size_t end_pos = client_data.find('\n', port_pos);
+
+				if (colon_pos != std::string::npos && colon_pos < end_pos) {
+					std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
+					port = std::stoi(port_str);
+				}
+			}
+			
+			if (port == -1)
+				port = 80;
+		}
+
+		if (port != -1 || portinfo.listen != port) {
+			int connected_port_index = 0;
+			for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
+				if ((*iter).listen == port)
+					break ;
+				connected_port_index++;
+			}
+
+			portinfo = configinfo[connected_port_index];
+			// content_len = extractContentLength(client_data);
+		}
+
+		if (total_bytes_read >= portinfo.maxClientBodySize) {
+			std::cout << RED << "Request exceeds payload limit" << std::endl;
+
+			_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
+			_isparsed[socket] = true;
+
+			FD_CLR(socket, &_readfds);
+			FD_SET(socket, &_writefds);
+			return ;
+		}
+
+		if (bytes_read < 1024) // && total_bytes_read >= content_len)
 			break ;
-	}
-
-	if (total_bytes_read >= 10000000) {
-		std::cout << RED << "Request too large" << std::endl;
-
-		_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
-
-		FD_CLR(socket, &_readfds);
-		FD_SET(socket, &_writefds);
-		return ;
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
 
-	int port = 80;
-	std::string host_header = "Host: ";
-	size_t host_pos = client_data.find(host_header);
-
-	if (host_pos != std::string::npos) {
-		size_t port_pos = host_pos + host_header.length();
-		size_t colon_pos = client_data.find(':', port_pos);
-		size_t end_pos = client_data.find('\n', port_pos);
-
-		if (colon_pos != std::string::npos && colon_pos < end_pos) {
-			std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
-			port = std::stoi(port_str);
-		}
-	}
-
-	int connected_port_index = 0;
-	for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
-		if ((*iter).listen == port)
-			break ;
-		connected_port_index++;
-	}
-
-	ServerConfig portinfo = configinfo[connected_port_index];
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
 
