@@ -19,6 +19,7 @@ ResponseGet::ResponseGet( void ) : ResponseBase() { }
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
 	_portinfo = portinfo;
 	_autoindex = false;
+	_path.clear();
 	this->_path.append(filePath);
 
 	checkPath();
@@ -65,13 +66,11 @@ void ResponseGet::checkPath( void ) {
 
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-			std::string tmp = _path.substr(0, _path.length() - 1);
-			tmp.insert(0, "/");
-			if (tmp.find((*iter).uri) != std::string::npos) {
+			(*iter).uri.erase(0, 1);
+			if (_path.find((*iter).uri) != std::string::npos) {
 				if ((*iter).autoindex == true) {
 					setContentType("html");
-					_path.clear();
-					this->_path.append(_portinfo.root + (*iter).uri + "/");
+					_path.insert(0, "/");
 					this->_autoindex = true;
 				}
 			}
@@ -82,7 +81,7 @@ void ResponseGet::checkPath( void ) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
 	}
-	else {
+	else if (!this->_path.empty() && !_autoindex) {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico")
 			this->_isImg = true;
@@ -146,7 +145,7 @@ void ResponseGet::generateResponse( void ) {
 	try {
 		if (_autoindex) {
 			std::map< std::string, std::string > content;
-			content["Path"] = this->_path + "/";
+			content["Path"] = this->_path;
 			content["Referer"] = _portinfo.name + ":" + std::to_string(_portinfo.listen);
 
 			autoindex ai(content);
@@ -191,7 +190,7 @@ void ResponseGet::generateResponse( void ) {
 		this->_response.append(body);
 	}
 
-	if (!_autoindex) _file.close();
+	_file.close();
 
 	// if (_autoindex) {
 	// 	try {
