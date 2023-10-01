@@ -18,6 +18,7 @@ ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
 	_portinfo = portinfo;
+	_autoindex = false;
 	this->_path.append(filePath);
 
 	checkPath();
@@ -45,6 +46,14 @@ static std::string fileExtension( const std::string& filename ) {
 }
 
 /*
+	Last character in requested path is '/'?
+*/
+bool isAutoIndex( const std::string path ) {
+	char lastChar = path[path.length() - 1];
+	return lastChar == '/';
+}
+
+/*
 	Find the content type of a given file extension
 	- If the extension is in the map
 	- - Return the content type
@@ -53,6 +62,22 @@ void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
 	_path.erase(0, 1);
+
+	if (!_path.empty() && isAutoIndex(_path)) {
+		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+			std::string tmp = _path.substr(0, _path.length() - 1);
+			tmp.insert(0, "/");
+			if (tmp.find((*iter).uri) != std::string::npos) {
+				if ((*iter).autoindex == true) {
+					setContentType("html");
+					_path.clear();
+					this->_path.append(_portinfo.root + (*iter).uri + "/");
+					this->_autoindex = true;
+				}
+			}
+		}
+	}
+
 	if (this->_path.empty()) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
@@ -75,6 +100,7 @@ void ResponseGet::checkPath( void ) {
 			}
 		}
 	}
+
 	setStatusCodeGet();
 }
 
@@ -89,6 +115,9 @@ void ResponseGet::setStatusCodeGet( void ) {
 	if (!checkPermissions("GET")) {
 		setStatusCode(405);
 		this->_file.open(this->_portinfo.errorPages[405]);
+	}
+	else if (_autoindex == true) {
+		return ;
 	}
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
 		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
@@ -115,31 +144,45 @@ void ResponseGet::generateResponse( void ) {
 	this->_response.clear();
 
 	try {
-		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+		if (_autoindex) {
+			std::map< std::string, std::string > content;
+			content["Path"] = this->_path + "/";
+			content["Referer"] = _portinfo.name + ":" + std::to_string(_portinfo.listen);
 
-		if (this->_isImg) {
-			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+			autoindex ai(content);
+			_response.clear();
+			_response.append("HTTP/1.1 200 OK\r\n");
+			_response.append("Content-Type: text/html\r\n\r\n");
 
-			char *imgBuffer = new char[1024];
-			std::memset(imgBuffer, 0, 1024);
-			while (!this->_file.eof()) {
-				this->_file.read(imgBuffer, 1024);
-				this->_response.append(imgBuffer, this->_file.gcount());				
-			}
-			delete [] imgBuffer;
+			_response += ai.generateList(_portinfo);
 		}
 		else {
-			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
-			std::string line;
-			while (getline(this->_file, line)) 
-				this->_response.append(line);
-		}
+			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
 
-		if (_file.bad()) { throw std::runtime_error("Error"); }
+			if (this->_isImg) {
+				this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+
+				char *imgBuffer = new char[1024];
+				std::memset(imgBuffer, 0, 1024);
+				while (!this->_file.eof()) {
+					this->_file.read(imgBuffer, 1024);
+					this->_response.append(imgBuffer, this->_file.gcount());				
+				}
+				delete [] imgBuffer;
+			}
+			else {
+				this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+				std::string line;
+				while (getline(this->_file, line)) 
+					this->_response.append(line);
+			}
+
+			if (_file.bad()) { throw std::runtime_error("Error"); }
+		}
 	}
 	catch (std::exception &e) {
 		this->_response.clear();
-		
+
 		this->_response.append(ISE_500);
 		std::string body = ISE_MESSAGE;
 		std::cout << "500 body:\n" << body << std::endl;
@@ -147,5 +190,57 @@ void ResponseGet::generateResponse( void ) {
 		this->_response.append(std::to_string(this->_contentLength));
 		this->_response.append(body);
 	}
-	this->_file.close();
+
+	if (!_autoindex) _file.close();
+
+	// if (_autoindex) {
+	// 	try {
+	// 	}
+	// 	catch (std::exception &e) {
+	// 		this->_response.clear();
+
+	// 		this->_response.append(ISE_500);
+	// 		std::string body = ISE_MESSAGE;
+	// 		std::cout << "500 body:\n" << body << std::endl;
+	// 		this->_contentLength = body.length();
+	// 		this->_response.append(std::to_string(this->_contentLength));
+	// 		this->_response.append(body);
+	// 	}
+	// }
+	// else {
+	// 	try {
+	// 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+
+	// 		if (this->_isImg) {
+	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+
+	// 			char *imgBuffer = new char[1024];
+	// 			std::memset(imgBuffer, 0, 1024);
+	// 			while (!this->_file.eof()) {
+	// 				this->_file.read(imgBuffer, 1024);
+	// 				this->_response.append(imgBuffer, this->_file.gcount());				
+	// 			}
+	// 			delete [] imgBuffer;
+	// 		}
+	// 		else {
+	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
+	// 			std::string line;
+	// 			while (getline(this->_file, line)) 
+	// 				this->_response.append(line);
+	// 		}
+
+	// 		if (_file.bad()) { throw std::runtime_error("Error"); }
+	// 	}
+	// 	catch (std::exception &e) {
+	// 		this->_response.clear();
+			
+	// 		this->_response.append(ISE_500);
+	// 		std::string body = ISE_MESSAGE;
+	// 		std::cout << "500 body:\n" << body << std::endl;
+	// 		this->_contentLength = body.length();
+	// 		this->_response.append(std::to_string(this->_contentLength));
+	// 		this->_response.append(body);
+	// 	}
+	// 	this->_file.close();
+	// }
 }

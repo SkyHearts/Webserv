@@ -66,25 +66,6 @@ void Server::acceptConnection( int serverfd ) {
 	std::cout << GREEN << "Accepted new connection on socket " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
-// static int extractContentLength( const std::string request ) {
-// 	const std::string contentLengthHeader = "Content-Length: ";
-// 	size_t contentLengthPos = request.find(contentLengthHeader);
-
-// 	if (contentLengthPos != std::string::npos) {
-// 		size_t endOfLinePos = request.find("\r\n", contentLengthPos);
-
-// 		if (endOfLinePos != std::string::npos) {
-// 			std::string lengthStr = request.substr(contentLengthPos + contentLengthHeader.length(), endOfLinePos - (contentLengthPos + contentLengthHeader.length()));
-
-// 			int contentLength;
-// 			if (sscanf(lengthStr.c_str(), "%d", &contentLength) == 1)
-// 				return contentLength;
-// 		}
-// 	}
-
-// 	return -1;
-// }
-
 /*
 	Read a request from a client
 	- Read data from client
@@ -101,7 +82,6 @@ void Server::readRequest( int socket, Request &request ) {
 	std::string host_header = "Host: ";
 	size_t host_pos;
 	ServerConfig portinfo;
-	// int content_len;
 	portinfo.listen = -1;
 
 	while (1) {
@@ -148,7 +128,6 @@ void Server::readRequest( int socket, Request &request ) {
 			}
 
 			portinfo = configinfo[connected_port_index];
-			// content_len = extractContentLength(client_data);
 		}
 
 		if (total_bytes_read >= portinfo.maxClientBodySize) {
@@ -162,11 +141,12 @@ void Server::readRequest( int socket, Request &request ) {
 			return ;
 		}
 
-		if (bytes_read < 1024) // && total_bytes_read >= content_len)
+		if (bytes_read < 1024)
 			break ;
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	std::cout << client_data << std::endl;
 
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;

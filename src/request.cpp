@@ -96,24 +96,11 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	parseRequest();
 
 	if (_method == "GET") {
-		// if (_path.find_last_not_of("/") == _path.length() && portinfo.autoindex) {
-		// 	// std::cout << "autoindex" << std::endl;
-		// 	autoindex autoindex(_path, portinfo);
-		// 	_response = autoindex.getResponse();
-		// }
-		// else {
-		// 	ResponseGet get(_path, portinfo);
-		// 	_response = get.getResponse();
-		// }
-
 		ResponseGet get(_path, portinfo);
 		_response = get.getResponse();
 	}
 	else if (_method == "POST") {
 		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
-		// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it)
-		// 	std::cout << it->first << " => " << it->second << '\n';
-		// std::cout << getBody() << std::endl;
 		_response = post.getResponse();
 		
 	}

@@ -33,14 +33,13 @@ std::string autoindex::getHead(std::string path){ // ( ͡° ͜ʖ ͡°)
 	std::fstream file;
 	std::string head;
 	std::string search = "%folder";
-	int i = 0;
-	int pos = 0;
 	file.open(autoIndexPath);
 	if(file.is_open()){
 		std::string in;
 		while (std::getline(file, in, '\n')){
 			in = trim(in);
-			if((pos = in.find(search)) != std::string::npos)
+			int pos = in.find(search);
+			if(in.find(search) != std::string::npos)
 				in.replace(pos, search.length(), path);
 			if(in.find("<body>") != std::string::npos)
 				break ;
@@ -126,10 +125,11 @@ std::string autoindex::generateList(ServerConfig portinfo){
 	if (this->_response.empty())
 		this->_response = getHead(path);
 	std::string currentdir = "./" + portinfo.root + path;
-	std::string rootdir = "./" + portinfo.root + uriRoot(path, "/");
+	std::string rootdir = "./" + portinfo.root + uriRoot(path);
 	// std::cout << "currentdir :" << currentdir << std::endl;
 	// std::cout << "rootdir :" << rootdir << std::endl;
 	DIR* dir = opendir(currentdir.c_str());
+	std::cout << "dir: " << currentdir << std::endl;
 	if (!dir){
 		std::cout << "Directory not found" << std::endl;
 		return "Directory not found";
@@ -148,7 +148,6 @@ std::string autoindex::generateList(ServerConfig portinfo){
 			continue;
 		if (stat(file_path.c_str(), &info) == 0){
 			tm* currTm;
-			time_t currTime;
 			char dateMod[100];
 			currTm = localtime(&info.st_mtime);
 			strftime(dateMod, 50, "%B %d, %Y %T", currTm);
@@ -177,7 +176,7 @@ std::string autoindex::generateList(ServerConfig portinfo){
 	return this->_response;
 }
 
-std::string uriRoot(std::string str, std::string delim){
+std::string uriRoot(std::string str){
 	std::string ret;
 	size_t delim_pos = str.find_first_of("/");
 	size_t len = str.find_first_of("/", delim_pos + 1);
