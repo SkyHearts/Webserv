@@ -165,21 +165,22 @@ void Server::sendResponse( int socket ) {
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
 
-	size_t chunk_size = 1024;
+	size_t chunk_size = 2048;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
 		size_t sentbytes = send(socket, response + total_sent, std::min(chunk_size, remaining), 0);
 
-		if (sentbytes < 0) {
+		if (sentbytes < 0 || errno == EBADF) {
 			error("send", false);
+            std::cout << "Send failed/bad file descriptor" << std::endl;
 			return;
 		}
 
 		_sentbytes[socket] += sentbytes;
 	}
-
-	if (_sentbytes[socket] < (int)response_len)
+    // std::cout << errno << std::endl;
+	if (_sentbytes[socket] < (int)response_len && errno != EPIPE)
 		FD_SET(socket, &_writefds);
 	else {
 		std::cout << GREEN << "Sent " << _sentbytes[socket] << " bytes" << std::endl;
@@ -220,6 +221,7 @@ void Server::loop( void ) {
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 10000;
 
+    signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
 
