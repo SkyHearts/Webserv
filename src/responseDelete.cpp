@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 15:54:10 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 19:00:12 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 19:22:50 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ ResponseDelete::ResponseDelete( std::string filePath, ServerConfig portinfo ) : 
 	this->_portinfo = portinfo;
 	this->_filePath.append(this->_portinfo.root + filePath);
 
+	std::cout << RED << "filepath before validate: " << this->_filePath << CLEAR << std::endl;
 	if (validateResource(this->_filePath)) {
 		this->_path.append(this->_filePath.substr(0, this->_filePath.find_last_of('/')));
 		if (checkPermissions("DELETE")) //fuck this needs directory
@@ -31,7 +32,7 @@ ResponseDelete::ResponseDelete( std::string filePath, ServerConfig portinfo ) : 
 	generateResponse();
 }
 
-ResponseDelete::ResponseDelete( void ) { }
+ResponseDelete::~ResponseDelete( void ) { }
 /*============================================================================*/
 
 // void ResponseDelete::clearResources( void ) {}
@@ -39,8 +40,11 @@ ResponseDelete::ResponseDelete( void ) { }
 bool ResponseDelete::validateResource( const std::string &name ) {
 	struct stat sb;
 
-	if (stat(name.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))
-		return true;
+	if (stat(name.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)) {
+		std::cout << RED << "valid file?" << CLEAR << std::endl;
+		return true; }
+	else
+		std::cout << RED << "invalid file?" << CLEAR << std::endl;
 	return false;
 }
 
