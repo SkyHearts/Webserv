@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 13:51:54 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 14:24:03 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,8 +159,8 @@ void Server::readRequest( int socket, Request &request ) {
 			break ;
 	}
 
-	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
-	std::cout << client_data << std::endl;
+	// std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	// std::cout << client_data << std::endl;
 
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
