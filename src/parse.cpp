@@ -6,11 +6,12 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/21 11:30:18 by jyim             ###   ########.fr       */
+/*   Updated: 2023/09/27 18:30:32 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "parse.hpp"
+// #include "parse.hpp"
+#include "../includes/parse.hpp"
 
 /** ----------- Constructs and Deconstruct ----------- **/
 
@@ -25,6 +26,45 @@ Config::Config( std::string config_file ) {
 	// std::cout << std::endl;
 	Config::parse(serverConfig);
 	Config::checkDupPorts();
+}
+
+/*
+	If path is directory return true, /test/ = true
+	Else return false, /test/test.html = false
+*/
+static bool isValidDir( const char *path ) {
+	struct stat info;
+
+	// std::cout << "isvaliddir path = " << path << std::endl;
+	if (stat(path, &info) == 0) {
+		// if (S_ISDIR(info.st_mode))
+		// 	std::cout << path << " is a directory" << std::endl;
+		// else 
+		// 	std::cout << path << " is not a directory" << std::endl;
+		return S_ISDIR(info.st_mode);
+	}
+	else
+		return 0;
+}
+
+/*
+	If path is regular file return true, /test/test.html = true
+	Else return false, /test/ = false
+*/
+static bool isValidFile( const char *path ) {
+	struct stat info;
+
+	// std::cout << "isvalidfile path = " << path << std::endl;
+	if (stat(path, &info) == 0) {
+		// if (S_ISREG(info.st_mode))
+		// 	std::cout << path << " is a regular file" << std::endl;
+		// else 
+			// std::cout << path << " is not a regular file" << std::endl;
+
+		return S_ISREG(info.st_mode);
+	}
+	else
+		return 0;
 }
 
 /** ---------- Members ---------- **/
@@ -100,7 +140,9 @@ void Config::initEnumServerBlock( std::map<std::string, serverBlock> &s_mapStrin
 	s_mapStringValues["location"] = location;
 	s_mapStringValues["index"] = indexServ;
 	s_mapStringValues["error_pages"] = errorPages;
+	s_mapStringValues["max_client_body_size"] = max_body_size;
 	s_mapStringValues["{"] = start;
+	s_mapStringValues["}"] = ended;
 }
 
 /*
@@ -358,6 +400,26 @@ void Config::parseErrorPages( std::istringstream &iss, ServerConfig *server ) {
 	// std::cout << "EXIT CONFIG::PARSEErrorPages" << std::endl << std::endl;
 }
 
+/*
+	Parse max_client_body_size in conf
+	Inserts server block max_client_body_size
+*/
+void Config::parseClientBodySize( std::istringstream &iss, ServerConfig *server ) {
+	std::string subs;
+	iss >> subs;
+
+	for (int i = 0, len = subs.size(); i < len; i++) {
+		if (is_punct(subs[i])) {
+			subs.erase(i--, 1);
+			len = subs.size();
+		}
+	}
+	// std::cout << "(Start_Name)" << subs << "(End_Name)" << std::endl;
+	server->maxClientBodySize = std::stoi(subs);
+	// std::cout << "Server Name is " << server->name <<std::endl;
+	// std::cout << "EXIT CONFIG::PARSESERVERNAME" << std::endl << std::endl;
+}
+
 /* 
 	Check if all struct is filled, if not the default path will be filled instead
 */
@@ -394,6 +456,7 @@ void Config::parseServerBlock( std::istringstream &iss ) {
 	int end = 1;
 	static int serverBlockIndex = 1;
 	server.name = "Serverblock " + std::to_string(serverBlockIndex);
+	server.maxClientBodySize = MAXCLIENTBODYSIZE_DEFAULT;
 
 	// std::cout << "IN CONFIG::PARSESERVERBLOCK" << std::endl;
 	do {
@@ -435,8 +498,19 @@ void Config::parseServerBlock( std::istringstream &iss ) {
 				// std::cout << "Parse Serverblock index" << std::endl;
 				parseErrorPages(iss, &server);
 				break ;
+			case max_body_size:
+				// std::cout << "Parse Serverblock index" << std::endl;
+				parseClientBodySize(iss, &server);
+				break ;
+			case start:
+				// std::cout << "Start Parsing Server Block" << std::endl;
+				break ;
+			case ended:
+				// std::cout << "End Parsing Server Block" << std::endl;
+				break ;
 			default:
-				continue ;
+				throw std::invalid_argument("Not a valid keyword");
+				// continue ;
 		}
 	} while (end == 0);
     checkDefaults(server);
@@ -512,45 +586,6 @@ bool checkAlpha( const std::string &str ) {
 }
 
 /*
-	If path is directory return true, /test/ = true
-	Else return false, /test/test.html = false
-*/
-bool isValidDir( const char *path ) {
-	struct stat info;
-
-	// std::cout << "isvaliddir path = " << path << std::endl;
-	if (stat(path, &info) == 0) {
-		// if (S_ISDIR(info.st_mode))
-		// 	std::cout << path << " is a directory" << std::endl;
-		// else 
-		// 	std::cout << path << " is not a directory" << std::endl;
-		return S_ISDIR(info.st_mode);
-	}
-	else
-		return 0;
-}
-
-/*
-	If path is regular file return true, /test/test.html = true
-	Else return false, /test/ = false
-*/
-bool isValidFile( const char *path ) {
-	struct stat info;
-
-	// std::cout << "isvalidfile path = " << path << std::endl;
-	if (stat(path, &info) == 0) {
-		// if (S_ISREG(info.st_mode))
-		// 	std::cout << path << " is a regular file" << std::endl;
-		// else 
-			// std::cout << path << " is not a regular file" << std::endl;
-
-		return S_ISREG(info.st_mode);
-	}
-	else
-		return 0;
-}
-
-/*
 	If string contains Alphabet return false
 	Else return true
 */
@@ -601,6 +636,7 @@ int main(int argc, char **argv) {
 			std::cout << "Listen: " << (*iter).listen << std::endl;
 			std::cout << "Root: " << (*iter).root << std::endl;
 			std::cout << "Index: " << (*iter).index << std::endl;
+			std::cout << "MaxClientBodySize: " << (*iter).maxClientBodySize << std::endl;
 			if(!(*iter).errorPages.empty()) {
 				std::cout << "KEY\tELEMENT\n";
 				for (std::map<int, std::string>::iterator itr = (*iter).errorPages.begin(); itr != (*iter).errorPages.end(); ++itr) {

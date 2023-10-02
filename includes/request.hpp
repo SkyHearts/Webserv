@@ -14,7 +14,6 @@
 #include "responseGet.hpp"
 #include "responsePost.hpp"
 #include "responseDelete.hpp"
-// #include "responseUnknown.hpp"
 
 class Request {
 	private:

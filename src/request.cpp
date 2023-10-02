@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/22 18:28:33 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/27 17:14:57 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,9 +101,6 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	}
 	else if (_method == "POST") {
 		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
-		// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it)
-		// 	std::cout << it->first << " => " << it->second << '\n';
-		// std::cout << getBody() << std::endl;
 		_response = post.getResponse();
 		
 	}

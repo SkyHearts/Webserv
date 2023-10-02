@@ -13,11 +13,13 @@
 #pragma once
 #include "headers.hpp"
 #include "responseBase.hpp"
+#include "autoindex.hpp"
 
 class ResponseGet : public ResponseBase {
 	private:
 		ResponseGet( void );
 		std::ifstream _file;
+		bool _autoindex;
 
 	public:
 

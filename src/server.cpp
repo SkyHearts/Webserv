@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/10/02 13:51:54 by nnorazma         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "server.hpp"
 
 /** ---------- Construct and Destruct ---------- */
@@ -76,8 +88,13 @@ void Server::acceptConnection( int serverfd ) {
 void Server::readRequest( int socket, Request &request ) {
 	int bytes_read;
 	int total_bytes_read = 0;
+	int port = -1;
 	char buffer[1024];
 	std::string client_data;
+	std::string host_header = "Host: ";
+	size_t host_pos;
+	ServerConfig portinfo;
+	portinfo.listen = -1;
 
 	while (1) {
 		std::memset(buffer, 0, 1024);
@@ -96,46 +113,55 @@ void Server::readRequest( int socket, Request &request ) {
 
 		client_data.append(buffer, bytes_read);
 		total_bytes_read += bytes_read;
+
+		if (port == -1) {
+			host_pos = client_data.find(host_header);
+			if (host_pos != std::string::npos) {
+				size_t port_pos = host_pos + host_header.length();
+				size_t colon_pos = client_data.find(':', port_pos);
+				size_t end_pos = client_data.find('\n', port_pos);
+
+				if (colon_pos != std::string::npos && colon_pos < end_pos) {
+					std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
+					port = std::stoi(port_str);
+				}
+			}
+			
+			if (port == -1)
+				port = 80;
+		}
+
+		if (port != -1 || portinfo.listen != port) {
+			int connected_port_index = 0;
+			for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
+				if ((*iter).listen == port)
+					break ;
+				connected_port_index++;
+			}
+
+			std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+			std::cout << YELLOW << client_data << CLEAR << std::endl; 
+			portinfo = configinfo[connected_port_index];
+		}
+
+		if (total_bytes_read >= portinfo.maxClientBodySize) {
+			std::cout << RED << "Request exceeds payload limit" << std::endl;
+
+			_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
+			_isparsed[socket] = true;
+
+			FD_CLR(socket, &_readfds);
+			FD_SET(socket, &_writefds);
+			return ;
+		}
+
 		if (bytes_read < 1024)
 			break ;
 	}
 
-	if (total_bytes_read >= 10000000) {
-		std::cout << RED << "Request too large" << std::endl;
-
-		_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
-
-		FD_CLR(socket, &_readfds);
-		FD_SET(socket, &_writefds);
-		return ;
-	}
-
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
-	std::cout << YELLOW << client_data << CLEAR << std::endl; 
+	std::cout << client_data << std::endl;
 
-	int port = 80;
-	std::string host_header = "Host: ";
-	size_t host_pos = client_data.find(host_header);
-
-	if (host_pos != std::string::npos) {
-		size_t port_pos = host_pos + host_header.length();
-		size_t colon_pos = client_data.find(':', port_pos);
-		size_t end_pos = client_data.find('\n', port_pos);
-
-		if (colon_pos != std::string::npos && colon_pos < end_pos) {
-			std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
-			port = std::stoi(port_str);
-		}
-	}
-
-	int connected_port_index = 0;
-	for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
-		if ((*iter).listen == port)
-			break ;
-		connected_port_index++;
-	}
-
-	ServerConfig portinfo = configinfo[connected_port_index];
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
 
@@ -153,21 +179,22 @@ void Server::sendResponse( int socket ) {
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
 
-	size_t chunk_size = 1024;
+	size_t chunk_size = 2048;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
 		size_t sentbytes = send(socket, response + total_sent, std::min(chunk_size, remaining), 0);
 
-		if (sentbytes < 0) {
+		if (sentbytes < 0 || errno == EBADF) {
 			error("send", false);
+            std::cout << "Send failed/bad file descriptor" << std::endl;
 			return;
 		}
 
 		_sentbytes[socket] += sentbytes;
 	}
-
-	if (_sentbytes[socket] < (int)response_len)
+    // std::cout << errno << std::endl;
+	if (_sentbytes[socket] < (int)response_len && errno != EPIPE)
 		FD_SET(socket, &_writefds);
 	else {
 		std::cout << GREEN << "Sent " << _sentbytes[socket] << " bytes" << std::endl;
@@ -208,6 +235,7 @@ void Server::loop( void ) {
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 10000;
 
+    signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < _ports.size(); i++)
 		FD_SET(_serverfds[i], &_readfds);
 
