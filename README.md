@@ -66,12 +66,21 @@ The part I worked on deals with the main handler loop of the server. This covers
 * Closing connections with the socket(s)
 
 ## Mars
-My job is to handle request parsing and method handling. Here's what I deal with:
+My job is to handle request parsing, method handling and responses. Here's what I deal with:
 
 * Dividing the request into the header and body
 * For all methods I must validate the resource path and validate method permissions.
-* **GET** simple covers locating the required resource, opening and reading the file, and then returning the contents as the response.
-* 
+* **GET** simply covers locating the required resource, opening and reading the file, and then returning the contents as the response.
+* **POST**:
+	* The types of data sent through POST is limited to ```application/x-www-form-urlencoded``` and ```multipart/form-data```
+	* The data to be stored must be validated; if it exists, send a 409 Conflict.
+	* Else, store the data and return a 201 Created.
+	* For ```application/x-www-form-urlencoded```:
+		* The data sent through will be encoded.
+		* Therefore in order to store the data completely, it has to be decoded.
+* **DELETE**:
+	* We chose to only test DELETE from command line. (To save time)
+	* The data stored is validated, deleted, and return a response 200 OK :thumbs_up:
 
 ## References
 [Web Server Concepts and Examples](https://www.youtube.com/watch?v=9J1nJOivdyw)
