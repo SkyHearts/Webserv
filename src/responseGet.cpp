@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/22 18:28:57 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 10:37:43 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,19 +83,31 @@ void ResponseGet::checkPath( void ) {
 	}
 	else if (!this->_path.empty() && !_autoindex) {
 		setContentType(fileExtension(this->_path));
-		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico")
+		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
 			this->_isImg = true;
-		else if (this->_contentType == "html")
-			_path.insert(0, "html");
+            _path.insert(0, _portinfo.root + "/");
+        }
+		else if (this->_contentType == "html"){
+            std::cout << "insert html infront" << std::endl;
+			// _path.insert(0, "html");
+             _path.insert(0, _portinfo.root + "/");
+        }
+        else if (this->_contentType == "txt") {
+            setContentType("plain");
+            _path.insert(0, _portinfo.root + "/");
+        }
 		else if (this->_contentType == "") {
 			setContentType("html");
 			_path.insert(0, "/");
+            std::cout << "Path is: " << this->_path << std::endl;
 			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 				if (this->_path.find((*iter).uri) != std::string::npos) {
 					_path.clear();
 					if (!(*iter).index.empty())
 						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
 				}
+                // else
+                //     _path.insert(0, _portinfo.root + "/");
 			}
 		}
 	}
@@ -121,11 +133,13 @@ void ResponseGet::setStatusCodeGet( void ) {
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
 		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
 		else setStatusCode(200);
-
+        std::cout << "Opening file" << std::endl;
+        std::cout << this->_path << std::endl;
+        // _path.insert(0, _portinfo.root + "/");
 		this->_file.open(this->_path);
 	}
-
 	if (!this->_file.is_open()) {
+        std::cout << "Fail to open file" << std::endl;
 		setStatusCode(404);
 		setContentType("html");
 		_file.open(_portinfo.errorPages[404]);
