@@ -85,13 +85,13 @@ void ResponseGet::checkPath( void ) {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
 			this->_isImg = true;
-            _path.insert(0, _portinfo.root + "/");
+			if (_path.find("assets/") == std::string::npos)
+            	_path.insert(0, _portinfo.root + "/");
         }
-		else if (this->_contentType == "html"){
-            std::cout << "insert html infront" << std::endl;
-			// _path.insert(0, "html");
+		else if (this->_contentType == "html") {
+			setContentType("plain");
              _path.insert(0, _portinfo.root + "/");
-        }
+		}
         else if (this->_contentType == "txt") {
             setContentType("plain");
             _path.insert(0, _portinfo.root + "/");
@@ -106,8 +106,6 @@ void ResponseGet::checkPath( void ) {
 					if (!(*iter).index.empty())
 						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
 				}
-                // else
-                //     _path.insert(0, _portinfo.root + "/");
 			}
 		}
 	}
@@ -127,19 +125,16 @@ void ResponseGet::setStatusCodeGet( void ) {
 		setStatusCode(405);
 		this->_file.open(this->_portinfo.errorPages[405]);
 	}
-	else if (_autoindex == true) {
+	else if (_autoindex == true)
 		return ;
-	}
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
 		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
 		else setStatusCode(200);
-        std::cout << "Opening file" << std::endl;
-        std::cout << this->_path << std::endl;
-        // _path.insert(0, _portinfo.root + "/");
+
 		this->_file.open(this->_path);
 	}
+
 	if (!this->_file.is_open()) {
-        std::cout << "Fail to open file" << std::endl;
 		setStatusCode(404);
 		setContentType("html");
 		_file.open(_portinfo.errorPages[404]);
@@ -205,55 +200,4 @@ void ResponseGet::generateResponse( void ) {
 	}
 
 	_file.close();
-
-	// if (_autoindex) {
-	// 	try {
-	// 	}
-	// 	catch (std::exception &e) {
-	// 		this->_response.clear();
-
-	// 		this->_response.append(ISE_500);
-	// 		std::string body = ISE_MESSAGE;
-	// 		std::cout << "500 body:\n" << body << std::endl;
-	// 		this->_contentLength = body.length();
-	// 		this->_response.append(std::to_string(this->_contentLength));
-	// 		this->_response.append(body);
-	// 	}
-	// }
-	// else {
-	// 	try {
-	// 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
-
-	// 		if (this->_isImg) {
-	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
-
-	// 			char *imgBuffer = new char[1024];
-	// 			std::memset(imgBuffer, 0, 1024);
-	// 			while (!this->_file.eof()) {
-	// 				this->_file.read(imgBuffer, 1024);
-	// 				this->_response.append(imgBuffer, this->_file.gcount());				
-	// 			}
-	// 			delete [] imgBuffer;
-	// 		}
-	// 		else {
-	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
-	// 			std::string line;
-	// 			while (getline(this->_file, line)) 
-	// 				this->_response.append(line);
-	// 		}
-
-	// 		if (_file.bad()) { throw std::runtime_error("Error"); }
-	// 	}
-	// 	catch (std::exception &e) {
-	// 		this->_response.clear();
-			
-	// 		this->_response.append(ISE_500);
-	// 		std::string body = ISE_MESSAGE;
-	// 		std::cout << "500 body:\n" << body << std::endl;
-	// 		this->_contentLength = body.length();
-	// 		this->_response.append(std::to_string(this->_contentLength));
-	// 		this->_response.append(body);
-	// 	}
-	// 	this->_file.close();
-	// }
 }
