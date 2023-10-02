@@ -60,13 +60,12 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 	setStatusCode(status);
 	setContentType("html");
 
-	std::cout << RED << "path before append: " << this->_path << CLEAR << std::endl;
 	if (isUpload) {
 		this->_path.insert(0, this->_portinfo.root);
 		this->_path.append("/" + std::to_string(this->_statusCode) + ".html");
 	}
-	this->_file.open(this->_path);
 
+	this->_file.open(this->_path);
 	if (!this->_file.is_open())
 		setStatusCode(500);
 }
@@ -110,11 +109,11 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 
 		std::ofstream file(_portinfo.root + "/uploads/" + key + ".txt");
 		if (!file.is_open()) { 
-			setStatusCodePost(500, 0);
+			setStatusCode(500);
 			return ;
 		}
 		file << value;
-		if (file.bad()) setStatusCodePost(500, 0);
+		if (file.bad()) setStatusCode(500);
 		else 
 			setStatusCodePost(201, 1);
 		file.close();
@@ -137,7 +136,7 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 	else {
 		std::ofstream file(filename);
 		if (!file.is_open()) {
-			setStatusCodePost(500, 0); 
+			setStatusCode(500); 
 			return;
 		}
 		file << rawData;

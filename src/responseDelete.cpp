@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 15:54:10 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 16:59:29 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 19:00:12 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,15 @@ ResponseDelete::ResponseDelete( void ) : ResponseBase() { }
 
 ResponseDelete::ResponseDelete( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
 	this->_portinfo = portinfo;
-	this->_path.append(filePath);
+	this->_filePath.append(this->_portinfo.root + filePath);
 
-	if (validateResource(this->_path)) {
-		if (checkPermissions("DELETE"))
+	if (validateResource(this->_filePath)) {
+		this->_path.append(this->_filePath.substr(0, this->_filePath.find_last_of('/')));
+		if (checkPermissions("DELETE")) //fuck this needs directory
 			deleteData();
-		else setStatusCodeDelete(405);
+		else setStatusCodeDelete(405, 0);
 	}
-	else setStatusCodeDelete(404);
+	else setStatusCodeDelete(404, 0);
 
 	generateResponse();
 }
@@ -43,9 +44,25 @@ bool ResponseDelete::validateResource( const std::string &name ) {
 	return false;
 }
 
-void ResponseDelete::setStatusCodeDelete( int status ) {
+void ResponseDelete::setStatusCodeDelete( int status, bool isUpload ) {
 	setStatusCode(status);
 	setContentType("html");
+
+	this->_path.append(this->_portinfo.root + "/");
+	if (isUpload)
+		this->_path.append("uploads/");
+	this->_path.append(std::to_string(this->_statusCode) + ".html");
+
+	this->_file.open(this->_path);
+	if (!this->_file.is_open())
+		setStatusCode(500);
+}
+
+void ResponseDelete::deleteData( void ) {
+	if (remove(this->_filePath.c_str()) == 0)
+		setStatusCodeDelete(200, 1);
+	else
+		setStatusCode(500);
 }
 
 void ResponseDelete::generateResponse( void ) {
