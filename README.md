@@ -65,6 +65,8 @@ The part I worked on deals with the main handler loop of the server. This covers
 * Writing to the socket(s)
 * Closing connections with the socket(s)
 
+I have also helped with the integration of the configuration parser and the request parser into the server.
+
 ## Mars
 My job is to handle request parsing, method handling and responses. Here's what I deal with:
 
