@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   responseGet.cpp                                    :+:      :+:    :+:   */
+/*   responseGet2.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 18:59:29 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 19:51:02 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,9 +80,7 @@ bool isAutoIndex( const std::string path ) {
 */
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
-
-	_path.erase(0, 1);
-
+	// path "/", "/upload", "/upload/"
 	/*
 		If path is not root AND path ends with a '/'
 		Loop through each stored location (uri)
@@ -103,45 +101,45 @@ void ResponseGet::checkPath( void ) {
 		}
 	}
 
-	if (this->_path.empty() && !this->_unknown) {
-		setContentType("html");
-		this->_path.append(_portinfo.root + "/" + _portinfo.index);
-		std::cout << "Path in here " << _path << std::endl; 
-	}
-	else if (!this->_path.empty() && !_autoindex) {
-		setContentType(fileExtension(this->_path));
-		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
-			this->_isImg = true;
-			if (_path.find("assets/") == std::string::npos)
-            	_path.insert(0, _portinfo.root + "/");
-        }
-		else if (this->_contentType == "html"){
-            std::cout << "insert html infront" << std::endl;
-             _path.insert(0, _portinfo.root + "/");
-        }
-        else if (this->_contentType == "txt") {
-            setContentType("plain");
-            _path.insert(0, _portinfo.root + "/");
-        }
-		else if (this->_contentType == "") {
-			setContentType("html");
-			_path.insert(0, "/");
-			if (this->_unknown) {
-				this->_path.clear();
-				this->_path.append(this->_portinfo.errorPages[501]);
-			}
-			else {
-				std::cout << "Path is: " << this->_path << std::endl;
-				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-					if (this->_path.find((*iter).uri) != std::string::npos) {
-						_path.clear();
-						if (!(*iter).index.empty())
-							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
-					}
-				}
-			}
-		}
-	}
+	// if (this->_path.empty() && !this->_unknown) {
+	// 	setContentType("html");
+	// 	this->_path.append(_portinfo.root + "/" + _portinfo.index);
+	// 	std::cout << "Path in here " << _path << std::endl; 
+	// }
+	// else if (!this->_path.empty() && !_autoindex) {
+	// 	setContentType(fileExtension(this->_path));
+	// 	if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
+	// 		this->_isImg = true;
+	// 		if (_path.find("assets/") == std::string::npos)
+    //         	_path.insert(0, _portinfo.root + "/");
+    //     }
+	// 	else if (this->_contentType == "html"){
+    //         std::cout << "insert html infront" << std::endl;
+    //          _path.insert(0, _portinfo.root + "/");
+    //     }
+    //     else if (this->_contentType == "txt") {
+    //         setContentType("plain");
+    //         _path.insert(0, _portinfo.root + "/");
+    //     }
+	// 	else if (this->_contentType == "") {
+	// 		setContentType("html");
+	// 		_path.insert(0, "/");
+	// 		if (this->_unknown) {
+	// 			this->_path.clear();
+	// 			this->_path.append(this->_portinfo.errorPages[501]);
+	// 		}
+	// 		else {
+	// 			std::cout << "Path is: " << this->_path << std::endl;
+	// 			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+	// 				if (this->_path.find((*iter).uri) != std::string::npos) {
+	// 					_path.clear();
+	// 					if (!(*iter).index.empty())
+	// 						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 	
 	std::cout << RED << "path before setstatuscodeget: " << this->_path << CLEAR << std::endl;
 	setStatusCodeGet();
@@ -221,17 +219,12 @@ void ResponseGet::generateResponse( void ) {
 					this->_response.append(line);
 			}
 
-			if (_file.bad()) { throw std::runtime_error("Error"); }
+			if (_file.bad()) throw std::runtime_error("Error");
 		}
 	}
 	catch (std::exception &e) {
 		this->_response.clear();
-
-		this->_response.append(ISE_500);
-		std::string body = ISE_MESSAGE;
-		this->_contentLength = body.length();
-		this->_response.append(std::to_string(this->_contentLength));
-		this->_response.append(body);
+		this->_response = generateResponseISE();
 	}
 
 	_file.close();
