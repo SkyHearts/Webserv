@@ -27,8 +27,9 @@ class ResponsePost : public ResponseBase {
 		~ResponsePost( void );
 
 		void clearResources( void );
-		void handleMultipartFormData( std::string filename, std::string rawData );
 		void handleTextData( std::string requestBody );
+		void handleCalc( std::string requestBody );
+		void handleMultipartFormData( std::string filename, std::string rawData );
 		bool validateResource( const std::string &name );
 		void saveData( void );
 		void setStatusCodePost( int status, int isUpload );

@@ -111,18 +111,31 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 		value = data.substr(equal + 1);
 
 		std::ofstream file(_portinfo.root + "/uploads/" + key + ".txt");
-		if (!file.is_open()) { 
-			setStatusCode(500);
-			return ;
-		}
+		if (!file.is_open())
+			return setStatusCode(500);
+
 		file << value;
-		if (file.bad()) setStatusCode(500);
+		if (file.bad())
+			setStatusCode(500);
 		else 
 			setStatusCodePost(201, 1);
+
 		file.close();
 	}
-	else {
+	else
 		setStatusCodePost(204, 1);
+}
+
+/*
+	Specifically to throw client input from calculator to CGI
+*/
+void ResponsePost::handleCalc( std::string requestBody ) {
+	size_t expression_pos = requestBody.find("expr=");
+	std::string expression;
+
+	if (expression_pos != std::string::npos) {
+		expression = requestBody.substr(expression_pos + 5);
+		std::cout << expression << std::endl;
 	}
 }
 
@@ -133,18 +146,21 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 	filename.insert(0, _portinfo.root + "/uploads/");
 
-	if (validateResource(filename)) {
+	if (validateResource(filename))
 		setStatusCodePost(409, 1);
-	}
 	else {
 		std::ofstream file(filename);
 		if (!file.is_open()) {
 			setStatusCode(500); 
 			return;
 		}
+
 		file << rawData;
-		if (file.bad()) setStatusCodePost(500, 0);
-		else setStatusCodePost(201, 1);
+		if (file.bad())
+			setStatusCodePost(500, 0);
+		else
+			setStatusCodePost(201, 1);
+
 		file.close();
 	}
 }
@@ -163,6 +179,10 @@ void ResponsePost::saveData( void ) {
 
 	if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
 		handleTextData(_requestBody);
+		return ;
+	}
+	else if (contentType.find("text/plain") != std::string::npos) {
+		handleCalc(_requestBody);
 		return ;
 	}
 

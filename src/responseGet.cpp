@@ -101,7 +101,6 @@ void ResponseGet::checkPath( void ) {
 	if (this->_path.empty() && !this->_unknown) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
-		std::cout << "Path in here " << _path << std::endl; 
 	}
 	else if (!this->_path.empty() && !_autoindex) {
 		setContentType(fileExtension(this->_path));
@@ -111,7 +110,6 @@ void ResponseGet::checkPath( void ) {
             	_path.insert(0, _portinfo.root + "/");
         }
 		else if (this->_contentType == "html"){
-            std::cout << "insert html infront" << std::endl;
              _path.insert(0, _portinfo.root + "/");
 		}
         else if (this->_contentType == "txt") {
@@ -138,7 +136,6 @@ void ResponseGet::checkPath( void ) {
 		}
 	}
 	
-	std::cout << RED << "path before setstatuscodeget: " << this->_path << CLEAR << std::endl;
 	setStatusCodeGet();
 }
 
@@ -159,8 +156,6 @@ void ResponseGet::setStatusCodeGet( void ) {
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
 		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
 		else setStatusCode(200);
-        std::cout << "Opening file" << std::endl;
-        std::cout << this->_path << std::endl;
 		this->_file.open(this->_path);
 	}
 
