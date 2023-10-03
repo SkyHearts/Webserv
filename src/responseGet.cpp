@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 16:55:16 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 18:12:19 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,18 @@
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
+/*
+	CHANGING FLOW. USING STAT()
+
+	path e.g: "/" "/upload" "/cgi-bin"
+	* 
+*/
+
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
-	//clearResources();
+	resetResources();
 	
-	_portinfo = portinfo;
-	_autoindex = false;
-	_unknown = false;
-	_path.clear();
+	this->_portinfo = portinfo;
 	this->_path = filePath;
-	std::cout << RED << "path to dir: " << _path << CLEAR << std::endl;
 
 	if (this->_path == "unknown")
 		this->_unknown = true;
@@ -35,6 +38,11 @@ ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : Respon
 ResponseGet::~ResponseGet( void ) { }
 
 /*============================================================================*/
+
+void ResponseGet::resetResources( void ) {
+	this->_autoindex = false;
+	this->_unknown = false;
+}
 
 /*
 	Find the file extension of a given filename
@@ -69,6 +77,14 @@ void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
 	_path.erase(0, 1);
+
+	/*
+		If path is not root AND path ends with a '/'
+		Loop through each stored location (uri)
+		Erase the leading '/' from the uri since _path already has leading '/' removed
+		If _path match with a uri, check if autoindex for that uri is on
+		If is on, set autoindex to true
+	*/
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 			(*iter).uri.erase(0, 1);
