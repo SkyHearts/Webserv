@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/29 15:49:55 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 16:10:42 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class ResponseGet : public ResponseBase {
 		ResponseGet( void );
 		std::ifstream _file;
 		bool _autoindex;
+		bool _unknown;
 
 	public:
 

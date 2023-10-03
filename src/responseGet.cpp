@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 15:24:17 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 16:55:16 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,17 @@
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
+	//clearResources();
+	
 	_portinfo = portinfo;
 	_autoindex = false;
+	_unknown = false;
 	_path.clear();
-	this->_path.append(filePath);
+	this->_path = filePath;
 	std::cout << RED << "path to dir: " << _path << CLEAR << std::endl;
 
+	if (this->_path == "unknown")
+		this->_unknown = true;
 	checkPath();
 	generateResponse();
 }
@@ -64,7 +69,6 @@ void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
 	_path.erase(0, 1);
-
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 			(*iter).uri.erase(0, 1);
@@ -78,9 +82,10 @@ void ResponseGet::checkPath( void ) {
 		}
 	}
 
-	if (this->_path.empty()) {
+	if (this->_path.empty() && !this->_unknown) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
+		std::cout << "Path in here " << _path << std::endl; 
 	}
 	else if (!this->_path.empty() && !_autoindex) {
 		setContentType(fileExtension(this->_path));
@@ -91,7 +96,6 @@ void ResponseGet::checkPath( void ) {
         }
 		else if (this->_contentType == "html"){
             std::cout << "insert html infront" << std::endl;
-			// _path.insert(0, "html");
              _path.insert(0, _portinfo.root + "/");
         }
         else if (this->_contentType == "txt") {
@@ -101,19 +105,24 @@ void ResponseGet::checkPath( void ) {
 		else if (this->_contentType == "") {
 			setContentType("html");
 			_path.insert(0, "/");
-            std::cout << "Path is: " << this->_path << std::endl;
-			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-				if (this->_path.find((*iter).uri) != std::string::npos) {
-					_path.clear();
-					if (!(*iter).index.empty())
-						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+			if (this->_unknown) {
+				this->_path.clear();
+				this->_path.append(this->_portinfo.errorPages[501]);
+			}
+			else {
+				std::cout << "Path is: " << this->_path << std::endl;
+				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+					if (this->_path.find((*iter).uri) != std::string::npos) {
+						_path.clear();
+						if (!(*iter).index.empty())
+							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+					}
 				}
-                // else
-                //     _path.insert(0, _portinfo.root + "/");
 			}
 		}
 	}
-
+	
+	std::cout << RED << "path before setstatuscodeget: " << this->_path << CLEAR << std::endl;
 	setStatusCodeGet();
 }
 
@@ -137,7 +146,6 @@ void ResponseGet::setStatusCodeGet( void ) {
 		else setStatusCode(200);
         std::cout << "Opening file" << std::endl;
         std::cout << this->_path << std::endl;
-        // _path.insert(0, _portinfo.root + "/");
 		this->_file.open(this->_path);
 	}
 	if (!this->_file.is_open()) {
@@ -206,55 +214,4 @@ void ResponseGet::generateResponse( void ) {
 	}
 
 	_file.close();
-
-	// if (_autoindex) {
-	// 	try {
-	// 	}
-	// 	catch (std::exception &e) {
-	// 		this->_response.clear();
-
-	// 		this->_response.append(ISE_500);
-	// 		std::string body = ISE_MESSAGE;
-	// 		std::cout << "500 body:\n" << body << std::endl;
-	// 		this->_contentLength = body.length();
-	// 		this->_response.append(std::to_string(this->_contentLength));
-	// 		this->_response.append(body);
-	// 	}
-	// }
-	// else {
-	// 	try {
-	// 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
-
-	// 		if (this->_isImg) {
-	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
-
-	// 			char *imgBuffer = new char[1024];
-	// 			std::memset(imgBuffer, 0, 1024);
-	// 			while (!this->_file.eof()) {
-	// 				this->_file.read(imgBuffer, 1024);
-	// 				this->_response.append(imgBuffer, this->_file.gcount());				
-	// 			}
-	// 			delete [] imgBuffer;
-	// 		}
-	// 		else {
-	// 			this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");
-	// 			std::string line;
-	// 			while (getline(this->_file, line)) 
-	// 				this->_response.append(line);
-	// 		}
-
-	// 		if (_file.bad()) { throw std::runtime_error("Error"); }
-	// 	}
-	// 	catch (std::exception &e) {
-	// 		this->_response.clear();
-			
-	// 		this->_response.append(ISE_500);
-	// 		std::string body = ISE_MESSAGE;
-	// 		std::cout << "500 body:\n" << body << std::endl;
-	// 		this->_contentLength = body.length();
-	// 		this->_response.append(std::to_string(this->_contentLength));
-	// 		this->_response.append(body);
-	// 	}
-	// 	this->_file.close();
-	// }
 }

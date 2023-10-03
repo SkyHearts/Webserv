@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 19:16:06 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 15:45:35 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	}
 
 	else {
-		ResponseGet unknown(portinfo.errorPages[501], portinfo);
+		ResponseGet unknown("unknown", portinfo);
 		_response = unknown.getResponse();
 	}
 	
