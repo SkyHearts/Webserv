@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 15:54:10 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 14:36:13 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 14:38:16 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ ResponseDelete::ResponseDelete( std::string filePath, ServerConfig portinfo ) : 
 
 	if (validateResource(this->_filePath)) {
 		this->_path.append(this->_filePath.substr(0, this->_filePath.find_last_of('/') + 1));
-		std::cout << RED << "path from filepath: " << this->_path << CLEAR << std::endl;
 		if (checkPermissions("DELETE"))
 			deleteData();
 		else setStatusCodeDelete(405, 0);
@@ -40,11 +39,8 @@ ResponseDelete::~ResponseDelete( void ) { }
 bool ResponseDelete::validateResource( const std::string &name ) {
 	struct stat sb;
 
-	if (stat(name.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)) {
-		std::cout << RED << "valid file?" << CLEAR << std::endl;
-		return true; }
-	else
-		std::cout << RED << "invalid file?" << CLEAR << std::endl;
+	if (stat(name.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))
+		return true;
 	return false;
 }
 
@@ -55,11 +51,9 @@ void ResponseDelete::setStatusCodeDelete( int status, bool isUpload ) {
 	this->_path.clear();
 	this->_path.append(this->_portinfo.root + "/");
 	if (isUpload)
-		std::cout << "ok" << std::endl;
 		this->_path.append("upload/");
 	this->_path.append(std::to_string(this->_statusCode) + ".html");
 
-	std::cout << RED << "path to response file: " << this->_path << CLEAR << std::endl;
 	this->_file.open(this->_path);
 	if (!this->_file.is_open())
 		setStatusCode(500);

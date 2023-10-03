@@ -12,12 +12,13 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	this->_requestBody = reqBody;
 	this->_payload = payload;
 
-	std::cout << RED << "path to dir: " << _path << CLEAR << std::endl;
 	if (validateResource(this->_portinfo.root + this->_path)) {
 		if (checkPermissions("POST"))
 			saveData();
-		else
+		else {
 			setStatusCodePost(405, 0);
+			std::cout << RED << "permission fail?" << CLEAR << std::endl;
+		}
 	}
 	else
 		setStatusCodePost(404, 0);
@@ -60,11 +61,13 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 	setStatusCode(status);
 	setContentType("html");
 
-	if (isUpload) {
-		this->_path.insert(0, this->_portinfo.root);
-		this->_path.append("/" + std::to_string(this->_statusCode) + ".html");
-	}
+	this->_path.clear();
+	this->_path.append(this->_portinfo.root);
+	if (isUpload)
+		this->_path.append("/upload");
+	this->_path.append("/" + std::to_string(this->_statusCode) + ".html");
 
+	std::cout << RED << "status code path: " << this->_path << CLEAR << std::endl;
 	this->_file.open(this->_path);
 	if (!this->_file.is_open())
 		setStatusCode(500);
@@ -196,7 +199,6 @@ void ResponsePost::saveData( void ) {
 
 void ResponsePost::generateResponse( void ) {
 
-	std::cout << RED << "path to response page: " << _path << CLEAR << std::endl;
 	if (this->_statusCode == 500)
 		_response.append(generateResponseISE());
 	else {

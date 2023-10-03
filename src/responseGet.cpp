@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 13:47:01 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 15:24:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : Respon
 	_autoindex = false;
 	_path.clear();
 	this->_path.append(filePath);
+	std::cout << RED << "path to dir: " << _path << CLEAR << std::endl;
 
 	checkPath();
 	generateResponse();
@@ -85,7 +86,8 @@ void ResponseGet::checkPath( void ) {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
 			this->_isImg = true;
-            _path.insert(0, _portinfo.root + "/");
+			if (_path.find("assets/") == std::string::npos)
+            	_path.insert(0, _portinfo.root + "/");
         }
 		else if (this->_contentType == "html"){
             std::cout << "insert html infront" << std::endl;

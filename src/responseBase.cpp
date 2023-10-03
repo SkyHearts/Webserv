@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/29 15:57:12 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 15:20:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,6 @@ bool ResponseBase::checkPermissions( std::string method ) {
 			}
 		}
 	}
-
 	return (found);
 }
 

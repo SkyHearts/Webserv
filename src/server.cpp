@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 14:24:03 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 14:48:48 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ void Server::sendResponse( int socket ) {
 	size_t response_len = _response[socket].length();
 	size_t total_sent = _sentbytes[socket];
 
-	size_t chunk_size = 2048;
+	size_t chunk_size = 1024;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
@@ -233,7 +233,7 @@ void Server::loop( void ) {
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 10000;
+	timeout.tv_usec = 1000;
 
     signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < _ports.size(); i++)
