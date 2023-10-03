@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/10/03 14:48:48 by nnorazma         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "server.hpp"
 
 /** ---------- Construct and Destruct ---------- */
@@ -127,6 +139,8 @@ void Server::readRequest( int socket, Request &request ) {
 				connected_port_index++;
 			}
 
+			std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+			std::cout << YELLOW << client_data << CLEAR << std::endl; 
 			portinfo = configinfo[connected_port_index];
 		}
 
@@ -145,8 +159,8 @@ void Server::readRequest( int socket, Request &request ) {
 			break ;
 	}
 
-	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
-	std::cout << client_data << std::endl;
+	// std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	// std::cout << client_data << std::endl;
 
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;

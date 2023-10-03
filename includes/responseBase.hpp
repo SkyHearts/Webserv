@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:37:55 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:39:43 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/29 14:52:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,5 +42,6 @@ class ResponseBase {
 		std::string getResponse( void );
 		bool checkPermissions( std::string method );
 		virtual void generateResponse( void ) = 0;
+		std::string generateResponseISE( void );
 
 };

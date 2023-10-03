@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:40:11 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/03 15:20:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void ResponseBase::initStatusCodes( void ) {
 	_statusCodes[405] = "Method Not Allowed";
 	_statusCodes[409] = "Conflict";
 	_statusCodes[413] = "Payload Too Large";
+	_statusCodes[500] = "Internal Server Error";
 	_statusCodes[501] = "Not Implemented";
 }
 
@@ -57,7 +58,6 @@ bool ResponseBase::checkPermissions( std::string method, std::string path, Serve
 			}
 		}
 	}
-
 	return found;
 }
 
@@ -93,6 +93,17 @@ bool ResponseBase::checkPermissions( std::string method ) {
 			}
 		}
 	}
+	return (found);
+}
 
-	return found;
+std::string ResponseBase::generateResponseISE ( void ) {
+		std::string response;
+		
+		response.append(ISE_500);
+		std::string body = ISE_MESSAGE;
+		this->_contentLength = body.length();
+		response.append(std::to_string(this->_contentLength));
+		response.append(body);
+
+		return (response);
 }

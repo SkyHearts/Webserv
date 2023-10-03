@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 10:37:43 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/03 18:12:19 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,21 @@
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
 
-ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
-	_portinfo = portinfo;
-	_autoindex = false;
-	_path.clear();
-	this->_path.append(filePath);
+/*
+	CHANGING FLOW. USING STAT()
 
+	path e.g: "/" "/upload" "/cgi-bin"
+	* 
+*/
+
+ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
+	resetResources();
+	
+	this->_portinfo = portinfo;
+	this->_path = filePath;
+
+	if (this->_path == "unknown")
+		this->_unknown = true;
 	checkPath();
 	generateResponse();
 }
@@ -29,6 +38,11 @@ ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : Respon
 ResponseGet::~ResponseGet( void ) { }
 
 /*============================================================================*/
+
+void ResponseGet::resetResources( void ) {
+	this->_autoindex = false;
+	this->_unknown = false;
+}
 
 /*
 	Find the file extension of a given filename
@@ -64,6 +78,13 @@ void ResponseGet::checkPath( void ) {
 
 	_path.erase(0, 1);
 
+	/*
+		If path is not root AND path ends with a '/'
+		Loop through each stored location (uri)
+		Erase the leading '/' from the uri since _path already has leading '/' removed
+		If _path match with a uri, check if autoindex for that uri is on
+		If is on, set autoindex to true
+	*/
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 			(*iter).uri.erase(0, 1);
@@ -77,9 +98,10 @@ void ResponseGet::checkPath( void ) {
 		}
 	}
 
-	if (this->_path.empty()) {
+	if (this->_path.empty() && !this->_unknown) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
+		std::cout << "Path in here " << _path << std::endl; 
 	}
 	else if (!this->_path.empty() && !_autoindex) {
 		setContentType(fileExtension(this->_path));
@@ -88,8 +110,8 @@ void ResponseGet::checkPath( void ) {
 			if (_path.find("assets/") == std::string::npos)
             	_path.insert(0, _portinfo.root + "/");
         }
-		else if (this->_contentType == "html") {
-			setContentType("plain");
+		else if (this->_contentType == "html"){
+            std::cout << "insert html infront" << std::endl;
              _path.insert(0, _portinfo.root + "/");
 		}
         else if (this->_contentType == "txt") {
@@ -99,17 +121,24 @@ void ResponseGet::checkPath( void ) {
 		else if (this->_contentType == "") {
 			setContentType("html");
 			_path.insert(0, "/");
-            std::cout << "Path is: " << this->_path << std::endl;
-			for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-				if (this->_path.find((*iter).uri) != std::string::npos) {
-					_path.clear();
-					if (!(*iter).index.empty())
-						this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+			if (this->_unknown) {
+				this->_path.clear();
+				this->_path.append(this->_portinfo.errorPages[501]);
+			}
+			else {
+				std::cout << "Path is: " << this->_path << std::endl;
+				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+					if (this->_path.find((*iter).uri) != std::string::npos) {
+						_path.clear();
+						if (!(*iter).index.empty())
+							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+					}
 				}
 			}
 		}
 	}
-
+	
+	std::cout << RED << "path before setstatuscodeget: " << this->_path << CLEAR << std::endl;
 	setStatusCodeGet();
 }
 
@@ -130,7 +159,8 @@ void ResponseGet::setStatusCodeGet( void ) {
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
 		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
 		else setStatusCode(200);
-
+        std::cout << "Opening file" << std::endl;
+        std::cout << this->_path << std::endl;
 		this->_file.open(this->_path);
 	}
 
@@ -193,7 +223,6 @@ void ResponseGet::generateResponse( void ) {
 
 		this->_response.append(ISE_500);
 		std::string body = ISE_MESSAGE;
-		std::cout << "500 body:\n" << body << std::endl;
 		this->_contentLength = body.length();
 		this->_response.append(std::to_string(this->_contentLength));
 		this->_response.append(body);
