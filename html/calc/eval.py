@@ -3,7 +3,7 @@
 import os
 
 def evaluate():
-	expression = os.environ.get('EXPR')
+	expression = os.environ.get('expr')
 
 	if expression is not None:
 		try:

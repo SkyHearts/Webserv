@@ -16,10 +16,8 @@ ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::s
 	if (validateResource(this->_portinfo.root + this->_path)) {
 		if (checkPermissions("POST"))
 			saveData();
-		else {
+		else
 			setStatusCodePost(405, 0);
-			std::cout << RED << "permission fail?" << CLEAR << std::endl;
-		}
 	}
 	else
 		setStatusCodePost(404, 0);
@@ -140,8 +138,9 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 	}
 
     cgi_handler cgi;
-    const char *sample_payload[2] = {expression.c_str(), NULL};
-    std::string response = cgi.execCGI(this->_requestHeader, "/html/calc/eval.py", this->_portinfo, const_cast<char **>(sample_payload));
+    const char *payload[2] = {expression.c_str(), NULL};
+    std::string response = cgi.execCGI(this->_requestHeader, "html/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
+	std::cout << "Evaluation is: " << response << std::endl;
 }
 
 /*

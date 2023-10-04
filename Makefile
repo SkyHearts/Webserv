@@ -5,7 +5,7 @@ INCLUDES	= -I includes
 
 RM			= rm -rf
 
-FILES		= main server parse request responseBase responseGet responsePost responseDelete autoindex
+FILES		= main server parse request responseBase responseGet responsePost responseDelete autoindex cgi_handler
 
 SRCS		= $(addsuffix .cpp, $(addprefix src/, $(FILES)))
 

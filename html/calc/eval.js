@@ -10,7 +10,7 @@ function evaluateExpression(expression) {
 }
 
 function main() {
-	const expression = process.env.EXPR;
+	const expression = process.env.expr;
 
 	if (expression) {
 		const result = evaluateExpression(expression);

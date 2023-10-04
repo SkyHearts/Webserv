@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then((response) => response.text())
 			.then((result) => {
 				updateOutput(result);
+				console.log('Success:', result)
 			})
 			.catch((error) => {
 				console.error('Error:', error);

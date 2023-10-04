@@ -100,7 +100,7 @@ void cgi_handler::createEnv( std::map<std::string, std::string> content, char** 
 	addEnv("HTTP_REFERER=" + content["Referer"]);
 	addEnv("HTTP_ACCEPT="+ content["Accept"]) ;
 
-    if (!payload)
+    if (payload)
 		addCharEnvs(payload);
 }
 
@@ -137,6 +137,12 @@ std::string cgi_handler::execCGI( std::map<std::string, std::string> content, st
 	createEnv(content, payload, portInfo);
 	createArg(path);
 
+	for(int i = 0; payload[i] != NULL; ++i) {
+		std::cout << i << " ";
+		std::cout << payload[i] << std::endl;  }
+	for(int i = 0; this->_env[i] != NULL; ++i) {
+		std::cout << i << " ";
+		std::cout << this->_env[i] << std::endl;  }
 	std::cout << std::endl;
 	std::cout << "Path: " << this->_arg[0] << std::endl;
 	int pipefd[2];
@@ -178,26 +184,26 @@ std::string cgi_handler::execCGI( std::map<std::string, std::string> content, st
 
 
 // to test cgi files, ./a.out <path to files>
-int main(int argc, char **argv){
-	std::map<std::string, std::string> content;
-	cgi_handler cgi;
-    ServerConfig portinfo;
-    portinfo.root = ROOT_DEFAULT;
-    portinfo.listen = 8080;
-	const char *sample_payload[3] = {"payload1=hello", "payload2=world!", NULL};
-    content["Path"] = "/cgi-bin/printEnv";
-    content["Method"] = "GET";
-    content["Referer"] = "localhost:8080";
-    content["Accept"] = "text/html";
-	// for(int i = 0; i < 3 != NULL; ++i) {
-	// 	std::cout << i << " ";
-	// 	std::cout << sample_payload[i] << std::endl;   
-    // }
-	// for(int i = 0; sample_payload[i] != NULL; ++i) {
-	// 	std::cout << i << " ";
-	// 	std::cout << sample_payload[i] << std::endl;   
-    // }
-	cgi.execCGI(content, "../html/cgi-bin/printEnv", portinfo, const_cast<char **>(sample_payload));
-	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
-	//system("leaks a.out");
-}
+// int main(int argc, char **argv){
+// 	std::map<std::string, std::string> content;
+// 	cgi_handler cgi;
+//     ServerConfig portinfo;
+//     portinfo.root = ROOT_DEFAULT;
+//     portinfo.listen = 8080;
+// 	const char *sample_payload[3] = {"payload1=hello", "payload2=world!", NULL};
+//     content["Path"] = "/cgi-bin/printEnv";
+//     content["Method"] = "GET";
+//     content["Referer"] = "localhost:8080";
+//     content["Accept"] = "text/html";
+// 	// for(int i = 0; i < 3 != NULL; ++i) {
+// 	// 	std::cout << i << " ";
+// 	// 	std::cout << sample_payload[i] << std::endl;   
+//     // }
+// 	// for(int i = 0; sample_payload[i] != NULL; ++i) {
+// 	// 	std::cout << i << " ";
+// 	// 	std::cout << sample_payload[i] << std::endl;   
+//     // }
+// 	cgi.execCGI(content, "../html/cgi-bin/printEnv", portinfo, const_cast<char **>(sample_payload));
+// 	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
+// 	//system("leaks a.out");
+// }

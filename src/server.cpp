@@ -158,6 +158,8 @@ void Server::readRequest( int socket, Request &request ) {
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	std::cout << client_data << std::endl;
+
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
 
