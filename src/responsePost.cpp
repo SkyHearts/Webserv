@@ -129,18 +129,19 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 	Specifically to throw client input from calculator to CGI
 */
 void ResponsePost::handleCalc( std::string requestBody ) {
-	size_t expression_pos = requestBody.find("expr=");
-	std::string expression;
+	size_t expression_pos = requestBody.find("EXPR=");
+	cgi_handler cgi;
 
+	_usingCGI = true;
+	_response.clear();
 	if (expression_pos != std::string::npos) {
-		expression = requestBody.substr(expression_pos);
-		std::cout << expression << std::endl; // expr=
+		std::string expression = requestBody.substr(expression_pos);
+		const char *payload[2] = {expression.c_str(), NULL};
+		_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+		_response += cgi.execCGI(this->_requestHeader, "html/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
 	}
-
-    cgi_handler cgi;
-    const char *payload[2] = {expression.c_str(), NULL};
-    std::string response = cgi.execCGI(this->_requestHeader, "html/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
-	std::cout << "Evaluation is: " << response << std::endl;
+	else
+		_response = "Error";
 }
 
 /*
@@ -222,9 +223,10 @@ void ResponsePost::saveData( void ) {
 }
 
 void ResponsePost::generateResponse( void ) {
-
 	if (this->_statusCode == 500)
 		_response.append(generateResponseISE());
+	else if (_usingCGI)
+		return ;
 	else {
 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
 		this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");

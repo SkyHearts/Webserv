@@ -137,14 +137,6 @@ std::string cgi_handler::execCGI( std::map<std::string, std::string> content, st
 	createEnv(content, payload, portInfo);
 	createArg(path);
 
-	for(int i = 0; payload[i] != NULL; ++i) {
-		std::cout << i << " ";
-		std::cout << payload[i] << std::endl;  }
-	for(int i = 0; this->_env[i] != NULL; ++i) {
-		std::cout << i << " ";
-		std::cout << this->_env[i] << std::endl;  }
-	std::cout << std::endl;
-	std::cout << "Path: " << this->_arg[0] << std::endl;
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		std::cout << "CGI pipe error" << std::endl;
@@ -169,12 +161,13 @@ std::string cgi_handler::execCGI( std::map<std::string, std::string> content, st
             {
                 // Null-terminate the buffer and print the output
                 buffer[bytes_read] = '\0';
-                std::cout << "Child process output: " << buffer << std::endl;
 				response += buffer;
             }
 		}
-		else
+		else {
             std::cerr << RED << "Child process failed to execute." << CLEAR << std::endl;
+			response = "Error";
+		}
 	}
 	std::cout << "CGI Response: " << response << std::endl;
 	delDArray(_env);

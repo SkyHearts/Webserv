@@ -18,9 +18,10 @@ class ResponsePost : public ResponseBase {
 	private:
 		ResponsePost( void );
 
-		std::string _requestBody, _boundary;
-		std::map < std::string, std::string > _requestHeader;
-		std::ifstream _file;
+		std::string								_requestBody, _boundary;
+		std::map < std::string, std::string >	_requestHeader;
+		std::ifstream							_file;
+		bool		 							_usingCGI;
 
 	public:
 		ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload, ServerConfig portinfo);

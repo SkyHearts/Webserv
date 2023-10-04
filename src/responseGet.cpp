@@ -78,13 +78,6 @@ void ResponseGet::checkPath( void ) {
 
 	_path.erase(0, 1);
 
-	/*
-		If path is not root AND path ends with a '/'
-		Loop through each stored location (uri)
-		Erase the leading '/' from the uri since _path already has leading '/' removed
-		If _path match with a uri, check if autoindex for that uri is on
-		If is on, set autoindex to true
-	*/
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 			(*iter).uri.erase(0, 1);

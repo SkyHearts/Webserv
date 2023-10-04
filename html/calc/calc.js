@@ -7,12 +7,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		button.addEventListener('click', () => {
 			const buttonText = button.textContent;
 
-			if (buttonText === 'C')
+			if (currentExpression === 'Error')
 				currentExpression = '';
+
+			if (buttonText === 'C')
+				currentExpression = '0';
 			else if (buttonText === '=')
 				sendExpression(currentExpression);
-			else
-				currentExpression += buttonText;
+			else {
+				if (currentExpression === '0')
+					currentExpression = buttonText;
+				else
+					currentExpression += buttonText;
+			}
 
 			outputDisplay.textContent = currentExpression;
 		});
@@ -20,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function sendExpression(expression) {
 		const uri = '/calc';
-		const requestBody = `expr=${expression}`;
+		const requestBody = `EXPR=${expression}`;
 		const headers = {
 			'Content-Type': 'text/plain'
 		};
@@ -35,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then((response) => response.text())
 			.then((result) => {
 				updateOutput(result);
-				console.log('Success:', result)
+				currentExpression = result.replace(/\s+/g, '');
 			})
 			.catch((error) => {
 				console.error('Error:', error);

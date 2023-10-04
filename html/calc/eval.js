@@ -1,26 +1,24 @@
-#!/usr/bin/env node
+const express = require('express');
+const bodyParser = require('body-parser');
 
-function evaluateExpression(expression) {
-	try {
-		const result = eval(expression);
-		return result.toString();
-	} catch (error) {
-		return 'Error';
-	}
-}
+const app = express();
+const port = 3000;
 
-function main() {
-	const expression = process.env.expr;
+app.use(bodyParser.text({ type: 'text/plain' }));
 
-	if (expression) {
-		const result = evaluateExpression(expression);
-		console.log(result);
-	} else {
-		console.error('Error');
-		process.exit(1);
-	}
-}
+app.post('/calc', (req, res) => {
+  const expression = req.body;
+  let result;
 
-if (require.main === module) {
-	main();
-}
+  try {
+    result = eval(expression);
+  } catch (e) {
+    result = 'Error';
+  }
+
+  res.send(result.toString());
+});
+
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});
