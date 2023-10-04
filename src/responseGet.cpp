@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 18:59:29 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 17:21:08 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,6 @@
 /*============================================================================*/
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
-
-/*
-	CHANGING FLOW. USING STAT()
-
-	path e.g: "/" "/upload" "/cgi-bin"
-	* check extension, if any, insert "/assets" to path
-	* else, insert root ("/html")
-	* set content-type, if "" set to html
-
-	* validate with stat.
-
-*/
 
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
 	resetResources();
