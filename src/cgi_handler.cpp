@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/27 13:41:00 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/04 11:13:48 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ void cgi_handler::createArg( std::string path ) {
 }
 
 
-void cgi_handler::execCGI( std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload ) {
+std::string cgi_handler::execCGI( std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload ) {
 	pid_t pid;
 	std::string response;
 
@@ -152,28 +152,28 @@ void cgi_handler::execCGI( std::map<std::string, std::string> content, std::stri
 		execve(_arg[0], _arg, this->_env);
 		exit(1);
 	}
-	// else{
-	// 	//parent
-	// 	int status;
-	// 	waitpid(pid, &status, 0);
-	// 	if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-	// 		char buffer[1024];
-    //         int bytes_read = read(pipefd[0], buffer, sizeof(buffer));
-    //         if (bytes_read > 0)
-    //         {
-    //             // Null-terminate the buffer and print the output
-    //             buffer[bytes_read] = '\0';
-    //             std::cout << "Child process output: " << buffer << std::endl;
-	// 			response += buffer;
-    //         }
-	// 	}
-	// 	else
-    //         std::cerr << RED << "Child process failed to execute." << CLEAR << std::endl;
-	// }
+	else{
+		//parent
+		int status;
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+			char buffer[1024];
+            int bytes_read = read(pipefd[0], buffer, sizeof(buffer));
+            if (bytes_read > 0)
+            {
+                // Null-terminate the buffer and print the output
+                buffer[bytes_read] = '\0';
+                std::cout << "Child process output: " << buffer << std::endl;
+				response += buffer;
+            }
+		}
+		else
+            std::cerr << RED << "Child process failed to execute." << CLEAR << std::endl;
+	}
 	std::cout << "CGI Response: " << response << std::endl;
 	delDArray(_env);
 	delDArray(_arg);
-	//return (response); //without header, etc
+	return (response); //without header, etc
 }
 
 

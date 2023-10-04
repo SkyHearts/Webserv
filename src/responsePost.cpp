@@ -1,4 +1,5 @@
 #include "responsePost.hpp"
+#include "cgi_handler.hpp"
 
 /*============================================================================*/
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
@@ -134,9 +135,13 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 	std::string expression;
 
 	if (expression_pos != std::string::npos) {
-		expression = requestBody.substr(expression_pos + 5);
-		std::cout << expression << std::endl;
+		expression = requestBody.substr(expression_pos);
+		std::cout << expression << std::endl; // expr=
 	}
+
+    cgi_handler cgi;
+    const char *sample_payload[2] = {expression.c_str(), NULL};
+    std::string response = cgi.execCGI(this->_requestHeader, "/html/calc/eval.py", this->_portinfo, const_cast<char **>(sample_payload));
 }
 
 /*

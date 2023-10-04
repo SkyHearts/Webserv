@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/23 18:09:17 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/04 11:13:47 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ class cgi_handler
 		void createArg( std::string path );
 		
 		//Execute in child process using execve
-		void execCGI( std::map< std::string, std::string > content, std::string path, ServerConfig portInfo, char** payload = NULL );
+		std::string execCGI( std::map< std::string, std::string > content, std::string path, ServerConfig portInfo, char** payload = NULL );
 };
 
 int getCharDArraySize( char** array );
