@@ -118,7 +118,7 @@ std::string autoindex::generateList(ServerConfig portinfo){
 	// this->configinfo = portinfo;
 	// std::cout << "Head :" << this->_response << std::endl;
 	// ./webserv is the actual starting directory represented by "./", then root and path is added in to get desired directory
-	std::string path = getContentValue("Path");
+	std::string path = "/" + getContentValue("Path");
 	std::string referer = getContentValue("Referer");
 	if (referer.find("http", 0, 4) == std::string::npos)
 		referer = "http://" + referer;
@@ -151,7 +151,7 @@ std::string autoindex::generateList(ServerConfig portinfo){
 			char dateMod[100];
 			currTm = localtime(&info.st_mtime);
 			strftime(dateMod, 50, "%B %d, %Y %T", currTm);
-			std::string url = referer + path + item->d_name;
+			std::string url = path + item->d_name;
 			if (isValidDir(file_path.c_str()))
 				url += "/";
 			// std::cout << item->d_name << "\t" << info.st_size << "bytes" << "\t" << dateMod << std::endl;

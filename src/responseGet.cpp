@@ -80,11 +80,12 @@ void ResponseGet::checkPath( void ) {
 
 	if (!_path.empty() && isAutoIndex(_path)) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-			(*iter).uri.erase(0, 1);
-			if (_path.find((*iter).uri) != std::string::npos) {
+			std::string tmp = (*iter).uri;
+			tmp.erase(0, 1);
+			std::cout << _path << std::endl;
+			if (_path.find(tmp) != std::string::npos) {
 				if ((*iter).autoindex == true) {
 					setContentType("html");
-					_path.insert(0, "/");
 					this->_autoindex = true;
 				}
 			}
@@ -119,10 +120,12 @@ void ResponseGet::checkPath( void ) {
 			else {
 				std::cout << "Path is: " << this->_path << std::endl;
 				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-					if (this->_path.find((*iter).uri) != std::string::npos) {
+					if (_path == (*iter).uri) {
 						_path.clear();
-						if (!(*iter).index.empty())
+						if (!(*iter).index.empty()) {
 							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+							std::cout << _path << std::endl;
+						}
 					}
 				}
 			}

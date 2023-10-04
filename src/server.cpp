@@ -186,6 +186,7 @@ void Server::sendResponse( int socket ) {
 		if (sentbytes < 0 || errno == EBADF) {
 			error("send", false);
             std::cout << "Send failed/bad file descriptor" << std::endl;
+			closeConnection(socket);
 			return;
 		}
 

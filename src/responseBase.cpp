@@ -46,21 +46,6 @@ void ResponseBase::initContentTypes( void ) {
 	_contentTypes["form"] = "multipart/form-data";
 }
 
-bool ResponseBase::checkPermissions( std::string method, std::string path, ServerConfig portinfo ) {
-	bool found = true;
-
-	for (std::vector<Location>::iterator it = portinfo.locations.begin(); it != portinfo.locations.end(); it++) {
-		if (path.find((*it).uri) != std::string::npos) {
-			found = false;
-			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
-			}
-		}
-	}
-	return found;
-}
-
 void ResponseBase::setContentType ( std::string type ) {
 	_contentType = type;
 }
@@ -82,7 +67,10 @@ std::string ResponseBase::getResponse( void ) {
 }
 
 bool ResponseBase::checkPermissions( std::string method ) {
-	bool found = true;
+	bool found = false;
+
+	if (this->_path.find("assets/") == 0)
+		found = true;
 
 	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
 		if (this->_path.find((*it).uri) != std::string::npos) {
@@ -97,13 +85,13 @@ bool ResponseBase::checkPermissions( std::string method ) {
 }
 
 std::string ResponseBase::generateResponseISE ( void ) {
-		std::string response;
-		
-		response.append(ISE_500);
-		std::string body = ISE_MESSAGE;
-		this->_contentLength = body.length();
-		response.append(std::to_string(this->_contentLength));
-		response.append(body);
+	std::string response;
 
-		return (response);
+	response.append(ISE_500);
+	std::string body = ISE_MESSAGE;
+	this->_contentLength = body.length();
+	response.append(std::to_string(this->_contentLength));
+	response.append(body);
+
+	return (response);
 }

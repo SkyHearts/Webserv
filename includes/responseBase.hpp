@@ -33,7 +33,6 @@ class ResponseBase {
 
 		void initStatusCodes( void );
 		void initContentTypes( void );
-		bool checkPermissions( std::string method, std::string path, ServerConfig portinfo );
 		std::string getPath( void ) const { return _path; }
 		std::map< std::string, std::string > getContentTypes( void ) const;
 		std::map< int, std::string > getStatusCodes( void ) const;
