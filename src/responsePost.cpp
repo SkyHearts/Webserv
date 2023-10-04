@@ -37,6 +37,9 @@ void ResponsePost::clearResources( void ) {
 	this->_requestBody.clear();
 }
 
+/*
+	Checks if the resource is a directory or file
+*/
 bool ResponsePost::validateResource( const std::string &name ) {
 	struct stat sb;
 
@@ -72,6 +75,9 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 		setStatusCode(500);
 }
 
+/*
+	Converts all instances of %xx to their ASCII equivalent
+*/
 static std::string decodeEncoding( std::string &input ) {
 	std::string decoded;
 	size_t input_len = input.length();
@@ -98,6 +104,10 @@ static std::string decodeEncoding( std::string &input ) {
 
 /*
 	Handler for content type of application/x-www-urlencoded
+	Split incoming data into left of = and right of =
+	Use left as Key and filename, then right as data
+
+	If file of same name already exists, overwrite data
 */
 void ResponsePost::handleTextData( std::string requestBody ) {
 	std::string key, value;
@@ -145,8 +155,12 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 }
 
 /*
-	Planning to split up the saving data section to minimise repeated code for ^ and v.
-	Perhaps pass in address of file and value, and return status code?
+	Create file of given filename (including extension)
+
+	If file of same name already exists, set status code to 409
+	Else, write rawData to file
+
+	If file fails to open, set status code to 500
 */
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 	filename.insert(0, _portinfo.root + "/uploads/");
@@ -172,7 +186,8 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 
 /*
 	1) Search for POST content-type
-	2) if text, handle the text
+	2) if urlencoded input, handle and save the text
+	3) If plaintext, we know its from calculator CGI call
 	3) if it contains form data;
 		- search for boundary
 		- split form header and body
@@ -222,6 +237,15 @@ void ResponsePost::saveData( void ) {
 		handleMultipartFormData(filename, rawDataStr);
 }
 
+/*
+	Generate response based on status code
+	- 500: Internal Server Error
+	- 201: Created
+	- 204: No Content
+	- 409: Conflict
+	- 405: Method Not Allowed
+	- 404: Not Found
+*/
 void ResponsePost::generateResponse( void ) {
 	if (this->_statusCode == 500)
 		_response.append(generateResponseISE());

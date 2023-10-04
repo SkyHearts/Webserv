@@ -81,7 +81,8 @@ void Server::acceptConnection( int serverfd ) {
 /*
 	Read a request from a client
 	- Read data from client
-	- Process request
+	- Take note of which port client is connected to
+	- Process request with limitations of current port
 	- Add response to corresponding socket
 	- Switch client socket from readfds to writefds
 */
@@ -145,7 +146,7 @@ void Server::readRequest( int socket, Request &request ) {
 		if (total_bytes_read >= portinfo.maxClientBodySize) {
 			std::cout << RED << "Request exceeds payload limit" << std::endl;
 
-			_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Length: 0\r\n\r\n";
+			_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/plain\r\n\r\n413 Payload Too Large";
 			_isparsed[socket] = true;
 
 			FD_CLR(socket, &_readfds);
@@ -158,7 +159,6 @@ void Server::readRequest( int socket, Request &request ) {
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
-	// std::cout << client_data << std::endl;
 
 	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
 	_isparsed[socket] = true;
@@ -185,14 +185,13 @@ void Server::sendResponse( int socket ) {
 
 		if (sentbytes < 0 || errno == EBADF) {
 			error("send", false);
-            std::cout << "Send failed/bad file descriptor" << std::endl;
 			closeConnection(socket);
 			return;
 		}
 
 		_sentbytes[socket] += sentbytes;
 	}
-    // std::cout << errno << std::endl;
+
 	if (_sentbytes[socket] < (int)response_len && errno != EPIPE)
 		FD_SET(socket, &_writefds);
 	else {
@@ -223,6 +222,14 @@ void Server::closeConnection( int socket ) {
 	- Accept connections from clients
 	- Read requests from clients
 	- Send responses to clients
+
+	listens for incoming connections and handles them
+	It sets up file descriptors for reading and writing,
+	sets a timeout, and waits for incoming connections using
+	the select() function. When a connection is accepted,
+	it reads the request from the client, processes it, and
+	sends a response back. This loop continues indefinitely until the
+	server is stopped.
 */
 void Server::loop( void ) {
 	fd_set readfds_copy, writefds_copy;

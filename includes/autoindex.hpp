@@ -21,16 +21,16 @@ class autoindex
 	private:
 		std::map<std::string, std::string> _content;
 		std::string _response;
-		autoindex();
+		autoindex( void );
 
 	public:
-		// ServerConfig configinfo;
-		autoindex(std::map<std::string, std::string> content);
-		~autoindex();
-		std::string generateList(ServerConfig portinfo);
-		std::string getContentValue(std::string key);
-		std::string getHead(std::string path);
+		autoindex( std::map<std::string, std::string> content );
+		~autoindex( void );
+
+		std::string generateList( ServerConfig portinfo );
+		std::string getContentValue( std::string key );
+		std::string getHead( std::string path );
 };
 
-std::string uriRoot(std::string str);
-std::string trim(const std::string& str);
+std::string uriRoot( std::string str );
+std::string trim( const std::string& str );
