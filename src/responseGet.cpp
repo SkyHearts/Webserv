@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseGet.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/04 18:02:35 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 22:55:41 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,9 @@ bool isAutoIndex( const std::string path ) {
 		Erase the leading '/' from the uri since _path already has leading '/' removed
 		If _path match with a uri, check if autoindex for that uri is on
 		If is on, set autoindex to true
+
+		Appends the path to root, unless it's an image file.
+		If no content type specified (aka directory), append path to respective html page.
 */
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
@@ -126,7 +129,7 @@ void ResponseGet::checkPath( void ) {
 /*
 	Set the status code of a GET request
 	- If the file is found and the content type is valid
-	- - Set the status code to 200
+	- Set the status code to 200
 	- Else
 	- - Set the status code to 404
 */

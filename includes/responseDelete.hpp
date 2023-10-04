@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseDelete.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/02 18:57:26 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 23:44:40 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@ class ResponseDelete : public ResponseBase {
 		~ResponseDelete( void );
 
 		void clearResources( void );
-		bool validateResource( const std::string &name );
 		void deleteData( void );
 		void setStatusCodeDelete( int status, bool isUpload );
 		void generateResponse( void );
+		
+		bool validateResource( const std::string &name );
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseBase.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 15:20:21 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 23:41:25 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,21 +44,6 @@ void ResponseBase::initContentTypes( void ) {
 	_contentTypes["ico"] = "image/x-icon";
 	_contentTypes["plain"] = "text/plain";
 	_contentTypes["form"] = "multipart/form-data";
-}
-
-bool ResponseBase::checkPermissions( std::string method, std::string path, ServerConfig portinfo ) {
-	bool found = true;
-
-	for (std::vector<Location>::iterator it = portinfo.locations.begin(); it != portinfo.locations.end(); it++) {
-		if (path.find((*it).uri) != std::string::npos) {
-			found = false;
-			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
-			}
-		}
-	}
-	return found;
 }
 
 void ResponseBase::setContentType ( std::string type ) {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 14:48:48 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 22:58:07 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,7 @@ void Server::readRequest( int socket, Request &request ) {
 	// std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
 	// std::cout << client_data << std::endl;
 
-	_response[socket] = request.processRequest(client_data, total_bytes_read, portinfo);
+	_response[socket] = request.processRequest(client_data, portinfo);
 	_isparsed[socket] = true;
 
 	FD_CLR(socket, &_readfds);
