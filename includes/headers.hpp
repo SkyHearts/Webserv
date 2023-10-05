@@ -44,6 +44,8 @@
 
 #define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "
 #define ISE_MESSAGE "\r\n\r\n<!DOCTYPE html>\n<html>\n<head>\n<title>Internal Server Error.</title>\n</head>\n<body>\n<h1>500 Internal Server Error</h1>\n<p>The Trinity Server has encountered an error and was unable to complete your request.</p>\n</body>\n</html>"
+#define PTL_413 "HTTP/1.1 413 Payload too Large\r\nContent-Type: text/html"
+#define PTL_MESSAGE "\r\n\r\n<!DOCTYPE html><html><head><title>Payload too large.</title><style>body {display: flex;justify-content: center;align-items: center;height: 100vh;margin: 0;background-color: #f090ff;font-family: Arial, Helvetica, sans-serif;}</style></head><body><div><h2>413 Payload too Large</h2><p>Tf you trying to send? Why is it so big\?\?</p></div></body></html>"
 
 enum serverBlock {
 	notDefined = 0,

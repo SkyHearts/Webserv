@@ -82,7 +82,6 @@ void ResponseGet::checkPath( void ) {
 		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 			std::string tmp = (*iter).uri;
 			tmp.erase(0, 1);
-			std::cout << _path << std::endl;
 			if (_path.find(tmp) != std::string::npos) {
 				if ((*iter).autoindex == true) {
 					setContentType("html");
@@ -121,10 +120,8 @@ void ResponseGet::checkPath( void ) {
 				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 					if (_path == (*iter).uri) {
 						_path.clear();
-						if (!(*iter).index.empty()) {
+						if (!(*iter).index.empty())
 							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
-							std::cout << _path << std::endl;
-						}
 					}
 				}
 			}

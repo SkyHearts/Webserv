@@ -27,28 +27,35 @@ Server::~Server( void ) {}
 	- Bind socket to port
 	- Listen on socket
 */
-void Server::init( void ) {
+void Server::init(void) {
 	for (size_t i = 0; i < _ports.size(); i++) {
 		int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (serverfd < 0)
-			error("socket");
+			error("socket", true);
 		_serverfds.push_back(serverfd);
 
 		int optval = 1;
 		if (setsockopt(_serverfds[i], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
-			error("setsockopt");
+			error("setsockopt", true);
 
-		_serveraddrs[_serverfds[i]].sin_family = AF_INET;
-		_serveraddrs[_serverfds[i]].sin_addr.s_addr = INADDR_ANY;
-		_serveraddrs[_serverfds[i]].sin_port = htons(_ports[i]);
-		std::memset(_serveraddrs[_serverfds[i]].sin_zero, '\0', sizeof(_serveraddrs[_serverfds[i]].sin_zero));
+		struct addrinfo hints, *serverinfo;
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = AI_PASSIVE;
 
-		if (bind(_serverfds[i], (struct sockaddr *)&_serveraddrs[_serverfds[i]], sizeof(_serveraddrs[_serverfds[i]])) < 0)
-			error("bind");
+		if (getaddrinfo(NULL, std::to_string(_ports[i]).c_str(), &hints, &serverinfo) != 0)
+			error("getaddrinfo", true);
+
+		if (bind(_serverfds[i], serverinfo->ai_addr, serverinfo->ai_addrlen) < 0)
+			error("bind", true);
 
 		if (listen(_serverfds[i], 1024) < 0)
-			error("listen");
-		std::cout << YELLOW << "Initialised port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
+			error("listen", true);
+
+		freeaddrinfo(serverinfo);
+
+		std::cout << YELLOW << "Initialized port " << GREEN_BOLD << _ports[i] << CLEAR << std::endl;
 	}
 }
 
@@ -132,7 +139,7 @@ void Server::readRequest( int socket, Request &request ) {
 				port = 80;
 		}
 
-		if (port != -1 || portinfo.listen != port) {
+		if (port != -1 && portinfo.listen != port) {
 			int connected_port_index = 0;
 			for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
 				if ((*iter).listen == port)
@@ -146,7 +153,7 @@ void Server::readRequest( int socket, Request &request ) {
 		if (total_bytes_read >= portinfo.maxClientBodySize) {
 			std::cout << RED << "Request exceeds payload limit" << std::endl;
 
-			_response[socket] = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/plain\r\n\r\n413 Payload Too Large";
+			_response[socket] = std::string(PTL_413) + std::string(PTL_MESSAGE);
 			_isparsed[socket] = true;
 
 			FD_CLR(socket, &_readfds);
