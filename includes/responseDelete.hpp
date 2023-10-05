@@ -6,21 +6,28 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:00 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/06 16:12:39 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 18:57:26 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "headers.hpp"
+#include "responseBase.hpp"
 
-class responseDelete {
+class ResponseDelete : public ResponseBase {
 	private:
-		std::string _response;
-		int _statusCode;
+		ResponseDelete( void );
+
+		std::ifstream _file;
+		std::string _filePath;
 
 	public:
-		responseDelete( void );
-		~responseDelete( void );
+		ResponseDelete( std::string filePath, ServerConfig portinfo );
+		~ResponseDelete( void );
 
-		std::string getResponse( void );
+		void clearResources( void );
+		bool validateResource( const std::string &name );
+		void deleteData( void );
+		void setStatusCodeDelete( int status, bool isUpload );
+		void generateResponse( void );
 };

@@ -92,6 +92,6 @@ class Config {
 bool	is_punct( int c );
 bool	checkAlpha( const std::string &str );
 bool	checkNum( const std::string &str );
-bool	isValidDir( const char *path );
-bool	isValidFile( const char *path );
+// bool	isValidDir( const char *path );
+// bool	isValidFile( const char *path );
 bool	containsDuplicate( const std::vector<int>& nums );

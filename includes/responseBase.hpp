@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:37:55 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/20 13:39:43 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/09/29 14:52:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ class ResponseBase {
 
 		void initStatusCodes( void );
 		void initContentTypes( void );
-		bool checkPermissions( std::string method, std::string path, ServerConfig portinfo );
 		std::string getPath( void ) const { return _path; }
 		std::map< std::string, std::string > getContentTypes( void ) const;
 		std::map< int, std::string > getStatusCodes( void ) const;
@@ -42,5 +41,7 @@ class ResponseBase {
 		std::string getResponse( void );
 		bool checkPermissions( std::string method );
 		virtual void generateResponse( void ) = 0;
-
+		std::string generateResponseISE( void );
 };
+
+std::string decodeEncoding( std::string &input );

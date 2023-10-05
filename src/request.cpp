@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/27 17:14:57 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/03 15:45:35 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,27 +101,17 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 	}
 	else if (_method == "POST") {
 		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
-		// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it)
-		// 	std::cout << it->first << " => " << it->second << '\n';
-		// std::cout << getBody() << std::endl;
 		_response = post.getResponse();
 		
 	}
-	// else if (_method == "DELETE") {
-	// 	responseDelete del;
-	// 	_response = del.getResponse(this->_path, getHeader(), getBody(), getPayload());
-	// }
-
+	else if (_method == "DELETE") {
+		ResponseDelete del(this->_path, portinfo);
+		_response = del.getResponse();
+	}
 	else {
-		ResponseGet unknown(portinfo.errorPages[501], portinfo);
+		ResponseGet unknown("unknown", portinfo);
 		_response = unknown.getResponse();
 	}
-	
-	//if path directory is cgi-bin and valid cgi program/file
-	// cgi_handler cgi;
-
-	// cgi.execCGI(this->_content, "html/" + this->_path, );
-	// 	_response = unknown.getResponse();
 
 	return _response;
 }

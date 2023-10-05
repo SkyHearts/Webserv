@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/21 15:32:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/02 15:56:04 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,25 @@
 #include "headers.hpp"
 #include "responseBase.hpp"
 
-class ResponsePost : public ResponseBase{
+class ResponsePost : public ResponseBase {
 	private:
 		ResponsePost( void );
-		void setContentType( std::string );
 
-		std::string _requestBody, _boundary;
-		std::map < std::string, std::string > _requestHeader;
+		std::string								_requestBody, _boundary;
+		std::map < std::string, std::string >	_requestHeader;
+		std::ifstream							_file;
+		bool		 							_usingCGI;
 
 	public:
 		ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload, ServerConfig portinfo);
 		~ResponsePost( void );
 
 		void clearResources( void );
-		void handleMultipartFormData( std::string filename, std::string rawData );
 		void handleTextData( std::string requestBody );
+		void handleCalc( std::string requestBody );
+		void handleMultipartFormData( std::string filename, std::string rawData );
+		bool validateResource( const std::string &name );
 		void saveData( void );
+		void setStatusCodePost( int status, int isUpload );
 		void generateResponse( void );
 };

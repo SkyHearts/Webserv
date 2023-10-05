@@ -28,6 +28,45 @@ Config::Config( std::string config_file ) {
 	Config::checkDupPorts();
 }
 
+/*
+	If path is directory return true, /test/ = true
+	Else return false, /test/test.html = false
+*/
+static bool isValidDir( const char *path ) {
+	struct stat info;
+
+	// std::cout << "isvaliddir path = " << path << std::endl;
+	if (stat(path, &info) == 0) {
+		// if (S_ISDIR(info.st_mode))
+		// 	std::cout << path << " is a directory" << std::endl;
+		// else 
+		// 	std::cout << path << " is not a directory" << std::endl;
+		return S_ISDIR(info.st_mode);
+	}
+	else
+		return 0;
+}
+
+/*
+	If path is regular file return true, /test/test.html = true
+	Else return false, /test/ = false
+*/
+static bool isValidFile( const char *path ) {
+	struct stat info;
+
+	// std::cout << "isvalidfile path = " << path << std::endl;
+	if (stat(path, &info) == 0) {
+		// if (S_ISREG(info.st_mode))
+		// 	std::cout << path << " is a regular file" << std::endl;
+		// else 
+			// std::cout << path << " is not a regular file" << std::endl;
+
+		return S_ISREG(info.st_mode);
+	}
+	else
+		return 0;
+}
+
 /** ---------- Members ---------- **/
 
 /*
@@ -544,45 +583,6 @@ bool checkAlpha( const std::string &str ) {
 	}
 
 	return retVal;
-}
-
-/*
-	If path is directory return true, /test/ = true
-	Else return false, /test/test.html = false
-*/
-bool isValidDir( const char *path ) {
-	struct stat info;
-
-	// std::cout << "isvaliddir path = " << path << std::endl;
-	if (stat(path, &info) == 0) {
-		// if (S_ISDIR(info.st_mode))
-		// 	std::cout << path << " is a directory" << std::endl;
-		// else 
-		// 	std::cout << path << " is not a directory" << std::endl;
-		return S_ISDIR(info.st_mode);
-	}
-	else
-		return 0;
-}
-
-/*
-	If path is regular file return true, /test/test.html = true
-	Else return false, /test/ = false
-*/
-bool isValidFile( const char *path ) {
-	struct stat info;
-
-	// std::cout << "isvalidfile path = " << path << std::endl;
-	if (stat(path, &info) == 0) {
-		// if (S_ISREG(info.st_mode))
-		// 	std::cout << path << " is a regular file" << std::endl;
-		// else 
-			// std::cout << path << " is not a regular file" << std::endl;
-
-		return S_ISREG(info.st_mode);
-	}
-	else
-		return 0;
 }
 
 /*
