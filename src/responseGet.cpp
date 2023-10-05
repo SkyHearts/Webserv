@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 17:15:35 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 18:47:47 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,8 @@ void ResponseGet::generateResponse( void ) {
 		}
 		else if (this->_redir) {
 			this->_response.clear();
-			this->_response.append("HTTP/1.1 308 Permanent Redirect\r\nLocation: " + _redirLocation + "\r\nContent-Length: 0");
+			this->_response.append("HTTP/1.1 308 Permanent Redirect\r\nLocation: " + _redirLocation + "\r\nContent-Length: 0\r\n\r\n");
+			std::cout << RED << "redir response: " << this->_response << CLEAR << std::endl;
 		}
 		else {
 			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
