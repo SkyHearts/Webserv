@@ -42,5 +42,6 @@ class ResponseBase {
 		bool checkPermissions( std::string method );
 		virtual void generateResponse( void ) = 0;
 		std::string generateResponseISE( void );
-
 };
+
+std::string decodeEncoding( std::string &input );

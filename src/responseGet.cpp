@@ -27,7 +27,7 @@ ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : Respon
 	resetResources();
 	
 	this->_portinfo = portinfo;
-	this->_path = filePath;
+	this->_path = decodeEncoding(filePath);
 
 	if (this->_path == "unknown")
 		this->_unknown = true;
@@ -118,7 +118,6 @@ void ResponseGet::checkPath( void ) {
 				this->_path.append(this->_portinfo.errorPages[501]);
 			}
 			else {
-				std::cout << "Path is: " << this->_path << std::endl;
 				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 					if (_path == (*iter).uri) {
 						_path.clear();

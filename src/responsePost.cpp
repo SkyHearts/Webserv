@@ -76,33 +76,6 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 }
 
 /*
-	Converts all instances of %xx to their ASCII equivalent
-*/
-static std::string decodeEncoding( std::string &input ) {
-	std::string decoded;
-	size_t input_len = input.length();
-	size_t pos = 0;
-	int ascii;
-
-	while (pos < input_len) {
-		if (input[pos] == '%' && (pos + 2) < input_len) {
-			char hex[3] = { input[pos + 1], input[pos + 2], 0 };
-
-			if (sscanf(hex, "%x", &ascii) == 1) {
-				decoded += static_cast<char>(ascii);
-				pos += 3;
-			}
-			else
-				decoded += input[pos++];
-		}
-		else
-			decoded += input[pos++];
-	}
-
-	return decoded;
-}
-
-/*
 	Handler for content type of application/x-www-urlencoded
 	Split incoming data into left of = and right of =
 	Use left as Key and filename, then right as data
@@ -148,7 +121,7 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 		std::string expression = requestBody.substr(expression_pos);
 		const char *payload[2] = {expression.c_str(), NULL};
 		_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
-		_response += cgi.execCGI(this->_requestHeader, "html/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
+		_response += cgi.execCGI(this->_requestHeader, _portinfo.root + "/calc/eval", this->_portinfo, const_cast<char **>(payload));
 	}
 	else
 		_response = "Error";
@@ -164,6 +137,7 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 */
 void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
 	filename.insert(0, _portinfo.root + "/uploads/");
+	filename = decodeEncoding(filename);
 
 	if (validateResource(filename))
 		setStatusCodePost(409, 1);

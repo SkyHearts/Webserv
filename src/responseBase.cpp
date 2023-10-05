@@ -72,6 +72,9 @@ bool ResponseBase::checkPermissions( std::string method ) {
 	if (this->_path.find("assets/") == 0)
 		found = true;
 
+	if (_path == _portinfo.root + '/' + _portinfo.index)
+		found = true;
+
 	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
 		if (this->_path.find((*it).uri) != std::string::npos) {
 			found = false;
@@ -94,4 +97,28 @@ std::string ResponseBase::generateResponseISE ( void ) {
 	response.append(body);
 
 	return (response);
+}
+
+std::string decodeEncoding( std::string &input ) {
+	std::string decoded;
+	size_t input_len = input.length();
+	size_t pos = 0;
+	int ascii;
+
+	while (pos < input_len) {
+		if (input[pos] == '%' && (pos + 2) < input_len) {
+			char hex[3] = { input[pos + 1], input[pos + 2], 0 };
+
+			if (sscanf(hex, "%x", &ascii) == 1) {
+				decoded += static_cast<char>(ascii);
+				pos += 3;
+			}
+			else
+				decoded += input[pos++];
+		}
+		else
+			decoded += input[pos++];
+	}
+
+	return decoded;
 }
