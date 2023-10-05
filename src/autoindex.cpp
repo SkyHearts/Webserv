@@ -16,7 +16,7 @@
 autoindex::autoindex( void ) { }
 
 autoindex::autoindex( std::map<std::string, std::string> content ) : _content(content) {
-	this->_response = getHead(_content["Path"]);
+	this->_response = getHead(this->_content["Path"]);
 }
 
 autoindex::~autoindex( void ) { }

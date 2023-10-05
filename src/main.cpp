@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/05 15:24:41 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/10/05 15:25:02 by nnorazma         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "server.hpp"
 #include "parse.hpp"
 #include <fstream>
@@ -11,7 +23,6 @@ static int isValidExtension( std::string config_file ) {
 		std::cerr << RED << "Error: Invalid or missing .conf extension" << CLEAR << std::endl;
 		return 1;
 	}
-
 	return 0;
 }
 

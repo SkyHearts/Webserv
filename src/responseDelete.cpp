@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 15:54:10 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 14:38:16 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 15:32:41 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,6 @@ ResponseDelete::ResponseDelete( std::string filePath, ServerConfig portinfo ) : 
 
 ResponseDelete::~ResponseDelete( void ) { }
 /*============================================================================*/
-
-// void ResponseDelete::clearResources( void ) {}
 
 bool ResponseDelete::validateResource( const std::string &name ) {
 	struct stat sb;
