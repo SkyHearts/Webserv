@@ -103,17 +103,10 @@ std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 		ResponseDelete del(this->_path, portinfo);
 		_response = del.getResponse();
 	}
-
 	else {
 		ResponseGet unknown("unknown", portinfo);
 		_response = unknown.getResponse();
 	}
-	
-	//if path directory is cgi-bin and valid cgi program/file
-	// cgi_handler cgi;
-
-	// cgi.execCGI(this->_content, "html/" + this->_path, );
-	// 	_response = unknown.getResponse();
 
 	return _response;
 }

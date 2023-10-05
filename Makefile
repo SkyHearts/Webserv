@@ -1,11 +1,11 @@
 NAME		= webserv
 CPP			= c++
-FLAGS		= -Wall -Werror -Wextra -fsanitize=address -g3
+FLAGS		= -Wall -Werror -Wextra
 INCLUDES	= -I includes
 
 RM			= rm -rf
 
-FILES		= main server parse request responseBase responseGet responsePost responseDelete autoindex
+FILES		= main server parse request responseBase responseGet responsePost responseDelete autoindex cgi_handler
 
 SRCS		= $(addsuffix .cpp, $(addprefix src/, $(FILES)))
 

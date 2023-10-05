@@ -1,4 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   responsePost.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/05 13:34:27 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/10/05 14:20:47 by nnorazma         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "responsePost.hpp"
+#include "cgi_handler.hpp"
 
 /*============================================================================*/
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
@@ -35,6 +48,9 @@ void ResponsePost::resetResources( void ) {
 	this->_requestBody.clear();
 }
 
+/*
+	Checks if the resource is a directory or file
+*/
 bool ResponsePost::validateResource( const std::string &name ) {
 	struct stat sb;
 
@@ -68,29 +84,6 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 		setStatusCode(500);
 }
 
-static std::string decodeEncoding( std::string &input ) {
-	std::string decoded;
-	size_t input_len = input.length();
-	size_t pos = 0;
-	int ascii;
-
-	while (pos < input_len) {
-		if (input[pos] == '%' && (pos + 2) < input_len) {
-			char hex[3] = { input[pos + 1], input[pos + 2], 0 };
-
-			if (sscanf(hex, "%x", &ascii) == 1) {
-				decoded += static_cast<char>(ascii);
-				pos += 3;
-			}
-			else
-				decoded += input[pos++];
-		}
-		else
-			decoded += input[pos++];
-	}
-	return decoded;
-}
-
 void ResponsePost::createResource( const std::string &filename, std::string &data ) {
 	std::ofstream file(filename);
 
@@ -108,6 +101,10 @@ void ResponsePost::createResource( const std::string &filename, std::string &dat
 
 /*
 	Handler for content type of application/x-www-urlencoded
+	Split incoming data into left of = and right of =
+	Use left as Key and filename, then right as data
+
+	If file of same name already exists, overwrite data
 */
 void ResponsePost::handleTextData( std::string requestBody ) {
 	std::string key, value;
@@ -131,17 +128,43 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 		// 	setStatusCodePost(201, 1);
 		// file.close();
 	}
-	else {
+	else
 		setStatusCodePost(204, 1);
-	}
 }
 
-void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
-	filename.insert(0, this->_portinfo.root + "/uploads/");
+/*
+	Specifically to throw client input from calculator to CGI
+*/
+void ResponsePost::handleCalc( std::string requestBody ) {
+	size_t expression_pos = requestBody.find("EXPR=");
+	cgi_handler cgi;
 
-	if (validateResource(filename)) {
-		setStatusCodePost(409, 1);
+	_usingCGI = true;
+	_response.clear();
+	if (expression_pos != std::string::npos) {
+		std::string expression = requestBody.substr(expression_pos);
+		const char *payload[2] = {expression.c_str(), NULL};
+		_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+		_response += cgi.execCGI(this->_requestHeader, _portinfo.root + "/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
 	}
+	else
+		_response = "Error";
+}
+
+/*
+	Create file of given filename (including extension)
+
+	If file of same name already exists, set status code to 409
+	Else, write rawData to file
+
+	If file fails to open, set status code to 500
+*/
+void ResponsePost::handleMultipartFormData( std::string filename, std::string rawData ) {
+	filename.insert(0, _portinfo.root + "/uploads/");
+	filename = decodeEncoding(filename);
+
+	if (validateResource(filename))
+		setStatusCodePost(409, 1);
 	else {
 		createResource(filename, rawData);
 		// std::ofstream file(filename);
@@ -158,7 +181,8 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 
 /*
 	1) Search for POST content-type
-	2) if text, handle the text
+	2) if urlencoded input, handle and save the text
+	3) If plaintext, we know its from calculator CGI call
 	3) if it contains form data;
 		- search for boundary
 		- split form header and body
@@ -172,6 +196,11 @@ void ResponsePost::saveData( void ) {
 		handleTextData(this->_requestBody);
 		return ;
 	}
+	else if (contentType.find("text/plain") != std::string::npos) {
+		handleCalc(_requestBody);
+		return ;
+	}
+
 
 	this->_boundary = contentType.substr(contentType.find("boundary=") + 9);
 
@@ -204,9 +233,20 @@ void ResponsePost::saveData( void ) {
 		handleMultipartFormData(filename, rawDataStr);
 }
 
+/*
+	Generate response based on status code
+	- 500: Internal Server Error
+	- 201: Created
+	- 204: No Content
+	- 409: Conflict
+	- 405: Method Not Allowed
+	- 404: Not Found
+*/
 void ResponsePost::generateResponse( void ) {
 	if (this->_statusCode == 500)
-		this->_response.append(generateResponseISE());
+		_response.append(generateResponseISE());
+	else if (_usingCGI)
+		return ;
 	else {
 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
 		this->_response.append("Content-Type: " + this->_contentTypes[this->_contentType] + "\r\n\r\n");

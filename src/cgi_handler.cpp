@@ -6,55 +6,53 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:08:33 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/27 13:41:00 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/04 11:13:48 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/cgi_handler.hpp"
+#include "cgi_handler.hpp"
 
-int getCharDArraySize(char** array) {
+int getCharDArraySize( char** array ) {
 	int i = 0;
+
 	while (array[i] != NULL)
 		i++;
 	return (i);
 }
 
-cgi_handler::cgi_handler() : _env(NULL), _arg(NULL){
-	std::cout << "Default constructor" << std::endl;
-}
+cgi_handler::cgi_handler( void ) : _env(NULL), _arg(NULL) { }
 
-cgi_handler::~cgi_handler( void ) {
-	std::cout << "Deconstruct Config" << std::endl;
-}
+cgi_handler::~cgi_handler( void ) { }
 
-void cgi_handler::reassginDArray(char **dest, char **src){
-	for (int i = 0; i < getCharDArraySize(src); ++i)
+void cgi_handler::reassginDArray( char **dest, char **src ) {
+	int srcSize = getCharDArraySize(src);
+
+	for (int i = 0; i < srcSize; ++i)
 		dest[i] = src[i];
-	delete[] src;		
+
+	delete[] src;
 }
 
-void cgi_handler::delDArray(char **dArray){
-	for(int i = 0; i < getCharDArraySize(dArray); ++i) {
+void cgi_handler::delDArray( char **dArray ) {
+	for (int i = 0; i < getCharDArraySize(dArray); ++i)
 		delete[] dArray[i];   
-    }
     delete[] dArray;
 }
 
-void cgi_handler::addEnv(std::string envVar) {
+void cgi_handler::addEnv( std::string envVar ) {
 	int envSize;
 	char** tmp_env;
+
 	if (_env == NULL) {
 		_env = new char*[2];
-		// _env[0] = strdup(envVar.c_str());
 		_env[0] = new char[envVar.size() + 1];
 		std::strcpy(_env[0], envVar.c_str());
 		_env[1] = NULL;
 	}
-	else{
+	else {
 		envSize = getCharDArraySize(_env);
 		tmp_env = new char*[envSize + 2];
 		reassginDArray(tmp_env, _env);
-		// tmp_env[envSize] = strdup(envVar.c_str());
 		tmp_env[envSize] = new char[envVar.size() + 1];
 		std::strcpy(tmp_env[envSize], envVar.c_str());
 		tmp_env[envSize + 1] = NULL;
@@ -62,29 +60,26 @@ void cgi_handler::addEnv(std::string envVar) {
 	}
 }
 
-void cgi_handler::addCharEnvs(char** payload){
+void cgi_handler::addCharEnvs( char** payload ) {
 	int payLoadSize = getCharDArraySize(payload);
-	// std::cout << "Payload size: " << payLoadSize << std::endl;
 	int envSize;
 	char** tmp_env;
 
 	if (_env == NULL) {
 		_env = new char*[payLoadSize + 1];
-		for (int i = 0; i < payLoadSize; ++i){
-			// _env[i] = strdup(payload[i]);
+
+		for (int i = 0; i < payLoadSize; ++i) {
 			_env[i] = new char[strlen(payload[i] + 1)];
 			std::strcpy(_env[i], payload[i]);
 		}
 		_env[payLoadSize] = NULL;
 	}
-	else{
+	else {
 		envSize = getCharDArraySize(_env);
-		// std::cout << "env: " << envSize << std::endl;
-		// std::cout << "env+payload: " << envSize + payLoadSize << std::endl;
 		tmp_env = new char*[envSize + payLoadSize + 1];
 		reassginDArray(tmp_env, _env);
-		for (int i = 0; i < payLoadSize; ++i){
-			// tmp_env[envSize + i] = strdup(payload[i]);
+
+		for (int i = 0; i < payLoadSize; ++i) {
 			tmp_env[envSize + i] = new char[strlen(payload[i]) + 1];
 			std::strcpy(tmp_env[envSize + i], payload[i]);
 		}
@@ -96,35 +91,33 @@ void cgi_handler::addCharEnvs(char** payload){
 /*
     if any of map content does not exist, ENV=<EMPTY>
 */
-void cgi_handler::createEnv(std::map<std::string, std::string> content, char** payload, ServerConfig portInfo){
+void cgi_handler::createEnv( std::map<std::string, std::string> content, char** payload, ServerConfig portInfo ) {
 	addEnv("SERVER_SOFTWARE=WebServ");
-	addEnv("SERVER_PORT=" + std::to_string(portInfo.listen));// + getPort() from parse request
-	addEnv("REQUEST_METHOD=" + content["Method"]);// + getMethod() from parse request
+	addEnv("SERVER_PORT=" + std::to_string(portInfo.listen));
+	addEnv("REQUEST_METHOD=" + content["Method"]);
 	addEnv("PATH_INFO=" + content["Path"]);
 	addEnv("PATH_TRANSLATED=" + portInfo.root + content["Path"]);
 	addEnv("HTTP_REFERER=" + content["Referer"]);
 	addEnv("HTTP_ACCEPT="+ content["Accept"]) ;
-    if (!payload){
-		std::cout << "In creatEnv Payload" << std::endl;
+
+    if (payload)
 		addCharEnvs(payload);
-	}
 }
 
-void cgi_handler::addArg(std::string arg){
+void cgi_handler::addArg( std::string arg ) {
 	int argSize;
 	char** tmp_arg;
-	if 	(_arg == NULL){
+
+	if 	(_arg == NULL) {
 		_arg = new char*[2];
-		// _arg[0] = strdup(arg.c_str());
 		_arg[0] = new char[arg.size() + 1];
 		std::strcpy(_arg[0], arg.c_str());
 		_arg[1] = NULL;
 	}
-	else{
+	else {
 		argSize = getCharDArraySize	(_arg);
 		tmp_arg = new char*[argSize + 2];
 		reassginDArray(tmp_arg, _arg);
-		// tmp_arg[argSize] = strdup(arg.c_str());
 		tmp_arg[argSize] = new char[arg.size() + 1];
 		std::strcpy(tmp_arg[argSize], arg.c_str());
 		tmp_arg[argSize + 1] = NULL;
@@ -132,30 +125,18 @@ void cgi_handler::addArg(std::string arg){
 	}
 }
 
-void cgi_handler::createArg(std::string path){
+void cgi_handler::createArg( std::string path ) {
 	addArg(path);
-	// parse extra argument if exist
-	//while (argu)
-	//	addArg("");
 }
 
 
-void cgi_handler::execCGI(std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload){
+std::string cgi_handler::execCGI( std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload ) {
 	pid_t pid;
 	std::string response;
-	
+
 	createEnv(content, payload, portInfo);
 	createArg(path);
-	// // Print env
-	// std::cout << std::endl;
-	// std::cout << "Print Env" << std::endl;
-	// for(int i = 0; i < getCharDArraySize(_env); ++i) {
-	// 	std::cout << i << " ";
-	// 	std::cout << _env[i] << std::endl;   
-    // }
-	// check path
-	std::cout << std::endl;
-	std::cout << "Path: " << this->_arg[0] << std::endl;
+
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		std::cout << "CGI pipe error" << std::endl;
@@ -169,52 +150,53 @@ void cgi_handler::execCGI(std::map<std::string, std::string> content, std::strin
 		execve(_arg[0], _arg, this->_env);
 		exit(1);
 	}
-	// else{
-	// 	//parent
-	// 	int status;
-	// 	waitpid(pid, &status, 0);
-	// 	if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-	// 		char buffer[1024];
-    //         int bytes_read = read(pipefd[0], buffer, sizeof(buffer));
-    //         if (bytes_read > 0)
-    //         {
-    //             // Null-terminate the buffer and print the output
-    //             buffer[bytes_read] = '\0';
-    //             std::cout << "Child process output: " << buffer << std::endl;
-	// 			response += buffer;
-    //         }
-	// 	}
-	// 	else
-    //         std::cerr << RED << "Child process failed to execute." << CLEAR << std::endl;
-	// }
+	else{
+		//parent
+		int status;
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+			char buffer[1024];
+            int bytes_read = read(pipefd[0], buffer, sizeof(buffer));
+            if (bytes_read > 0)
+            {
+                // Null-terminate the buffer and print the output
+                buffer[bytes_read] = '\0';
+				response += buffer;
+            }
+		}
+		else {
+            std::cerr << RED << "Child process failed to execute." << CLEAR << std::endl;
+			response = "Error";
+		}
+	}
 	std::cout << "CGI Response: " << response << std::endl;
 	delDArray(_env);
 	delDArray(_arg);
-	//return (response); //without header, etc
+	return (response); //without header, etc
 }
 
 
 // to test cgi files, ./a.out <path to files>
-int main(int argc, char **argv){
-	std::map<std::string, std::string> content;
-	cgi_handler cgi;
-    ServerConfig portinfo;
-    portinfo.root = ROOT_DEFAULT;
-    portinfo.listen = 8080;
-	const char *sample_payload[3] = {"payload1=hello", "payload2=world!", NULL};
-    content["Path"] = "/cgi-bin/printEnv";
-    content["Method"] = "GET";
-    content["Referer"] = "localhost:8080";
-    content["Accept"] = "text/html";
-	// for(int i = 0; i < 3 != NULL; ++i) {
-	// 	std::cout << i << " ";
-	// 	std::cout << sample_payload[i] << std::endl;   
-    // }
-	// for(int i = 0; sample_payload[i] != NULL; ++i) {
-	// 	std::cout << i << " ";
-	// 	std::cout << sample_payload[i] << std::endl;   
-    // }
-	cgi.execCGI(content, "../html/cgi-bin/printEnv", portinfo, const_cast<char **>(sample_payload));
-	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
-	//system("leaks a.out");
-}
+// int main(int argc, char **argv){
+// 	std::map<std::string, std::string> content;
+// 	cgi_handler cgi;
+//     ServerConfig portinfo;
+//     portinfo.root = ROOT_DEFAULT;
+//     portinfo.listen = 8080;
+// 	const char *sample_payload[3] = {"payload1=hello", "payload2=world!", NULL};
+//     content["Path"] = "/cgi-bin/printEnv";
+//     content["Method"] = "GET";
+//     content["Referer"] = "localhost:8080";
+//     content["Accept"] = "text/html";
+// 	// for(int i = 0; i < 3 != NULL; ++i) {
+// 	// 	std::cout << i << " ";
+// 	// 	std::cout << sample_payload[i] << std::endl;   
+//     // }
+// 	// for(int i = 0; sample_payload[i] != NULL; ++i) {
+// 	// 	std::cout << i << " ";
+// 	// 	std::cout << sample_payload[i] << std::endl;   
+//     // }
+// 	cgi.execCGI(content, "../html/cgi-bin/printEnv", portinfo, const_cast<char **>(sample_payload));
+// 	// cgi.execCGI(content, "sampleCGI/sampleCGI_c");
+// 	//system("leaks a.out");
+// }

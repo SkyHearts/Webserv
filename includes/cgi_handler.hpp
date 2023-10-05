@@ -6,7 +6,7 @@
 /*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/23 18:09:17 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/04 11:13:47 by jyim             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,32 +39,32 @@
 class cgi_handler
 {
 	private:
-	//WebEnv _structEnv;
-	char **_env;
-	char **_arg;
+		//WebEnv _structEnv;
+		char **_env;
+		char **_arg;
+
 	public:
-	cgi_handler();
-	~cgi_handler();
-	
-	//Get funct _env;
-	char** getEnv(void) { return _env; }
+		cgi_handler( void );
+		~cgi_handler( void );
+		
+		//Get funct _env;
+		char** getEnv( void ) { return _env; }
 
-	//Utils
-	void reassginDArray(char **dest, char **src);
-	void delDArray(char **dArray);
+		//Utils
+		void reassginDArray( char **dest, char **src );
+		void delDArray( char **dArray );
 
-
-	//Set _env
-	void createEnv(std::map<std::string, std::string> content, char** payload, ServerConfig portInfo);
-	void addCharEnvs(char** payload);
-	void addEnv(std::string envVar);
-	
-	//Set argv, arg[0] = path to cgi
-	void addArg(std::string arg);
-	void createArg(std::string path);
-	
-	//Execute in child process using execve
-	void execCGI(std::map<std::string, std::string> content, std::string path, ServerConfig portInfo, char** payload = NULL);
+		//Set _env
+		void createEnv( std::map< std::string, std::string > content, char** payload, ServerConfig portInfo );
+		void addCharEnvs( char** payload );
+		void addEnv( std::string envVar );
+		
+		//Set argv, arg[0] = path to cgi
+		void addArg( std::string arg );
+		void createArg( std::string path );
+		
+		//Execute in child process using execve
+		std::string execCGI( std::map< std::string, std::string > content, std::string path, ServerConfig portInfo, char** payload = NULL );
 };
 
-int getCharDArraySize(char** array);
+int getCharDArraySize( char** array );

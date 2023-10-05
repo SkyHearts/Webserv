@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseBase.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/04 23:41:25 by m4rrs            ###   ########.fr       */
+/*   Updated: 2023/10/05 14:32:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,29 +66,59 @@ std::string ResponseBase::getResponse( void ) {
 	return (_response);
 }
 
-bool ResponseBase::checkPermissions( std::string method ) {
-	bool found = true;
+bool ResponseBase::checkPermissions(std::string method) {
+	if (this->_path.find("assets/") == 0)
+		return true;
+
+	if (_path == _portinfo.root + '/' + _portinfo.index)
+		return true;
 
 	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
+		std::cout << _path << " is being checked" << std::endl;
 		if (this->_path.find((*it).uri) != std::string::npos) {
-			found = false;
 			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
+				if (*it2 == method) {
+					return true;
+				}
 			}
 		}
 	}
-	return (found);
+
+	return false;
 }
 
 std::string ResponseBase::generateResponseISE ( void ) {
-		std::string response;
-		
-		response.append(ISE_500);
-		std::string body = ISE_MESSAGE;
-		this->_contentLength = body.length();
-		response.append(std::to_string(this->_contentLength));
-		response.append(body);
+	std::string response;
 
-		return (response);
+	response.append(ISE_500);
+	std::string body = ISE_MESSAGE;
+	this->_contentLength = body.length();
+	response.append(std::to_string(this->_contentLength));
+	response.append(body);
+
+	return (response);
+}
+
+std::string decodeEncoding( std::string &input ) {
+	std::string decoded;
+	size_t input_len = input.length();
+	size_t pos = 0;
+	int ascii;
+
+	while (pos < input_len) {
+		if (input[pos] == '%' && (pos + 2) < input_len) {
+			char hex[3] = { input[pos + 1], input[pos + 2], 0 };
+
+			if (sscanf(hex, "%x", &ascii) == 1) {
+				decoded += static_cast<char>(ascii);
+				pos += 3;
+			}
+			else
+				decoded += input[pos++];
+		}
+		else
+			decoded += input[pos++];
+	}
+
+	return decoded;
 }
