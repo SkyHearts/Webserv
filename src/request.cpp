@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 15:45:35 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/04 22:57:22 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,6 @@ std::map< std::string, std::string > Request::getHeader( void ) const {
 
 std::string Request::getBody( void ) const {
 	return (_body);
-}
-
-size_t Request::getPayload( void ) const {
-	return (_payloadSize);
 }
 
 /*
@@ -88,11 +84,10 @@ void Request::parseRequest() {
 	Request handler to generate responses based on
 	the type of client request
 */
-std::string Request::processRequest( std::string req, int req_len, ServerConfig portinfo ) {
+std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 	clearResources();
 
 	_request = req;
-	_payloadSize = req_len;
 	parseRequest();
 
 	if (_method == "GET") {
@@ -100,7 +95,7 @@ std::string Request::processRequest( std::string req, int req_len, ServerConfig 
 		_response = get.getResponse();
 	}
 	else if (_method == "POST") {
-		ResponsePost post(this->_path, getHeader(), getBody(), getPayload(), portinfo);
+		ResponsePost post(this->_path, getHeader(), getBody(), portinfo);
 		_response = post.getResponse();
 		
 	}

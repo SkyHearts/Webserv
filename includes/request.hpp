@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hongyou <hongyou@student.42.fr>            +#+  +:+       +#+        */
+/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/09/17 18:01:40 by hongyou          ###   ########.fr       */
+/*   Updated: 2023/10/04 23:48:01 by m4rrs            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,13 @@
 
 class Request {
 	private:
-		std::string _request;
-		std::string _response;
-		std::string _method;
-		std::string _path;
-		std::string _http;
-		std::string _body;
-		size_t _payloadSize;
+		std::string _request, _response, _method, _path, _http, _body;
 		std::map< std::string, std::string > _header;
+		// std::string _response;
+		// std::string _method;
+		// std::string _path;
+		// std::string _http;
+		// std::string _body;
 
 	public:
 		Request( void );
@@ -32,8 +31,7 @@ class Request {
 
 		void clearResources( void );
 		void parseRequest( void );
-		std::string processRequest( std::string req, int req_len, ServerConfig portinfo );
-		std::map< std::string, std::string > getHeader( void ) const;
+		std::string processRequest( std::string req, ServerConfig portinfo );
 		std::string getBody( void ) const;
-		size_t getPayload( void ) const;
+		std::map< std::string, std::string > getHeader( void ) const;
 };

@@ -35,11 +35,11 @@
 #define UA "User-Agent"
 #define ACCEPT "Accept"
 
-#define ROOT_DEFAULT "html"
+#define ROOT_DEFAULT "root_folder"
 #define INDEX_DEFAULT "/index.html"
-#define e404_DEFAULT "html/404.html"
-#define e405_DEFAULT "html/405.html"
-#define e501_DEFAULT "html/501.html"
+#define e404_DEFAULT "root_folder/404.html"
+#define e405_DEFAULT "root_folder/405.html"
+#define e501_DEFAULT "root_folder/501.html"
 #define MAXCLIENTBODYSIZE_DEFAULT 20000000
 
 #define ISE_500 "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: "

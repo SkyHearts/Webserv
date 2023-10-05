@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 15:20:21 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 14:32:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,25 +66,25 @@ std::string ResponseBase::getResponse( void ) {
 	return (_response);
 }
 
-bool ResponseBase::checkPermissions( std::string method ) {
-	bool found = false;
-
+bool ResponseBase::checkPermissions(std::string method) {
 	if (this->_path.find("assets/") == 0)
-		found = true;
+		return true;
 
 	if (_path == _portinfo.root + '/' + _portinfo.index)
-		found = true;
+		return true;
 
 	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
+		std::cout << _path << " is being checked" << std::endl;
 		if (this->_path.find((*it).uri) != std::string::npos) {
-			found = false;
 			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
-				if (*it2 == method)
-					found = true;
+				if (*it2 == method) {
+					return true;
+				}
 			}
 		}
 	}
-	return (found);
+
+	return false;
 }
 
 std::string ResponseBase::generateResponseISE ( void ) {

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/03 18:12:19 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 14:51:30 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,6 @@
 /*============================================================================*/
 
 ResponseGet::ResponseGet( void ) : ResponseBase() { }
-
-/*
-	CHANGING FLOW. USING STAT()
-
-	path e.g: "/" "/upload" "/cgi-bin"
-	* 
-*/
 
 ResponseGet::ResponseGet( std::string filePath, ServerConfig portinfo ) : ResponseBase() {
 	resetResources();
@@ -60,18 +53,21 @@ static std::string fileExtension( const std::string& filename ) {
 	return "";
 }
 
-/*
-	Last character in requested path is '/'?
-*/
+/* Last character in requested path is '/'? */
 bool isAutoIndex( const std::string path ) {
 	char lastChar = path[path.length() - 1];
 	return lastChar == '/';
 }
 
 /*
-	Find the content type of a given file extension
-	- If the extension is in the map
-	- - Return the content type
+		If path is not root AND path ends with a '/'
+		Loop through each stored location (uri)
+		Erase the leading '/' from the uri since _path already has leading '/' removed
+		If _path match with a uri, check if autoindex for that uri is on
+		If is on, set autoindex to true
+
+		Appends the path to root, unless it's an image file.
+		If no content type specified (aka directory), append path to respective html page.
 */
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
@@ -95,67 +91,72 @@ void ResponseGet::checkPath( void ) {
 		setContentType("html");
 		this->_path.append(_portinfo.root + "/" + _portinfo.index);
 	}
-	else if (!this->_path.empty() && !_autoindex) {
+	else if (!this->_path.empty() && !this->_autoindex) {
 		setContentType(fileExtension(this->_path));
 		if (this->_contentType == "png" || this->_contentType == "jpg" || this->_contentType == "jpeg" || this->_contentType == "ico") {
 			this->_isImg = true;
-			if (_path.find("assets/") == std::string::npos)
-            	_path.insert(0, _portinfo.root + "/");
+			if (this->_path.find("assets/") == std::string::npos)
+            	this->_path.insert(0, this->_portinfo.root + "/");
         }
 		else if (this->_contentType == "html"){
              _path.insert(0, _portinfo.root + "/");
 		}
         else if (this->_contentType == "txt") {
             setContentType("plain");
-            _path.insert(0, _portinfo.root + "/");
+            this->_path.insert(0, this->_portinfo.root + "/");
         }
 		else if (this->_contentType == "") {
 			setContentType("html");
-			_path.insert(0, "/");
+			this->_path.insert(0, "/");
 			if (this->_unknown) {
 				this->_path.clear();
 				this->_path.append(this->_portinfo.errorPages[501]);
+				std::cout << "uknown: " << this->_path << std::endl;
 			}
 			else {
 				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
 					if (_path == (*iter).uri) {
 						_path.clear();
 						if (!(*iter).index.empty())
-							this->_path.append(_portinfo.root + (*iter).uri + "/" + (*iter).index);
+							this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
 					}
 				}
 			}
 		}
 	}
-	
 	setStatusCodeGet();
 }
 
 /*
 	Set the status code of a GET request
 	- If the file is found and the content type is valid
-	- - Set the status code to 200
+	- Set the status code to 200
 	- Else
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
-	if (!checkPermissions("GET")) {
-		setStatusCode(405);
-		this->_file.open(this->_portinfo.errorPages[405]);
-	}
-	else if (_autoindex == true)
+	if (_autoindex == true)
 		return ;
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
-		if (this->_path == this->_portinfo.errorPages[501]) setStatusCode(501);
-		else setStatusCode(200);
+		// if (this->_path == this->_portinfo.errorPages[501])
+		// 	setStatusCode(501);
 		this->_file.open(this->_path);
 	}
 
 	if (!this->_file.is_open()) {
 		setStatusCode(404);
-		setContentType("html");
-		_file.open(_portinfo.errorPages[404]);
+		_file.close();
+		this->_file.open(_portinfo.errorPages[404]);
 	}
+	else if (!_unknown && !checkPermissions("GET")) {
+		setStatusCode(405);
+		_file.close();
+		this->_file.open(this->_portinfo.errorPages[405]);
+	}
+	else if (_unknown)
+		setStatusCode(501);
+	else
+		setStatusCode(200);
 }
 
 /*
@@ -169,17 +170,17 @@ void ResponseGet::generateResponse( void ) {
 	this->_response.clear();
 
 	try {
-		if (_autoindex) {
+		if (this->_autoindex) {
 			std::map< std::string, std::string > content;
 			content["Path"] = this->_path;
-			content["Referer"] = _portinfo.name + ":" + std::to_string(_portinfo.listen);
+			content["Referer"] = this->_portinfo.name + ":" + std::to_string(this->_portinfo.listen);
 
 			autoindex ai(content);
-			_response.clear();
-			_response.append("HTTP/1.1 200 OK\r\n");
-			_response.append("Content-Type: text/html\r\n\r\n");
+			this->_response.clear();
+			this->_response.append("HTTP/1.1 200 OK\r\n");
+			this->_response.append("Content-Type: text/html\r\n\r\n");
 
-			_response += ai.generateList(_portinfo);
+			this->_response += ai.generateList(this->_portinfo);
 		}
 		else {
 			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
@@ -201,19 +202,13 @@ void ResponseGet::generateResponse( void ) {
 				while (getline(this->_file, line)) 
 					this->_response.append(line);
 			}
-
-			if (_file.bad()) { throw std::runtime_error("Error"); }
+			if (_file.bad())
+				throw std::runtime_error("Error");
 		}
 	}
 	catch (std::exception &e) {
 		this->_response.clear();
-
-		this->_response.append(ISE_500);
-		std::string body = ISE_MESSAGE;
-		this->_contentLength = body.length();
-		this->_response.append(std::to_string(this->_contentLength));
-		this->_response.append(body);
+		this->_response.append(generateResponseISE());
 	}
-
-	_file.close();
+	this->_file.close();
 }

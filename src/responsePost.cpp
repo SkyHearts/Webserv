@@ -1,17 +1,28 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   responsePost.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/05 13:34:27 by nnorazma          #+#    #+#             */
+/*   Updated: 2023/10/05 14:20:47 by nnorazma         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "responsePost.hpp"
 #include "cgi_handler.hpp"
 
 /*============================================================================*/
 ResponsePost::ResponsePost( void ) : ResponseBase() { }
 
-ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, size_t payload, ServerConfig portinfo) : ResponseBase() {
-	clearResources();
+ResponsePost::ResponsePost( std::string filePath, std::map < std::string, std::string > reqHead, std::string reqBody, ServerConfig portinfo) : ResponseBase() {
+	resetResources();
 
 	this->_portinfo = portinfo;
 	this->_path.append(filePath);
 	this->_requestHeader = reqHead;
 	this->_requestBody = reqBody;
-	this->_payload = payload;
 
 	if (validateResource(this->_portinfo.root + this->_path)) {
 		if (checkPermissions("POST"))
@@ -31,7 +42,7 @@ ResponsePost::~ResponsePost( void ) { }
 /*
 	Clear up necessary resources to be used next call
 */
-void ResponsePost::clearResources( void ) {
+void ResponsePost::resetResources( void ) {
 	this->_fileName.clear();
 	this->_requestHeader.clear();
 	this->_requestBody.clear();
@@ -49,7 +60,6 @@ bool ResponsePost::validateResource( const std::string &name ) {
 		else if (S_ISREG(sb.st_mode))
 			return true;
 	}
-	
 	return false;
 }
 
@@ -69,10 +79,24 @@ void ResponsePost::setStatusCodePost( int status, int isUpload ) {
 		this->_path.append("/upload");
 	this->_path.append("/" + std::to_string(this->_statusCode) + ".html");
 
-	std::cout << RED << "status code path: " << this->_path << CLEAR << std::endl;
 	this->_file.open(this->_path);
 	if (!this->_file.is_open())
 		setStatusCode(500);
+}
+
+void ResponsePost::createResource( const std::string &filename, std::string &data ) {
+	std::ofstream file(filename);
+
+	if (!file.is_open()) { 
+		setStatusCode(500);
+		return ;
+	}
+	file << data;
+	if (file.bad())
+		setStatusCode(500);
+	else 
+		setStatusCodePost(201, 1);
+	file.close();
 }
 
 /*
@@ -92,17 +116,17 @@ void ResponsePost::handleTextData( std::string requestBody ) {
 		key = data.substr(0, equal);
 		value = data.substr(equal + 1);
 
-		std::ofstream file(_portinfo.root + "/uploads/" + key + ".txt");
-		if (!file.is_open())
-			return setStatusCode(500);
-
-		file << value;
-		if (file.bad())
-			setStatusCode(500);
-		else 
-			setStatusCodePost(201, 1);
-
-		file.close();
+		createResource(this->_portinfo.root + "/uploads/" + key + ".txt", value);
+		// std::ofstream file(_portinfo.root + "/uploads/" + key + ".txt");
+		// if (!file.is_open()) { 
+		// 	setStatusCode(500);
+		// 	return ;
+		// }
+		// file << value;
+		// if (file.bad()) setStatusCode(500);
+		// else 
+		// 	setStatusCodePost(201, 1);
+		// file.close();
 	}
 	else
 		setStatusCodePost(204, 1);
@@ -121,7 +145,7 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 		std::string expression = requestBody.substr(expression_pos);
 		const char *payload[2] = {expression.c_str(), NULL};
 		_response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
-		_response += cgi.execCGI(this->_requestHeader, _portinfo.root + "/calc/eval", this->_portinfo, const_cast<char **>(payload));
+		_response += cgi.execCGI(this->_requestHeader, _portinfo.root + "/calc/eval.py", this->_portinfo, const_cast<char **>(payload));
 	}
 	else
 		_response = "Error";
@@ -142,19 +166,16 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 	if (validateResource(filename))
 		setStatusCodePost(409, 1);
 	else {
-		std::ofstream file(filename);
-		if (!file.is_open()) {
-			setStatusCode(500); 
-			return;
-		}
-
-		file << rawData;
-		if (file.bad())
-			setStatusCodePost(500, 0);
-		else
-			setStatusCodePost(201, 1);
-
-		file.close();
+		createResource(filename, rawData);
+		// std::ofstream file(filename);
+		// if (!file.is_open()) {
+		// 	setStatusCode(500); 
+		// 	return;
+		// }
+		// file << rawData;
+		// if (file.bad()) setStatusCodePost(500, 0);
+		// else setStatusCodePost(201, 1);
+		// file.close();
 	}
 }
 
@@ -169,10 +190,10 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 		- handle multipart/form-data
 */
 void ResponsePost::saveData( void ) {
-	std::string contentType = _requestHeader["Content-Type"];
+	std::string contentType = this->_requestHeader["Content-Type"];
 
 	if (contentType.find("application/x-www-form-urlencoded") != std::string::npos) {
-		handleTextData(_requestBody);
+		handleTextData(this->_requestBody);
 		return ;
 	}
 	else if (contentType.find("text/plain") != std::string::npos) {
@@ -180,9 +201,10 @@ void ResponsePost::saveData( void ) {
 		return ;
 	}
 
-	_boundary = contentType.substr(contentType.find("boundary=") + 9);
 
-	std::istringstream formBody(_requestBody);
+	this->_boundary = contentType.substr(contentType.find("boundary=") + 9);
+
+	std::istringstream formBody(this->_requestBody);
 	std::string line, key, value;
 	std::vector< std::string > formHead;
 
@@ -195,7 +217,7 @@ void ResponsePost::saveData( void ) {
 	std::ostringstream rawData;
 	std::string rawDataStr;
 	while (std::getline(formBody, line, '\n')) {
-		if (line == "--" + _boundary + "--")
+		if (line == "--" + this->_boundary + "--")
 			break ;
 		rawData << line << "\n";
 	}
