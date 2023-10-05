@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 18:47:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 19:03:48 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,9 +147,16 @@ void ResponseGet::checkPath( void ) {
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
-	if (_autoindex == true || _redir == true)
+
+	if (_autoindex == true)
 		return ;
-	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
+
+	if (_redir == true) {
+		setStatusCode(308);
+		return ;
+	}
+	
+	if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
 		this->_file.open(this->_path);
 
 	if (!this->_file.is_open()) {
@@ -193,7 +200,8 @@ void ResponseGet::generateResponse( void ) {
 		}
 		else if (this->_redir) {
 			this->_response.clear();
-			this->_response.append("HTTP/1.1 308 Permanent Redirect\r\nLocation: " + _redirLocation + "\r\nContent-Length: 0\r\n\r\n");
+			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+			this->_response.append("Location: " + this->_redirLocation + "\r\nContent-Length: 0\r\n\r\n");
 			std::cout << RED << "redir response: " << this->_response << CLEAR << std::endl;
 		}
 		else {

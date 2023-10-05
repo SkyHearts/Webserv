@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 15:32:32 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 18:59:32 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ void ResponseBase::initStatusCodes( void ) {
 	this->_statusCodes[200] = "OK";
 	this->_statusCodes[201] = "Created";
 	this->_statusCodes[202] = "Accepted";
+	this->_statusCodes[308] = "Permanent Redirect";
 	this->_statusCodes[400] = "Bad Request";
 	this->_statusCodes[404] = "Not Found";
 	this->_statusCodes[405] = "Method Not Allowed";
