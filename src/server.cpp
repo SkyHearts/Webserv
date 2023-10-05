@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 15:41:34 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 17:28:03 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,9 +160,11 @@ void Server::readRequest( int socket, Request &request ) {
 	}
 
 	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
+	std::cout << "[" << client_data << "]" << std::endl;
 
 	this->_response[socket] = request.processRequest(client_data, portinfo);
 	this->_isparsed[socket] = true;
+
 
 	FD_CLR(socket, &this->_readfds);
 	FD_SET(socket, &this->_writefds);
@@ -175,16 +177,18 @@ void Server::readRequest( int socket, Request &request ) {
 */
 void Server::sendResponse( int socket ) {
 	const char *response = this->_response[socket].c_str();
+	// std::cout << _response[socket] << std::endl;
 	size_t response_len = this->_response[socket].length();
 	size_t total_sent = this->_sentbytes[socket];
+	int sentbytes = 0;
 
 	size_t chunk_size = 1024;
 	size_t remaining = response_len - total_sent;
 
 	if (remaining > 0) {
-		size_t sentbytes = send(socket, response + total_sent, std::min(chunk_size, remaining), 0);
+		sentbytes = send(socket, response + total_sent, std::min(chunk_size, remaining), 0);
 
-		if (sentbytes < 0 || errno == EBADF) {
+		if (sentbytes < 0) {
 			error("send", false);
 			closeConnection(socket);
 			return;
@@ -193,12 +197,11 @@ void Server::sendResponse( int socket ) {
 		this->_sentbytes[socket] += sentbytes;
 	}
 
-	if (this->_sentbytes[socket] < (int)response_len && errno != EPIPE)
-		FD_SET(socket, &_writefds);
-	else {
+	if (this->_sentbytes[socket] == (int)response_len) {
 		std::cout << GREEN << "Sent " << this->_sentbytes[socket] << " bytes" << std::endl;
 		closeConnection(socket);
 	}
+
 }
 
 /*

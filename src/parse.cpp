@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:01:43 by jyim              #+#    #+#             */
-/*   Updated: 2023/10/05 15:29:57 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 16:55:57 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,6 +215,10 @@ void Config::parseIndexServ( std::istringstream &iss, ServerConfig *server ) {
 			server->index = subs;
 			filled = 1;
 		}
+		else{
+			server->index = subs;
+			filled = 1;
+		}
 	} while (end == 0);
 
 	if (!filled)
@@ -244,12 +248,20 @@ void Config::parseLocationParams( std::istringstream &iss, ServerConfig *server,
 				loc->allowedMethods.push_back(subs);
 			}
 		}
-		else if (!subs.compare("index") && !end) {
+		else if ((!subs.compare("index") || !subs.compare("return")) && !end) {
 			iss >> subs;
 
 			removePunc(subs);
-			if (isValidFile((server->root + "/" + loc->uri + "/" + subs).c_str()))
+			if (isValidFile((server->root + "/" + loc->uri + "/" + subs).c_str())){
 				loc->index = subs;
+				std::cout << "here" <<std::endl;
+
+			}
+			else if (subs.find("http") != std::string::npos)
+			{
+				std::cout << "here http " << subs << std::endl;
+				loc->index = subs;
+			}
 			else
 				throw(std::invalid_argument("Invalid Index file path"));
 		}	
@@ -280,11 +292,12 @@ void Config::parseLocation( std::istringstream &iss, ServerConfig *server ) {
 	int end = 1;
 	iss >> subs;
 
-	if (isValidDir((server->root + subs).c_str()))
+	// if (isValidDir((server->root + subs).c_str()))
 		loc.uri = subs;
-
-	else
-		throw(std::invalid_argument("No path given"));
+	// else if (subs.find("http") != std::string::npos)
+	// 	loc.uri = subs;
+	// else
+	// 	throw(std::invalid_argument("No path given"));
 
 	do {
 		iss >> subs;
@@ -418,7 +431,7 @@ void Config::parseServerBlock( std::istringstream &iss ) {
 			case ended:
 				break ;
 			default:
-				throw std::invalid_argument("Not a valid keyword");
+				throw std::invalid_argument("Invalid keyword/format");
 		}
 	} while (end == 0);
     checkDefaults(server);

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 15:36:25 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 17:15:35 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ ResponseGet::~ResponseGet( void ) { }
 void ResponseGet::resetResources( void ) {
 	this->_autoindex = false;
 	this->_unknown = false;
+	this->_redir = false;
+	this->_redirLocation.clear();
 }
 
 /*
@@ -112,11 +114,23 @@ void ResponseGet::checkPath( void ) {
 				this->_path.append(this->_portinfo.errorPages[501]);
 			}
 			else {
+				if (_path.find_last_of('/') == _path.length() - 1)
+					_path = _path.substr(0, _path.length() - 1);
 				for (std::vector<Location>::iterator iter = this->_portinfo.locations.begin(); iter < this->_portinfo.locations.end(); iter++) {
+					std::cout << (*iter).uri << std::endl;
 					if (this->_path == (*iter).uri) {
+					std::cout << RED << "Here" << CLEAR << std::endl;
 						this->_path.clear();
-						if (!(*iter).index.empty())
-							this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
+						if (!(*iter).index.empty()) {
+							if ((*iter).index.find("http") != std::string::npos) {
+								_redir = true;
+								std::cout << (*iter).index << std::endl;
+								_redirLocation.append((*iter).index);
+							}
+							else
+								this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
+						}
+
 					}
 				}
 			}
@@ -133,7 +147,7 @@ void ResponseGet::checkPath( void ) {
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
-	if (_autoindex == true)
+	if (_autoindex == true || _redir == true)
 		return ;
 	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
 		this->_file.open(this->_path);
@@ -176,6 +190,10 @@ void ResponseGet::generateResponse( void ) {
 			this->_response.append("Content-Type: text/html\r\n\r\n");
 
 			this->_response += ai.generateList(this->_portinfo);
+		}
+		else if (this->_redir) {
+			this->_response.clear();
+			this->_response.append("HTTP/1.1 308 Permanent Redirect\r\nLocation: " + _redirLocation + "\r\nContent-Length: 0");
 		}
 		else {
 			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
