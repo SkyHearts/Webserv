@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/10 17:13:06 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/10 18:28:53 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,6 @@ void Server::readRequest( int socket, Request &request ) {
 
 	std::memset(buffer, 0, CHUNK_SIZE);
 	bytes_read = recv(socket, buffer, CHUNK_SIZE, 0);
-	write(1, buffer, bytes_read);
 
 	if (bytes_read < 0) {
 		if (bytes_read != 0)
