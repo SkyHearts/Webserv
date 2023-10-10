@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:37:14 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/04 23:48:01 by m4rrs            ###   ########.fr       */
+/*   Updated: 2023/10/05 15:19:51 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,6 @@ class Request {
 	private:
 		std::string _request, _response, _method, _path, _http, _body;
 		std::map< std::string, std::string > _header;
-		// std::string _response;
-		// std::string _method;
-		// std::string _path;
-		// std::string _http;
-		// std::string _body;
 
 	public:
 		Request( void );

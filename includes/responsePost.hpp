@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:06:03 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 13:45:05 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 15:20:29 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,9 @@ class ResponsePost : public ResponseBase {
 		void saveData( void );
 		void setStatusCodePost( int status, int isUpload );
 		void handleTextData( std::string requestBody );
-		void handleCalc( std::string requestBody );
 		void handleMultipartFormData( std::string filename, std::string rawData );
-		bool validateResource( const std::string &name );
+		void handleCalc( std::string requestBody );
 		void generateResponse( void );
+
+		bool validateResource( const std::string &name );
 };

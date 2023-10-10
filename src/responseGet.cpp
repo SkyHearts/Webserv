@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 14:51:30 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/10 17:15:42 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ ResponseGet::~ResponseGet( void ) { }
 void ResponseGet::resetResources( void ) {
 	this->_autoindex = false;
 	this->_unknown = false;
+	this->_redir = false;
+	this->_redirLocation.clear();
 }
 
 /*
@@ -72,13 +74,12 @@ bool isAutoIndex( const std::string path ) {
 void ResponseGet::checkPath( void ) {
 	this->_isImg = false;
 
-	_path.erase(0, 1);
-
-	if (!_path.empty() && isAutoIndex(_path)) {
-		for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
+	this->_path.erase(0, 1);
+	if (!this->_path.empty() && isAutoIndex(this->_path)) {
+		for (std::vector<Location>::iterator iter = this->_portinfo.locations.begin(); iter < this->_portinfo.locations.end(); iter++) {
 			std::string tmp = (*iter).uri;
 			tmp.erase(0, 1);
-			if (_path.find(tmp) != std::string::npos) {
+			if (this->_path.find(tmp) != std::string::npos) {
 				if ((*iter).autoindex == true) {
 					setContentType("html");
 					this->_autoindex = true;
@@ -89,7 +90,7 @@ void ResponseGet::checkPath( void ) {
 
 	if (this->_path.empty() && !this->_unknown) {
 		setContentType("html");
-		this->_path.append(_portinfo.root + "/" + _portinfo.index);
+		this->_path.append(this->_portinfo.root + "/" + this->_portinfo.index);
 	}
 	else if (!this->_path.empty() && !this->_autoindex) {
 		setContentType(fileExtension(this->_path));
@@ -99,7 +100,7 @@ void ResponseGet::checkPath( void ) {
             	this->_path.insert(0, this->_portinfo.root + "/");
         }
 		else if (this->_contentType == "html"){
-             _path.insert(0, _portinfo.root + "/");
+             this->_path.insert(0,this->_portinfo.root + "/");
 		}
         else if (this->_contentType == "txt") {
             setContentType("plain");
@@ -111,14 +112,21 @@ void ResponseGet::checkPath( void ) {
 			if (this->_unknown) {
 				this->_path.clear();
 				this->_path.append(this->_portinfo.errorPages[501]);
-				std::cout << "uknown: " << this->_path << std::endl;
 			}
 			else {
-				for (std::vector<Location>::iterator iter = _portinfo.locations.begin(); iter < _portinfo.locations.end(); iter++) {
-					if (_path == (*iter).uri) {
-						_path.clear();
-						if (!(*iter).index.empty())
-							this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
+				if (_path.find_last_of('/') == _path.length() - 1)
+					_path = _path.substr(0, _path.length() - 1);
+				for (std::vector<Location>::iterator iter = this->_portinfo.locations.begin(); iter < this->_portinfo.locations.end(); iter++) {
+					if (this->_path == (*iter).uri) {
+						this->_path.clear();
+						if (!(*iter).index.empty()) {
+							if ((*iter).index.find("http") != std::string::npos) {
+								this->_redir = true;
+								this->_redirLocation.append((*iter).index);
+							}
+							else
+								this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
+						}
 					}
 				}
 			}
@@ -135,25 +143,29 @@ void ResponseGet::checkPath( void ) {
 	- - Set the status code to 404
 */
 void ResponseGet::setStatusCodeGet( void ) {
+
 	if (_autoindex == true)
 		return ;
-	else if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end())) {
-		// if (this->_path == this->_portinfo.errorPages[501])
-		// 	setStatusCode(501);
-		this->_file.open(this->_path);
+
+	if (_redir == true) {
+		setStatusCode(308);
+		return ;
 	}
+	
+	if ((this->_contentTypes.find(this->_contentType) != this->_contentTypes.end()))
+		this->_file.open(this->_path);
 
 	if (!this->_file.is_open()) {
 		setStatusCode(404);
-		_file.close();
+		this->_file.close();
 		this->_file.open(_portinfo.errorPages[404]);
 	}
-	else if (!_unknown && !checkPermissions("GET")) {
+	else if (!this->_unknown && !checkPermissions("GET")) {
 		setStatusCode(405);
-		_file.close();
+		this->_file.close();
 		this->_file.open(this->_portinfo.errorPages[405]);
 	}
-	else if (_unknown)
+	else if (this->_unknown)
 		setStatusCode(501);
 	else
 		setStatusCode(200);
@@ -182,6 +194,12 @@ void ResponseGet::generateResponse( void ) {
 
 			this->_response += ai.generateList(this->_portinfo);
 		}
+		else if (this->_redir) {
+			this->_response.clear();
+			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
+			this->_response.append("Location: " + this->_redirLocation + "\r\nContent-Length: 0\r\n\r\n");
+			std::cout << RED << "redir response: " << this->_response << CLEAR << std::endl;
+		}
 		else {
 			this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");
 
@@ -202,7 +220,7 @@ void ResponseGet::generateResponse( void ) {
 				while (getline(this->_file, line)) 
 					this->_response.append(line);
 			}
-			if (_file.bad())
+			if (this->_file.bad())
 				throw std::runtime_error("Error");
 		}
 	}

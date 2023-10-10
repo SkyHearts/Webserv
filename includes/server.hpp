@@ -3,6 +3,8 @@
 #include "headers.hpp"
 #include "request.hpp"
 
+#define CHUNK_SIZE 1024
+
 class Server {
 	private:
 		fd_set						_readfds, _writefds;
@@ -11,9 +13,15 @@ class Server {
 		std::map<int, std::string>	_response;
 		std::map<int, bool>			_isparsed;
 		std::map<int, long>			_sentbytes;
+		int							_totalbytesread, _currclientpayloadsize, _currclientport;
+		ServerConfig				_currclientconfig;
+		std::string					_clientdata;
 
 		void init( void );
 		void acceptConnection( int serverfd );
+		void findCurrentClientPort( void );
+		void setCurrentClientConfig( void );
+		void findCurrentClientPayloadSize( void );
 		void readRequest( int socket, Request &request );
 		void sendResponse( int socket );
 		void closeConnection( int socket );

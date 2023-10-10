@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/18 16:00:42 by jyim              #+#    #+#             */
-/*   Updated: 2023/09/27 18:07:02 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/05 15:19:38 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,51 +14,6 @@
 
 #include "headers.hpp"
 #include "server.hpp"
-
-//class Server {
-//	private:
-//		int					_port;
-//		int					_serverfd;
-//		struct sockaddr_in	_server_addr;
-//		std::vector<int>	_client_sockets;
-
-//		Server( void );
-//		int init( void );
-
-//	public:
-//		Server( int port );
-//		~Server( void );
-
-//		int run( void );
-//};
-
-//server {  //start of server block
-//    listen       <port>; // can insert multiple ports
-//    server_name  <name>
-//    root         <path_to_files>; // e.g. user/documents/
-
-//    location ~ <url_path> { //e.g. /, /cgi-bin, /etc
-//     allowedMethods <security>; //restrict what a url is able to send to server. https://coldbox.ortusbooks.com/the-basics/event-handlers/http-method-security
-//} //end of server block
-
-// Enum declare
-//enum	serverBlock{
-//	notDefined = 0,
-//	listen = 1,
-//	server_name = 2,
-//	root = 3,
-//	location = 4,
-//	start = 5
-//};
-
-//enum	parseelocation{
-//	notDefined = 0,
-//	listen = 1,
-//	server_name = 2,
-//	root = 3,
-//	location = 4,
-//	start = 5
-//};
 
 class Config {
 	private:
@@ -92,6 +47,4 @@ class Config {
 bool	is_punct( int c );
 bool	checkAlpha( const std::string &str );
 bool	checkNum( const std::string &str );
-// bool	isValidDir( const char *path );
-// bool	isValidFile( const char *path );
 bool	containsDuplicate( const std::vector<int>& nums );

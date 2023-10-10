@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: m4rrs <m4rrs@student.42.fr>                +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/24 16:36:28 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/04 22:57:22 by m4rrs            ###   ########.fr       */
+/*   Updated: 2023/10/05 15:31:21 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,11 @@ void Request::clearResources( void ) {
 }
 
 std::map< std::string, std::string > Request::getHeader( void ) const {
-	return (_header);
+	return (this->_header);
 }
 
 std::string Request::getBody( void ) const {
-	return (_body);
+	return (this->_body);
 }
 
 /*
@@ -47,16 +47,16 @@ std::string Request::getBody( void ) const {
 	header and content components
 */
 void Request::parseRequest() {
-	std::istringstream requestStream(_request);
+	std::istringstream requestStream(this->_request);
 	std::string line;
 	std::string key, value;
 
 	if (std::getline(requestStream, line)) {
 		std::istringstream head(line);
-		head >> _method >> _path >> _http;
+		head >> this->_method >> this->_path >> this->_http;
 	}
-	_header.insert(std::pair< std::string, std::string >("Method", _method));
-	_header.insert(std::pair< std::string, std::string >("Path", _path));
+	_header.insert(std::pair< std::string, std::string >("Method", this->_method));
+	_header.insert(std::pair< std::string, std::string >("Path", this->_path));
 
 	while (std::getline(requestStream, line, '\n') && !line.empty()) {
 		if (line == "\r")
@@ -71,13 +71,13 @@ void Request::parseRequest() {
 		catch (std::exception const &e) {
 			break ;
 		} 
-		_header.insert(std::pair< std::string, std::string >(key, value));
+		this->_header.insert(std::pair< std::string, std::string >(key, value));
 	}
 
 	std::ostringstream bodyStream;
 	while (std::getline(requestStream, line, '\n'))
 		bodyStream << line << "\n";
-	_body = bodyStream.str();
+	this->_body = bodyStream.str();
 }
 
 /*
@@ -87,26 +87,26 @@ void Request::parseRequest() {
 std::string Request::processRequest( std::string req, ServerConfig portinfo ) {
 	clearResources();
 
-	_request = req;
+	this->_request = req;
 	parseRequest();
 
-	if (_method == "GET") {
-		ResponseGet get(_path, portinfo);
-		_response = get.getResponse();
+	if (this->_method == "GET") {
+		ResponseGet get(this->_path, portinfo);
+		this->_response = get.getResponse();
 	}
-	else if (_method == "POST") {
+	else if (this->_method == "POST") {
 		ResponsePost post(this->_path, getHeader(), getBody(), portinfo);
-		_response = post.getResponse();
+		this->_response = post.getResponse();
 		
 	}
-	else if (_method == "DELETE") {
+	else if (this->_method == "DELETE") {
 		ResponseDelete del(this->_path, portinfo);
-		_response = del.getResponse();
+		this->_response = del.getResponse();
 	}
 	else {
 		ResponseGet unknown("unknown", portinfo);
-		_response = unknown.getResponse();
+		this->_response = unknown.getResponse();
 	}
 
-	return _response;
+	return this->_response;
 }

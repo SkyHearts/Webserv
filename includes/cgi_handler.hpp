@@ -3,38 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jyim <jyim@student.42kl.edu.my>            +#+  +:+       +#+        */
+/*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 15:53:55 by jyim              #+#    #+#             */
-/*   Updated: 2023/10/04 11:13:47 by jyim             ###   ########.fr       */
+/*   Updated: 2023/10/05 15:19:17 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "headers.hpp"
-
-//typedef struct env
-//{
-//	std::string SERVER_SOFTWARE;
-//	int 		SERVER_PORT;
-//	std::string REQUEST_METHOD;
-//	std::string PATH_INFO;
-//	std::string PATH_TRANSLATED;
-//	std::string HTTP_REFERER;
-//	std::string HTTP_ACCEPT;
-//} WebEnv;
-
-//To help return response?
-// class uri
-// {
-// 	private:
-// 	void parsehttp(std::string url);
-// 	public:
-// 	//Get func
-// 	std::string path, name, host;
-// 	int port;
-// };
 
 class cgi_handler
 {

@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/05 13:34:27 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 14:20:47 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/10 18:27:42 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,39 +100,6 @@ void ResponsePost::createResource( const std::string &filename, std::string &dat
 }
 
 /*
-	Handler for content type of application/x-www-urlencoded
-	Split incoming data into left of = and right of =
-	Use left as Key and filename, then right as data
-
-	If file of same name already exists, overwrite data
-*/
-void ResponsePost::handleTextData( std::string requestBody ) {
-	std::string key, value;
-	std::string data = decodeEncoding(requestBody);
-	std::replace(data.begin(), data.end(), '+', ' ');
-	size_t equal = data.find('=');
-
-	if (equal != std::string::npos) {
-		key = data.substr(0, equal);
-		value = data.substr(equal + 1);
-
-		createResource(this->_portinfo.root + "/uploads/" + key + ".txt", value);
-		// std::ofstream file(_portinfo.root + "/uploads/" + key + ".txt");
-		// if (!file.is_open()) { 
-		// 	setStatusCode(500);
-		// 	return ;
-		// }
-		// file << value;
-		// if (file.bad()) setStatusCode(500);
-		// else 
-		// 	setStatusCodePost(201, 1);
-		// file.close();
-	}
-	else
-		setStatusCodePost(204, 1);
-}
-
-/*
 	Specifically to throw client input from calculator to CGI
 */
 void ResponsePost::handleCalc( std::string requestBody ) {
@@ -152,6 +119,29 @@ void ResponsePost::handleCalc( std::string requestBody ) {
 }
 
 /*
+	Handler for content type of application/x-www-urlencoded
+	Split incoming data into left of = and right of =
+	Use left as Key and filename, then right as data
+
+	If file of same name already exists, overwrite data
+*/
+void ResponsePost::handleTextData( std::string requestBody ) {
+	std::string key, value;
+	std::string data = decodeEncoding(requestBody);
+	std::replace(data.begin(), data.end(), '+', ' ');
+	size_t equal = data.find('=');
+
+	if (equal != std::string::npos) {
+		key = data.substr(0, equal);
+		value = data.substr(equal + 1);
+
+		createResource(this->_portinfo.root + "/uploads/" + key + ".txt", value);
+	}
+	else
+		setStatusCodePost(204, 1);
+}
+
+/*
 	Create file of given filename (including extension)
 
 	If file of same name already exists, set status code to 409
@@ -165,18 +155,9 @@ void ResponsePost::handleMultipartFormData( std::string filename, std::string ra
 
 	if (validateResource(filename))
 		setStatusCodePost(409, 1);
-	else {
+	else
 		createResource(filename, rawData);
-		// std::ofstream file(filename);
-		// if (!file.is_open()) {
-		// 	setStatusCode(500); 
-		// 	return;
-		// }
-		// file << rawData;
-		// if (file.bad()) setStatusCodePost(500, 0);
-		// else setStatusCodePost(201, 1);
-		// file.close();
-	}
+
 }
 
 /*
@@ -197,7 +178,7 @@ void ResponsePost::saveData( void ) {
 		return ;
 	}
 	else if (contentType.find("text/plain") != std::string::npos) {
-		handleCalc(_requestBody);
+		handleCalc(this->_requestBody);
 		return ;
 	}
 
@@ -244,8 +225,8 @@ void ResponsePost::saveData( void ) {
 */
 void ResponsePost::generateResponse( void ) {
 	if (this->_statusCode == 500)
-		_response.append(generateResponseISE());
-	else if (_usingCGI)
+		this->_response.append(generateResponseISE());
+	else if (this->_usingCGI)
 		return ;
 	else {
 		this->_response.append("HTTP/1.1 " + std::to_string(this->_statusCode) + " " + this->_statusCodes[this->_statusCode] + "\r\n");

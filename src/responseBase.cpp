@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/11 19:38:01 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 14:32:17 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/05 18:59:32 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,59 +22,59 @@ ResponseBase::~ResponseBase( void ) { }
 /*============================================================================*/
 
 void ResponseBase::initStatusCodes( void ) {
-	_statusCodes[200] = "OK";
-	_statusCodes[201] = "Created";
-	_statusCodes[202] = "Accepted";
-	_statusCodes[400] = "Bad Request";
-	_statusCodes[404] = "Not Found";
-	_statusCodes[405] = "Method Not Allowed";
-	_statusCodes[409] = "Conflict";
-	_statusCodes[413] = "Payload Too Large";
-	_statusCodes[500] = "Internal Server Error";
-	_statusCodes[501] = "Not Implemented";
+	this->_statusCodes[200] = "OK";
+	this->_statusCodes[201] = "Created";
+	this->_statusCodes[202] = "Accepted";
+	this->_statusCodes[308] = "Permanent Redirect";
+	this->_statusCodes[400] = "Bad Request";
+	this->_statusCodes[404] = "Not Found";
+	this->_statusCodes[405] = "Method Not Allowed";
+	this->_statusCodes[409] = "Conflict";
+	this->_statusCodes[413] = "Payload Too Large";
+	this->_statusCodes[500] = "Internal Server Error";
+	this->_statusCodes[501] = "Not Implemented";
 }
 
 void ResponseBase::initContentTypes( void ) {
-	_contentTypes["html"] = "text/html";
-	_contentTypes["css"] = "text/css";
-	_contentTypes["js"] = "text/javascript";
-	_contentTypes["png"] = "image/png";
-	_contentTypes["jpg"] = "image/jpeg";
-	_contentTypes["jpeg"] = "image/jpeg";
-	_contentTypes["ico"] = "image/x-icon";
-	_contentTypes["plain"] = "text/plain";
-	_contentTypes["form"] = "multipart/form-data";
+	this->_contentTypes["html"] = "text/html";
+	this->_contentTypes["css"] = "text/css";
+	this->_contentTypes["js"] = "text/javascript";
+	this->_contentTypes["png"] = "image/png";
+	this->_contentTypes["jpg"] = "image/jpeg";
+	this->_contentTypes["jpeg"] = "image/jpeg";
+	this->_contentTypes["ico"] = "image/x-icon";
+	this->_contentTypes["plain"] = "text/plain";
+	this->_contentTypes["form"] = "multipart/form-data";
 }
 
 void ResponseBase::setContentType ( std::string type ) {
-	_contentType = type;
+	this->_contentType = type;
 }
 
 void ResponseBase::setStatusCode ( int code ) {
-	_statusCode = code;
+	this->_statusCode = code;
 }
 
 std::map< std::string, std::string > ResponseBase::getContentTypes( void ) const {
-	return (_contentTypes);
+	return (this->_contentTypes);
 }
 
 std::map< int, std::string > ResponseBase::getStatusCodes( void ) const {
-	return (_statusCodes);
+	return (this->_statusCodes);
 }
 
 std::string ResponseBase::getResponse( void ) {
-	return (_response);
+	return (this->_response);
 }
 
 bool ResponseBase::checkPermissions(std::string method) {
 	if (this->_path.find("assets/") == 0)
 		return true;
 
-	if (_path == _portinfo.root + '/' + _portinfo.index)
+	if (this->_path == this->_portinfo.root + '/' + this->_portinfo.index)
 		return true;
 
 	for (std::vector<Location>::iterator it = this->_portinfo.locations.begin(); it != this->_portinfo.locations.end(); it++) {
-		std::cout << _path << " is being checked" << std::endl;
 		if (this->_path.find((*it).uri) != std::string::npos) {
 			for (std::vector<std::string>::iterator it2 = (*it).allowedMethods.begin(); it2 != (*it).allowedMethods.end(); it2++) {
 				if (*it2 == method) {
@@ -83,7 +83,6 @@ bool ResponseBase::checkPermissions(std::string method) {
 			}
 		}
 	}
-
 	return false;
 }
 
@@ -119,6 +118,5 @@ std::string decodeEncoding( std::string &input ) {
 		else
 			decoded += input[pos++];
 	}
-
 	return decoded;
 }
