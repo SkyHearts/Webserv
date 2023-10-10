@@ -84,6 +84,48 @@ void Server::acceptConnection( int serverfd ) {
 	std::cout << GREEN << "Accepted new connection on socket " << GREEN_BOLD << clientfd << CLEAR << std::endl;
 }
 
+void Server::findCurrentClientPort( void ) {
+	std::string host_str = "Host: ";
+	size_t host_pos = _clientdata.find(host_str);
+
+	if (host_pos != std::string::npos) {
+		size_t port_pos = host_pos + host_str.length();
+		size_t colon_pos = _clientdata.find(':', port_pos);
+		size_t end_pos = _clientdata.find('\n', port_pos);
+
+		if (colon_pos != std::string::npos && colon_pos < end_pos) {
+			std::string port_str = _clientdata.substr(colon_pos + 1, end_pos - colon_pos - 1);
+			_currclientport = std::stoi(port_str);
+		}
+	}
+
+	if (_currclientport == -1)
+		_currclientport = 80;
+}
+
+void Server::setCurrentClientConfig( void ) {
+	int connected_port_index = 0;
+
+	for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
+		if ((*iter).listen == _currclientport)
+			break ;
+		connected_port_index++;
+	}
+
+	_currclientconfig = configinfo[connected_port_index];
+}
+
+void Server::findCurrentClientPayloadSize( void ) {
+	std::string content_length_str = "Content-Length: ";
+	size_t content_length_pos = _clientdata.find(content_length_str);
+
+	if (content_length_pos != std::string::npos) {
+		size_t end_pos = _clientdata.find('\n', content_length_pos);
+		std::string content_length = _clientdata.substr(content_length_pos + content_length_str.length(), end_pos - content_length_pos - content_length_str.length());
+		_currclientpayloadsize = std::stoi(content_length);
+	}
+}
+
 /*
 	Read a request from a client
 	- Read data from client
@@ -94,80 +136,57 @@ void Server::acceptConnection( int serverfd ) {
 */
 void Server::readRequest( int socket, Request &request ) {
 	int bytes_read;
-	int total_bytes_read = 0;
-	int port = -1;
-	char buffer[1024];
-	std::string client_data;
-	std::string host_header = "Host: ";
-	size_t host_pos;
-	ServerConfig portinfo;
-	portinfo.listen = -1;
+	char buffer[CHUNK_SIZE];
 
-	while (1) {
-		std::memset(buffer, 0, 1024);
-		bytes_read = recv(socket, buffer, 1024, 0);
+	std::memset(buffer, 0, CHUNK_SIZE);
+	std::cout << "before recv" << std::endl;
+	bytes_read = recv(socket, buffer, CHUNK_SIZE, 0);
+	std::cout << "after recv" << std::endl;
+	std::cout << YELLOW << "Bytes read this round " << bytes_read << CLEAR << std::endl;
+	write(1, buffer, bytes_read);
 
-		if (bytes_read < 0) {
+	if (bytes_read < 0) {
+		std::cout << "Here" << std::endl;
+		if (bytes_read != 0)
 			error("recv", false);
-			return closeConnection(socket);
-		}
-		else if (bytes_read == 0)
-			return closeConnection(socket);
-
-		client_data.append(buffer, bytes_read);
-		total_bytes_read += bytes_read;
-
-		if (port == -1) {
-			host_pos = client_data.find(host_header);
-			if (host_pos != std::string::npos) {
-				size_t port_pos = host_pos + host_header.length();
-				size_t colon_pos = client_data.find(':', port_pos);
-				size_t end_pos = client_data.find('\n', port_pos);
-
-				if (colon_pos != std::string::npos && colon_pos < end_pos) {
-					std::string port_str = client_data.substr(colon_pos + 1, end_pos - colon_pos - 1);
-					port = std::stoi(port_str);
-				}
-			}
-			
-			if (port == -1)
-				port = 80;
-		}
-
-		if (port != -1 && portinfo.listen != port) {
-			int connected_port_index = 0;
-			for (std::vector<ServerConfig>::iterator iter = configinfo.begin(); iter < configinfo.end(); iter++) {
-				if ((*iter).listen == port)
-					break ;
-				connected_port_index++;
-			}
-			portinfo = configinfo[connected_port_index];
-		}
-
-		if (total_bytes_read >= portinfo.maxClientBodySize) {
-			std::cout << RED << "Request exceeds payload limit" << std::endl;
-
-			this->_response[socket] = std::string(PTL_413) + std::string(PTL_MESSAGE);
-			this->_isparsed[socket] = true;
-
-			FD_CLR(socket, &this->_readfds);
-			FD_SET(socket, &this->_writefds);
-			return ;
-		}
-
-		if (bytes_read < 1024)
-			break ;
+		return closeConnection(socket);
 	}
 
-	std::cout << GREEN << "Received " << total_bytes_read << " bytes\n" << CLEAR << std::endl;
-	std::cout << "[" << client_data << "]" << std::endl;
+	std::cout << "saves into string" << std::endl;
+	_clientdata.append(buffer, bytes_read);
+	_totalbytesread += bytes_read;
+	std::cout << "saved into string" << std::endl;
 
-	this->_response[socket] = request.processRequest(client_data, portinfo);
-	this->_isparsed[socket] = true;
+	if (_currclientport == -1)
+		findCurrentClientPort();
 
+	if (_currclientport != -1 && _currclientconfig.listen != _currclientport)
+		setCurrentClientConfig();
 
-	FD_CLR(socket, &this->_readfds);
-	FD_SET(socket, &this->_writefds);
+	if (_currclientpayloadsize == -1)
+		findCurrentClientPayloadSize();
+
+	if (_currclientpayloadsize > _currclientconfig.maxClientBodySize) {
+		std::cout << RED << "Request exceeds payload limit" << std::endl;
+
+		this->_response[socket] = std::string(PTL_413) + std::string(PTL_MESSAGE);
+		this->_isparsed[socket] = true;
+
+		FD_CLR(socket, &this->_readfds);
+		FD_SET(socket, &this->_writefds);
+		return ;
+	}
+
+	if (bytes_read < CHUNK_SIZE) {
+		std::cout << GREEN << "Received " << _totalbytesread << " bytes\n" << CLEAR << std::endl;
+		std::cout << YELLOW << "[" << _clientdata << "]" << CLEAR << std::endl;
+
+		this->_response[socket] = request.processRequest(_clientdata, _currclientconfig);
+		this->_isparsed[socket] = true;
+
+		FD_CLR(socket, &this->_readfds);
+		FD_SET(socket, &this->_writefds);
+	}
 }
 
 /*
@@ -177,7 +196,6 @@ void Server::readRequest( int socket, Request &request ) {
 */
 void Server::sendResponse( int socket ) {
 	const char *response = this->_response[socket].c_str();
-	// std::cout << _response[socket] << std::endl;
 	size_t response_len = this->_response[socket].length();
 	size_t total_sent = this->_sentbytes[socket];
 	int sentbytes = 0;
@@ -215,6 +233,11 @@ void Server::closeConnection( int socket ) {
 	this->_response.erase(socket);
 	this->_isparsed.erase(socket);
 	this->_sentbytes.erase(socket);
+	this->_totalbytesread = 0;
+	this->_currclientpayloadsize = -1;
+	this->_currclientport = -1;
+	this->_currclientconfig.listen = -1;
+	this->_clientdata.clear();
 	close(socket);
 	
 	std::cout << BLUE << "Closed connection on socket " << socket << "\n" << CLEAR << std::endl;
@@ -243,7 +266,12 @@ void Server::loop( void ) {
 	FD_ZERO(&readfds_copy);
 	FD_ZERO(&writefds_copy);
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
+	timeout.tv_usec = 10000;
+
+	_totalbytesread = 0;
+	_currclientpayloadsize = -1;
+	_currclientport = -1;
+	_currclientconfig.listen = -1;
 
     signal(SIGPIPE, SIG_IGN);
 	for (size_t i = 0; i < this->_ports.size(); i++)
