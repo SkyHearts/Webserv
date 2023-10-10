@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 15:08:23 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 19:03:48 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/10 17:15:42 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,20 +117,16 @@ void ResponseGet::checkPath( void ) {
 				if (_path.find_last_of('/') == _path.length() - 1)
 					_path = _path.substr(0, _path.length() - 1);
 				for (std::vector<Location>::iterator iter = this->_portinfo.locations.begin(); iter < this->_portinfo.locations.end(); iter++) {
-					std::cout << (*iter).uri << std::endl;
 					if (this->_path == (*iter).uri) {
-					std::cout << RED << "Here" << CLEAR << std::endl;
 						this->_path.clear();
 						if (!(*iter).index.empty()) {
 							if ((*iter).index.find("http") != std::string::npos) {
-								_redir = true;
-								std::cout << (*iter).index << std::endl;
-								_redirLocation.append((*iter).index);
+								this->_redir = true;
+								this->_redirLocation.append((*iter).index);
 							}
 							else
 								this->_path.append(this->_portinfo.root + (*iter).uri + "/" + (*iter).index);
 						}
-
 					}
 				}
 			}

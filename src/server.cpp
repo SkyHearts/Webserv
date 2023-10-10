@@ -6,7 +6,7 @@
 /*   By: nnorazma <nnorazma@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/02 13:47:30 by nnorazma          #+#    #+#             */
-/*   Updated: 2023/10/05 17:28:03 by nnorazma         ###   ########.fr       */
+/*   Updated: 2023/10/10 17:13:06 by nnorazma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,23 +139,17 @@ void Server::readRequest( int socket, Request &request ) {
 	char buffer[CHUNK_SIZE];
 
 	std::memset(buffer, 0, CHUNK_SIZE);
-	std::cout << "before recv" << std::endl;
 	bytes_read = recv(socket, buffer, CHUNK_SIZE, 0);
-	std::cout << "after recv" << std::endl;
-	std::cout << YELLOW << "Bytes read this round " << bytes_read << CLEAR << std::endl;
 	write(1, buffer, bytes_read);
 
 	if (bytes_read < 0) {
-		std::cout << "Here" << std::endl;
 		if (bytes_read != 0)
 			error("recv", false);
 		return closeConnection(socket);
 	}
 
-	std::cout << "saves into string" << std::endl;
 	_clientdata.append(buffer, bytes_read);
 	_totalbytesread += bytes_read;
-	std::cout << "saved into string" << std::endl;
 
 	if (_currclientport == -1)
 		findCurrentClientPort();
@@ -179,7 +173,6 @@ void Server::readRequest( int socket, Request &request ) {
 
 	if (bytes_read < CHUNK_SIZE) {
 		std::cout << GREEN << "Received " << _totalbytesread << " bytes\n" << CLEAR << std::endl;
-		std::cout << YELLOW << "[" << _clientdata << "]" << CLEAR << std::endl;
 
 		this->_response[socket] = request.processRequest(_clientdata, _currclientconfig);
 		this->_isparsed[socket] = true;
