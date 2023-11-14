@@ -8,7 +8,7 @@ Contributors to this project are:
 
 ## Current Workflow
 Technically non-existent. **But,**
-* **JJ:** [Configuration file parsing and CGI](#jj)
+* **JJ:** [Configuration file parsing, autoindex and CGI](#jj)
 * **Hong You:** [Main server handling.](#hong-you)
 * **Me:** [Handling requests and responses.](#mars)
 
@@ -42,12 +42,18 @@ server 			//server keyword to parse a server block
 }		//End of a server block
 //Any keyword not supported will result in exception being thrown
 ```
+<b>Autoindex</b>
+Written in CPP
+* This function will check if file path exist using stat function, create a list of files and directory that is available in the path.
+* Function will then return a response following a format written in CSS.
+* Checking for autoindex on/off and if uri ends in slash is handled in server loop.
 
 <b>CGI Execution</b>
 A simple CGI execution function is also written to run scripts/executable in child process and response will be return.
 * https://handoutset.com/wp-content/uploads/2022/05/Web-Server-Programming-Neil-Gray.pdf
 * Environtment variable(Env) of webserver and argument(Arg) will be created
 * Env and Arg will be passed to execeve() to run scripts or executable
+* Checking for URI with CGI script handled in server loop.
 
 
 ## Hong You
